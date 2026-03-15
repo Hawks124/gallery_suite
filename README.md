@@ -278,8 +278,13 @@ print(items.first.isVideo); // bool
 
 ---
 
-## 📝 License & Acknowledgements
+## ❤️ Acknowledgements & Credits
 
-MIT — see [LICENSE](LICENSE).
+`gallery_suite` stands on the shoulders of giants. This package would not exist without the incredible work of the following open-source contributors:
 
-Thanks to [photo_manager](https://pub.dev/packages/photo_manager), [flutter_staggered_grid_view](https://pub.dev/packages/flutter_staggered_grid_view), [video_player](https://pub.dev/packages/video_player) and [just_audio](https://pub.dev/packages/just_audio).
+- **[photo_manager](https://pub.dev/packages/photo_manager)** — The high-performance engine powering our native media library access.
+- **[flutter_staggered_grid_view](https://pub.dev/packages/flutter_staggered_grid_view)** — Responsible for the beautiful and fluid Masonry layout of our grids.
+- **[video_player](https://pub.dev/packages/video_player)** — Enabling our seamless, zero-latency inline video previews.
+- **[just_audio](https://pub.dev/packages/just_audio)** — The backbone of our integrated audio playback experience.
+
+Thank you to the Flutter community for building the "bricks" that allowed us to create this "house". 🏠✨
