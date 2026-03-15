@@ -27,15 +27,41 @@
 
 ## 📑 Table of Contents
 
+- [🚀 Quick Start](#-quick-start)
 - [🤔 Why Gallery Suite?](#-why-gallery-suite)
 - [✨ Features](#-features)
 - [📦 Installation & Setup](#-installation--setup)
-  - [Android Setup](#android-setup)
-  - [iOS Setup](#ios-setup)
 - [💻 Usage](#-usage)
 - [📤 Handling Selected Media (Upload Example)](#-handling-selected-media-upload-example)
 - [⚙️ PickerConfig API](#%EF%B8%8F-pickerconfig-api)
 - [📝 License & Acknowledgements](#-license--acknowledgements)
+
+---
+
+## 🚀 Quick Start
+
+**1. Add dependency**
+```yaml
+dependencies:
+  gallery_suite: ^1.0.0
+```
+
+**2. Open the picker**
+```dart
+import 'package:gallery_suite/gallery_suite.dart';
+
+final assets = await CustomMediaPicker.show(context: context);
+```
+
+**3. Get the file**
+```dart
+if (assets != null) {
+  final file = await assets.first.file;
+}
+```
+
+> [!IMPORTANT]
+> Don't forget to add **Permissions** in your `AndroidManifest.xml` and `Info.plist`. [See Setup](#-installation--setup).
 
 ---
 
