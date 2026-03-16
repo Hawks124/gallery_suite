@@ -32,8 +32,15 @@
 - [✨ Features](#-features)
 - [📦 Installation & Setup](#-installation--setup)
 - [💻 Usage](#-usage)
+  - [Pick Images](#pick-images)
+  - [Pick a Video](#pick-a-video)
+  - [Pick Audio](#pick-audio)
+  - [Disabling the Live Camera Tile](#disabling-the-live-camera-tile)
+  - [Disabling Swipe-To-Select](#disabling-swipe-to-select)
 - [📤 Handling Selected Media (Upload Example)](#-handling-selected-media-upload-example)
 - [⚙️ PickerConfig API](#%EF%B8%8F-pickerconfig-api)
+- [🚀 Version History & Roadmap](#-version-history--roadmap)
+- [⚡ Performance Notes](#-performance-notes)
 - [📝 License & Acknowledgements](#-license--acknowledgements)
 
 ---
@@ -82,36 +89,37 @@ The built-in `image_picker` delegates to the operating system's native media bro
 | Picker UI        | Native OS dialog  | WeChat-style grid      | Custom Masonry grid             |
 | Audio/Video UI   | System default    | Yes                    | Inline playback (Mini-player)   |
 | Multi-select     | Images only       | Yes                    | Yes (Images & Audio)            |
-| In-app Camera    | No                | No                     | Yes (Live tile & Custom UI)     |
+| In-app Camera    | No                | No                     | ✅ Yes (Live tile & Custom UI)  |
+| Swipe-To-Select  | No                | No                     | ✅ Yes (iOS Photos style)       |
 | UI Theming       | System restricted | Restricted             | Fully customizable per-instance |
 
 ---
 
 ## ✨ Features
 
-**Image picker**
+**Image Picker**
 
-- Built-in Native Camera — live preview tile directly in the grid at position 0. Full custom `CameraScreen` with flash, flip, and recording support.
+- 📸 **Built-in Native Camera** — live preview tile directly in the grid at position 0. Full custom `CameraScreen` with flash, flip, and recording support. Can be disabled via `showCameraTile: false`.
+- 👆 **iOS-style Swipe-To-Select** — long press and drag your finger to rapidly select multiple images in one fluid motion. Includes intelligent auto-scrolling near screen edges. Can be disabled via `enableSwipeToSelect: false`.
 - Masonry grid — photos display at their natural proportions, no forced square crops.
 - Multi-select with numbered badges showing order of selection.
 - Horizontal preview strip at the bottom with selected items.
 - Album switcher sheet (slide-up, drag to expand).
 
-**Video picker**
+**Video Picker**
 
 - Built-in Native Camera — record videos directly from the live tile without leaving the app.
-
 - Same masonry grid with a duration badge on each tile.
 - Tap a tile → bottom sheet with a full inline video player.
 - Confirm button in the sheet — user can preview before deciding to send.
 
-**Audio picker**
+**Audio Picker**
 
 - List view with album art, track name, and duration for each file.
 - Tap a track to play or pause it inline.
 - Mini player. Selection is separated from playback.
 
-**All pickers**
+**All Pickers**
 
 - Fully customizable theming via `PickerConfig.brightness` and `primaryColor`.
 - Haptic feedback and native-feeling micro-animations and _Glassmorphism_.
@@ -210,12 +218,16 @@ import 'package:photo_manager/photo_manager.dart';
 ### Pick Images
 
 ```dart
+// Full-featured: Camera tile + Swipe-to-select + Multi-select
 final assets = await CustomMediaPicker.show(
   context: context,
   config: PickerConfig(
     requestType: RequestType.image,
     maxSelection: 10,
+    showCameraTile: true,        // Live camera feed at index 0
+    enableSwipeToSelect: true,   // iOS-style drag to select
     primaryColor: Colors.deepPurple,
+    confirmText: 'Done',
   ),
 );
 ```
@@ -227,7 +239,8 @@ final assets = await CustomMediaPicker.show(
   context: context,
   config: PickerConfig(
     requestType: RequestType.video,
-    maxSelection: 1, // Videos are usually single-select
+    maxSelection: 1,             // Videos are usually single-select
+    showCameraTile: true,        // Camera tile records video in this mode
   ),
 );
 ```
@@ -239,7 +252,8 @@ final assets = await CustomMediaPicker.show(
   context: context,
   config: PickerConfig(
     requestType: RequestType.audio,
-    maxSelection: 5, // Supports multi-select!
+    maxSelection: 5,             // Supports multi-select!
+    primaryColor: Colors.purple,
   ),
 );
 ```
@@ -254,6 +268,20 @@ final assets = await CustomMediaPicker.show(
   config: PickerConfig(
     requestType: RequestType.image,
     showCameraTile: false, // Hides the built-in camera
+  ),
+);
+```
+
+### Disabling Swipe-To-Select
+
+The iOS-style swipe-to-select is enabled by default. If you prefer a classic tap-only selection, simply set `enableSwipeToSelect: false`.
+
+```dart
+final assets = await CustomMediaPicker.show(
+  context: context,
+  config: PickerConfig(
+    requestType: RequestType.image,
+    enableSwipeToSelect: false, // Classic tap-only selection
   ),
 );
 ```
@@ -302,21 +330,34 @@ print(items.first.isVideo); // bool
 
 ## ⚙️ PickerConfig API
 
-| Parameter        | Type          | Default             | Description                                 |
-| ---------------- | ------------- | ------------------- | ------------------------------------------- |
-| `requestType`    | `RequestType` | `RequestType.image` | `image`, `video`, or `audio`                |
-| `maxSelection`   | `int`         | `10`                | Max assets selectable                       |
-| `primaryColor`   | `Color`       | `Color(0xFF2E7D32)` | Accent color for badges, buttons, seek bars |
-| `brightness`     | `Brightness?` | `null`              | Override theme; `null` = follow system      |
-| `confirmText`    | `String`      | `'Envoyer'`         | Send button label                           |
-| `cancelText`     | `String`      | `'Annuler'`         | Cancel button label                         |
-| `showCameraTile` | `bool`        | `true`              | Show live camera capture tile in the grid   |
+The entire look and feel is controlled via `PickerConfig`. Here is exactly what you can configure:
+
+| Parameter             | Type          | Default             | Description                                                                                                                                                       |
+| --------------------- | ------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `requestType`         | `RequestType` | `RequestType.image` | The specific gallery to open (`image`, `video`, or `audio`).                                                                                                      |
+| `maxSelection`        | `int`         | `10`                | The maximum number of assets the user can select. Used in Images and Audio. Video is currently single-select.                                                     |
+| `primaryColor`        | `Color`       | `Color(0xFF007AFF)` | The global accent color for checkmarks, badges, seek-bars, and confirm buttons.                                                                                   |
+| `brightness`          | `Brightness?` | `null`              | Force a specific theme (`Brightness.dark` or `light`). If `null`, it automatically follows the system `Theme.of(context)`.                                        |
+| `confirmText`         | `String`      | `'Sélectionner'`    | Localized text for the final send/done button.                                                                                                                    |
+| `cancelText`          | `String`      | `'Annuler'`         | Localized text for the cancel button in the app bar.                                                                                                              |
+| `showCameraTile`      | `bool`        | `true`              | When `true`, renders a live `camera` feed at index `0`. Supports both photo and video depending on `requestType`. Tap to open a full-screen Dribbble-inspired UI. |
+| `enableSwipeToSelect` | `bool`        | `true`              | When `true`, allows the user to long-press and drag their finger across the masonry grid to rapidly select items (iOS Photos style). Includes edge auto-scroll.   |
 
 ---
 
+## 🚀 Version History & Roadmap
+
+We use [Semantic Versioning](https://semver.org/). This package is currently evolving rapidly:
+
+| Version           | Status    | Highlights                                                                       |
+| ----------------- | --------- | -------------------------------------------------------------------------------- |
+| **v1.0.0**        | ✅ Stable | Core engine: Masonry grid, audio/video picker, album selection, dark/light theme |
+| **v1.1.0-dev.1**  | 🔧 Dev    | Native Camera Integration (live tile + premium camera screen)                    |
+| **v1.2.0-beta.1** | 🧪 Beta   | Draggable Swipe-To-Select + stability bug fixes                                  |
+
 ---
 
-## Performance notes
+## ⚡ Performance Notes
 
 - Thumbnails are decoded at 400 × 400 by `photo_manager`. `Image.memory` does not add a second decode step (`cacheWidth`/`cacheHeight` are intentionally omitted) — this is why thumbnails are sharp and not stretched.
 - Each grid tile is wrapped in `RepaintBoundary`; only the tapped tile repaints on selection.
@@ -325,7 +366,7 @@ print(items.first.isVideo); // bool
 
 ---
 
-## License
+## 📜 License
 
 MIT — see [LICENSE](LICENSE).
 

@@ -4,6 +4,22 @@ import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:gallery_suite/gallery_suite.dart';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Gallery Suite — Example App
+//
+// This example demonstrates EVERY feature of the package in a single,
+// production-quality screen. It covers:
+//
+//   📸  Image Picker   — Masonry grid, multi-select, live camera tile,
+//                         iOS-style swipe-to-select
+//   🎬  Video Picker   — Inline video preview, single-select, camera recording
+//   🎵  Audio Picker   — Inline just_audio playback, mini-player, multi-select
+//   ⚙️  PickerConfig   — Every configurable parameter is showcased below
+//
+// Each picker call is heavily commented so you can copy-paste directly into
+// your own project.
+// ─────────────────────────────────────────────────────────────────────────────
+
 void main() {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
@@ -18,10 +34,10 @@ class ExampleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Gallery Suite Pro',
+      title: 'Gallery Suite Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        fontFamily: 'Inter', // Assuming standard modern sans
+        fontFamily: 'Inter',
         scaffoldBackgroundColor: const Color(0xFFF8F9FA),
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF4F46E5),
@@ -56,18 +72,43 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
   File? _pickedAudio;
   String? _audioTitle;
 
+  // ── IMAGE PICKER ────────────────────────────────────────────────────────
+  // This is the most feature-rich mode. It showcases:
+  //   • showCameraTile         → live camera preview at grid position 0
+  //   • enableSwipeToSelect    → long-press + drag to batch-select
+  //   • maxSelection           → cap the number of selectable items
+  //   • primaryColor           → brand accent for badges, buttons, seek bars
+  //   • brightness             → pin the picker to dark or light mode
+  //   • confirmText/cancelText → localize the UI labels
   Future<void> _pickImages() async {
-    // 💡 UNIQUE FEATURE: Gallery Suite handles the heavy lifting UI and camera natively.
-    // By keeping `showCameraTile: true` (default), the user gets a live camera
-    // exactly at index 0 of the grid, with no extra native setup from you.
     final assets = await CustomMediaPicker.show(
       context: context,
       config: PickerConfig(
         requestType: RequestType.image,
+
+        // Maximum number of assets the user can pick.
         maxSelection: 10,
-        showCameraTile: true, // 📸 Built-in camera integration
+
+        // 📸 Live camera tile: a real-time camera preview appears as the
+        // first tile in the grid. Tapping it opens a premium full-screen
+        // camera with flash, flip, and glassmorphism UI.
+        // Set to `false` if you handle camera externally.
+        showCameraTile: true,
+
+        // 👆 Swipe-to-select: long press on any tile, then drag your finger
+        // across the grid to rapidly select multiple images without lifting.
+        // The grid auto-scrolls when your finger nears the top/bottom edge.
+        // Set to `false` if you prefer classic tap-only selection.
+        enableSwipeToSelect: true,
+
+        // 🎨 Brand accent used for selection badges, checkmarks, seek bars,
+        // and the confirm button gradient.
         primaryColor: const Color(0xFF4F46E5),
+
+        // Force a specific brightness, or omit to follow the system theme.
         brightness: Theme.of(context).brightness,
+
+        // Localized button labels.
         confirmText: 'Select',
         cancelText: 'Cancel',
       ),
@@ -75,9 +116,9 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
 
     if (assets == null || !mounted) return;
 
-    // 💡 BEST PRACTICE: The picker returns `AssetEntity` (from photo_manager)
-    // to keep scrolling at 60fps. You must extract the standard Dart `File`
-    // asynchronously before uploading them to your backend.
+    // The picker returns `List<AssetEntity>` (from photo_manager) for
+    // maximum scroll performance. Extract standard Dart `File` objects
+    // asynchronously before uploading to your backend.
     final files = (await Future.wait(assets.map((e) => e.file)))
         .whereType<File>()
         .toList();
@@ -87,15 +128,23 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
       ..addAll(files));
   }
 
+  // ── VIDEO PICKER ────────────────────────────────────────────────────────
+  // The video picker displays the same masonry grid but with duration badges.
+  // Tapping a tile opens an inline bottom-sheet video player so the user can
+  // preview before confirming. The camera tile records video in this mode.
   Future<void> _pickVideo() async {
-    // 💡 The built-in videoplayer preview allows users to play
-    // and review the video inline BEFORE confirming.
     final assets = await CustomMediaPicker.show(
       context: context,
       config: PickerConfig(
         requestType: RequestType.video,
-        maxSelection: 1, // Videos are usually single-select
-        showCameraTile: true, // 📸 Allows recording video straight from the grid
+
+        // Videos are typically single-select in messaging apps.
+        maxSelection: 1,
+
+        // 📸 The camera tile switches to video recording mode automatically
+        // when requestType is set to video.
+        showCameraTile: true,
+
         primaryColor: const Color(0xFFE11D48),
         brightness: Theme.of(context).brightness,
       ),
@@ -109,14 +158,19 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
     }
   }
 
+  // ── AUDIO PICKER ────────────────────────────────────────────────────────
+  // Unlike most pickers, Gallery Suite provides a full audio list view
+  // with album art, durations, and inline just_audio playback. The user
+  // can tap to play/pause and review tracks before selecting.
   Future<void> _pickAudio() async {
-    // 💡 Unlike most pickers, the Audio mode supports both inline
-    // playback (using just_audio) and multi-selection natively.
     final assets = await CustomMediaPicker.show(
       context: context,
       config: PickerConfig(
         requestType: RequestType.audio,
+
+        // Audio supports multi-select — perfect for playlist-style selection.
         maxSelection: 5,
+
         primaryColor: const Color(0xFF0D9488),
         brightness: Theme.of(context).brightness,
       ),
@@ -133,6 +187,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
     }
   }
 
+  // ── BUILD ───────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -142,23 +197,36 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // Premium Header
+          // ── Header ──────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.only(top: topPadding + 24, left: 24, right: 24, bottom: 12),
+              padding: EdgeInsets.only(
+                top: topPadding + 24,
+                left: 24,
+                right: 24,
+                bottom: 12,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Version badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF312E81) : const Color(0xFFEEF2FF),
+                      color: isDark
+                          ? const Color(0xFF312E81)
+                          : const Color(0xFFEEF2FF),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      'Gallery Suite 1.0',
+                      'Gallery Suite v1.2.0-beta.1',
                       style: TextStyle(
-                        color: isDark ? const Color(0xFFA5B4FC) : const Color(0xFF4338CA),
+                        color: isDark
+                            ? const Color(0xFFA5B4FC)
+                            : const Color(0xFF4338CA),
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.5,
@@ -176,37 +244,63 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                       color: isDark ? Colors.white : const Color(0xFF0F172A),
                     ),
                   ),
+                  const SizedBox(height: 8),
+                  // Short feature highlights
+                  Text(
+                    'Camera • Swipe-to-Select • Masonry Grid • Inline Playback',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: isDark
+                          ? const Color(0xFF94A3B8)
+                          : const Color(0xFF64748B),
+                    ),
+                  ),
                   const SizedBox(height: 24),
                 ],
               ),
             ),
           ),
 
-          // Cards List
+          // ── Action Cards ─────────────────────────────────────────────
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 _buildActionCard(
                   title: 'Photos & Camera',
-                  subtitle: 'Live Native Camera • Masonry Grid • Multi-select',
+                  subtitle:
+                      'Live Camera • Masonry Grid • Swipe-to-Select • Multi-select',
                   icon: Icons.camera_enhance_rounded,
                   color: const Color(0xFF4F46E5),
-                  gradientColors: [const Color(0xFF4F46E5), const Color(0xFF6366F1)],
+                  gradientColors: [
+                    const Color(0xFF4F46E5),
+                    const Color(0xFF6366F1),
+                  ],
                   onTap: _pickImages,
                   isDark: isDark,
-                  child: _pickedImages.isNotEmpty ? _buildImagesPreview() : null,
+                  child:
+                      _pickedImages.isNotEmpty ? _buildImagesPreview() : null,
                 ),
                 const SizedBox(height: 16),
                 _buildActionCard(
                   title: 'High-Res Video',
-                  subtitle: 'Inline Playback • Trim • Seek',
+                  subtitle: 'Inline Playback • Camera Recording • Seek',
                   icon: Icons.play_circle_fill_rounded,
                   color: const Color(0xFFE11D48),
-                  gradientColors: [const Color(0xFFE11D48), const Color(0xFFF43F5E)],
+                  gradientColors: [
+                    const Color(0xFFE11D48),
+                    const Color(0xFFF43F5E),
+                  ],
                   onTap: _pickVideo,
                   isDark: isDark,
-                  child: _pickedVideo != null ? _buildFilePreview(_pickedVideo!.path, Icons.videocam_rounded, const Color(0xFFE11D48)) : null,
+                  child: _pickedVideo != null
+                      ? _buildFilePreview(
+                          _pickedVideo!.path,
+                          Icons.videocam_rounded,
+                          const Color(0xFFE11D48),
+                        )
+                      : null,
                 ),
                 const SizedBox(height: 16),
                 _buildActionCard(
@@ -214,10 +308,19 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                   subtitle: 'Mini-player • Album Art • Multi-select',
                   icon: Icons.graphic_eq_rounded,
                   color: const Color(0xFF0D9488),
-                  gradientColors: [const Color(0xFF0D9488), const Color(0xFF14B8A6)],
+                  gradientColors: [
+                    const Color(0xFF0D9488),
+                    const Color(0xFF14B8A6),
+                  ],
                   onTap: _pickAudio,
                   isDark: isDark,
-                  child: _pickedAudio != null ? _buildFilePreview(_audioTitle ?? _pickedAudio!.path, Icons.audiotrack_rounded, const Color(0xFF0D9488)) : null,
+                  child: _pickedAudio != null
+                      ? _buildFilePreview(
+                          _audioTitle ?? _pickedAudio!.path,
+                          Icons.audiotrack_rounded,
+                          const Color(0xFF0D9488),
+                        )
+                      : null,
                 ),
                 const SizedBox(height: 48),
               ]),
@@ -228,6 +331,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
     );
   }
 
+  // ── Reusable Card ─────────────────────────────────────────────────────
   Widget _buildActionCard({
     required String title,
     required String subtitle,
@@ -281,7 +385,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                             color: color.withOpacity(0.3),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
-                          )
+                          ),
                         ],
                       ),
                       child: Icon(icon, color: Colors.white, size: 28),
@@ -296,7 +400,9 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
-                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF0F172A),
                               letterSpacing: -0.3,
                             ),
                           ),
@@ -306,7 +412,9 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
-                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                              color: isDark
+                                  ? const Color(0xFF94A3B8)
+                                  : const Color(0xFF64748B),
                             ),
                           ),
                         ],
@@ -314,7 +422,9 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                     ),
                     Icon(
                       Icons.arrow_forward_ios_rounded,
-                      color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1),
+                      color: isDark
+                          ? const Color(0xFF475569)
+                          : const Color(0xFFCBD5E1),
                       size: 16,
                     ),
                   ],
@@ -322,7 +432,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                 if (child != null) ...[
                   const SizedBox(height: 20),
                   child,
-                ]
+                ],
               ],
             ),
           ),
@@ -331,6 +441,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
     );
   }
 
+  // ── Image preview strip ──────────────────────────────────────────────
   Widget _buildImagesPreview() {
     return SizedBox(
       height: 80,
@@ -349,7 +460,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                 color: Colors.black.withOpacity(0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
-              )
+              ),
             ],
             image: DecorationImage(
               image: FileImage(_pickedImages[i]),
@@ -361,6 +472,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
     );
   }
 
+  // ── File info row ─────────────────────────────────────────────────────
   Widget _buildFilePreview(String path, IconData icon, Color color) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
@@ -384,7 +496,8 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155),
+                color:
+                    isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155),
               ),
             ),
           ),

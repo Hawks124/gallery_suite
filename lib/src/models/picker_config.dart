@@ -20,23 +20,21 @@ import 'package:photo_manager/photo_manager.dart';
 /// );
 /// ```
 class PickerConfig {
-  /// The type of media to display.
-  ///
-  /// Use [RequestType.image] (default) for the masonry image grid,
-  /// [RequestType.video] for the video grid with inline preview sheet,
-  /// or [RequestType.audio] for the audio list with inline playback.
+  /// The type of media to request (image, video, or audio).
   final RequestType requestType;
 
-  /// Maximum number of assets the user can select.
-  ///
-  /// Only applies to [RequestType.image]. Video and audio pickers
-  /// are always single-select. Defaults to `10`.
+  /// Maximum number of selectable assets. Default is 10.
   final int maxSelection;
 
-  /// The primary accent color used for selection badges, the send button,
-  /// seek bar tracks, and other interactive elements.
-  ///
-  /// Defaults to `Color(0xFF2E7D32)` (Material green 800).
+  /// Whether to show the live Camera tile as the first item in the grid.
+  /// Defaults to `true`. Effective only for image and video modes.
+  final bool showCameraTile;
+
+  /// Whether to enable iOS-style "swipe to select" when dragging across the grid.
+  /// Defaults to `true`.
+  final bool enableSwipeToSelect;
+
+  /// Primary accent color used for selections, buttons, and animations.
   final Color primaryColor;
 
   /// Force a specific brightness for the picker UI.
@@ -47,34 +45,25 @@ class PickerConfig {
   final Brightness? brightness;
 
   /// Label for the send / confirm button that appears in the AppBar once
-  /// at least one asset is selected. Defaults to `'Envoyer'`.
+  /// at least one asset is selected. Defaults to `'Sélectionner'`.
   final String confirmText;
 
   /// Label for the cancel button that dismisses the picker without a
   /// selection. Defaults to `'Annuler'`.
   final String cancelText;
 
-  /// Whether to show a live camera tile as the first item in the media grid.
-  ///
-  /// When `true` (default), a premium camera tile appears at position 0 in
-  /// the image/video grid. Tapping it launches a built-in camera screen
-  /// powered by the `camera` package. The captured photo or video is
-  /// automatically added to the selection.
-  ///
-  /// Set to `false` to hide the camera tile entirely.
-  final bool showCameraTile;
-
   /// Creates a [PickerConfig] with the given options.
   ///
   /// All parameters are optional — calling `const PickerConfig()` gives you
   /// a sensible image picker with up to 10 items selectable.
   const PickerConfig({
-    this.maxSelection = 10,
     this.requestType = RequestType.image,
-    this.primaryColor = const Color(0xFF2E7D32),
-    this.brightness,
-    this.confirmText = 'Envoyer',
-    this.cancelText = 'Annuler',
+    this.maxSelection = 10,
     this.showCameraTile = true,
+    this.enableSwipeToSelect = true,
+    this.primaryColor = const Color(0xFF007AFF),
+    this.brightness,
+    this.confirmText = 'Sélectionner',
+    this.cancelText = 'Annuler',
   });
 }

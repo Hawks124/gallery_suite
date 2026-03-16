@@ -77,7 +77,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
   void dispose() {
     _player.dispose();
     _scrollController.dispose();
-    MediaService.cancelAll();
+    // MediaService.cancelAll();
     super.dispose();
   }
 

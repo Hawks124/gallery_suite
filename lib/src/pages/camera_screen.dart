@@ -4,14 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// The capture mode for the built-in camera screen.
-enum CameraCaptureMode {
-  /// Capture a still photo.
-  photo,
-
-  /// Record a video.
-  video,
-}
+import '../enum/enum.dart';
 
 /// A premium, full-screen camera screen built with the `camera` package.
 ///
@@ -70,7 +63,9 @@ class _CameraScreenState extends State<CameraScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _controller?.dispose().catchError((e) => debugPrint('Screen dispose error: $e'));
+    _controller
+        ?.dispose()
+        .catchError((e) => debugPrint('Screen dispose error: $e'));
     _captureAnimCtrl.dispose();
     _flipAnimCtrl.dispose();
     super.dispose();
@@ -81,7 +76,9 @@ class _CameraScreenState extends State<CameraScreen>
     if (_controller == null || !_controller!.value.isInitialized) return;
 
     if (state == AppLifecycleState.inactive) {
-      _controller?.dispose().catchError((e) => debugPrint('Lifecycle dispose error: $e'));
+      _controller
+          ?.dispose()
+          .catchError((e) => debugPrint('Lifecycle dispose error: $e'));
     } else if (state == AppLifecycleState.resumed) {
       _initializeCamera();
     }
@@ -180,7 +177,9 @@ class _CameraScreenState extends State<CameraScreen>
   }
 
   Future<void> _capturePhoto() async {
-    if (_isCapturing || _controller == null || !_controller!.value.isInitialized) return;
+    if (_isCapturing ||
+        _controller == null ||
+        !_controller!.value.isInitialized) return;
 
     setState(() => _isCapturing = true);
     HapticFeedback.mediumImpact();
@@ -337,8 +336,8 @@ class _CameraScreenState extends State<CameraScreen>
                 // Flip camera button
                 _cameras.length > 1
                     ? RotationTransition(
-                        turns: Tween(begin: 0.0, end: 1.0)
-                            .animate(CurvedAnimation(
+                        turns:
+                            Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
                           parent: _flipAnimCtrl,
                           curve: Curves.easeInOutBack,
                         )),
@@ -458,12 +457,15 @@ class _CameraScreenState extends State<CameraScreen>
               shape: _isRecording ? BoxShape.rectangle : BoxShape.circle,
               borderRadius: _isRecording ? BorderRadius.circular(12) : null,
               color: isVideo
-                  ? (_isRecording ? buttonColor.withValues(alpha: 0.8) : buttonColor)
+                  ? (_isRecording
+                      ? buttonColor.withValues(alpha: 0.8)
+                      : buttonColor)
                   : Colors.white,
             ),
             margin: EdgeInsets.all(_isRecording ? 18 : 2),
             child: isVideo && !_isRecording
-                ? const Icon(Icons.videocam_rounded, color: Colors.white, size: 28)
+                ? const Icon(Icons.videocam_rounded,
+                    color: Colors.white, size: 28)
                 : null,
           ),
         ),

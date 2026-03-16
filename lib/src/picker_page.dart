@@ -4,17 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'models/picker_config.dart';
-import 'models/picker_theme.dart';
+
+import '../gallery_suite.dart';
+import 'enum/enum.dart';
 import 'pages/audio_picker_page.dart';
-import 'pages/camera_screen.dart';
-import 'services/media_service.dart';
-import 'widgets/camera_tile.dart';
-import 'widgets/media_thumbnail.dart';
-import 'widgets/video_preview_sheet.dart';
-import 'widgets/send_button.dart';
-import 'widgets/pulsing_skeleton_grid.dart';
-import 'widgets/album_selector_sheet.dart';
+import 'widgets/suite_widgets.dart';
 
 /// The main entry point for the custom media picker.
 ///
@@ -241,10 +235,9 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
   Future<void> _onCameraCaptured(File file) async {
     setState(() => _isLoading = true);
-    
+
     try {
-      final AssetEntity? savedAsset = await (
-        _isVideoMode
+      final AssetEntity? savedAsset = await (_isVideoMode
           ? PhotoManager.editor.saveVideo(
               file,
               title: 'Captured_${DateTime.now().millisecondsSinceEpoch}.mp4',
@@ -252,8 +245,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
           : PhotoManager.editor.saveImageWithPath(
               file.path,
               title: 'Captured_${DateTime.now().millisecondsSinceEpoch}.jpg',
-            )
-      );
+            ));
 
       if (savedAsset != null) {
         if (_isVideoMode || widget.config.maxSelection == 1) {
@@ -496,64 +488,82 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     // Determine if the camera tile should be shown
     final showCamera = widget.config.showCameraTile;
     final cameraOffset = showCamera ? 1 : 0;
+    final enableSwipe = !_isVideoMode && widget.config.enableSwipeToSelect;
 
-    return MasonryGridView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.all(1.5),
-      gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-      ),
-      mainAxisSpacing: 1.5,
-      crossAxisSpacing: 1.5,
-      itemCount: _assets.length + cameraOffset + (_isLoadingMore ? 3 : 0),
-      itemBuilder: (ctx, i) {
-        // Camera tile at position 0
-        if (showCamera && i == 0) {
-          return AspectRatio(
-            aspectRatio: 1.0,
-            child: CameraTileWidget(
-              primaryColor: widget.config.primaryColor,
-              isDark: _theme.isDark,
-              captureMode: _isVideoMode
-                  ? CameraCaptureMode.video
-                  : CameraCaptureMode.photo,
-              onCaptured: _onCameraCaptured,
-            ),
-          );
-        }
-
-        final assetIndex = i - cameraOffset;
-
-        if (assetIndex >= _assets.length) {
-          return AspectRatio(
-            aspectRatio: 1,
-            child: ColoredBox(color: _theme.shimmerBase),
-          );
-        }
-        final asset = _assets[assetIndex];
-        final selIdx = _selectionIndex(asset);
-        final isSelected = selIdx >= 0;
-
-        final double ar = (asset.width > 0 && asset.height > 0)
-            ? asset.width / asset.height
-            : 1.0;
-
-        return AspectRatio(
-          aspectRatio: ar.clamp(0.35, 2.8),
-          child: MediaThumbnailWidget(
-            key: ValueKey(asset.id),
-            asset: asset,
-            isSelected: isSelected,
-            selectionNumber: isSelected ? selIdx + 1 : null,
-            primaryColor: widget.config.primaryColor,
-            isDark: _theme.isDark,
-            showPlayOverlay: _isVideoMode || asset.type == AssetType.video,
-            onTap: () =>
-                _isVideoMode ? _onVideoTap(asset) : _toggleSelection(asset),
+    return DraggableSelectionGrid(
+        scrollController: _scrollController,
+        enabled: enableSwipe,
+        onAssetHover: (asset) {
+          // Toggle selection during swipe (only add or remove once per drag pass)
+          final idx = _selectionIndex(asset);
+          if (idx == -1 && _selected.length < widget.config.maxSelection) {
+            HapticFeedback.selectionClick();
+            setState(() => _selected.add(asset));
+          }
+        },
+        child: MasonryGridView.builder(
+          controller: _scrollController,
+          padding: const EdgeInsets.all(1.5),
+          gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
           ),
-        );
-      },
-    );
+          mainAxisSpacing: 1.5,
+          crossAxisSpacing: 1.5,
+          itemCount: _assets.length + cameraOffset + (_isLoadingMore ? 3 : 0),
+          itemBuilder: (ctx, i) {
+            // Camera tile at position 0
+            if (showCamera && i == 0) {
+              return AspectRatio(
+                aspectRatio: 1.0,
+                child: CameraTileWidget(
+                  primaryColor: widget.config.primaryColor,
+                  isDark: _theme.isDark,
+                  captureMode: _isVideoMode
+                      ? CameraCaptureMode.video
+                      : CameraCaptureMode.photo,
+                  onCaptured: _onCameraCaptured,
+                ),
+              );
+            }
+
+            final assetIndex = i - cameraOffset;
+
+            if (assetIndex >= _assets.length) {
+              return AspectRatio(
+                aspectRatio: 1,
+                child: ColoredBox(color: _theme.shimmerBase),
+              );
+            }
+            final asset = _assets[assetIndex];
+            final selIdx = _selectionIndex(asset);
+            final isSelected = selIdx >= 0;
+
+            final double ar = (asset.width > 0 && asset.height > 0)
+                ? asset.width / asset.height
+                : 1.0;
+
+            return AspectRatio(
+              aspectRatio: ar.clamp(0.35, 2.8),
+              child: MetaData(
+                metaData: asset,
+                behavior: HitTestBehavior.translucent,
+                child: MediaThumbnailWidget(
+                  key: ValueKey(asset.id),
+                  asset: asset,
+                  isSelected: isSelected,
+                  selectionNumber: isSelected ? selIdx + 1 : null,
+                  primaryColor: widget.config.primaryColor,
+                  isDark: _theme.isDark,
+                  showPlayOverlay:
+                      _isVideoMode || asset.type == AssetType.video,
+                  onTap: () => _isVideoMode
+                      ? _onVideoTap(asset)
+                      : _toggleSelection(asset),
+                ),
+              ),
+            );
+          },
+        ));
   }
 
   Widget _buildSelectedStrip() {

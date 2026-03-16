@@ -6,8 +6,14 @@ This document outlines the planned roadmap and potential future features for the
 
 - [x] **Camera Integration**: Allow taking photos and recording videos directly from within the picker grid (a live camera tile as the first item).
 - [ ] **Localization Support**: Add robust built-in `intl` delegate for standard translations without forcing developers to manually inject text config for every language.
-- [ ] **Draggable Selection**: Allow users to swipe-to-select multiple items rapidly without lifting their finger, similar to iOS Photos.
+- [x] **Draggable Selection**: Allow users to swipe-to-select multiple items rapidly without lifting their finger, similar to iOS Photos.
 - [ ] **Custom Video Trimmer**: A lightweight, integrated video trimming UI immediately after selecting a video.
+
+## ??
+
+- [ ] GIF/sticker tab support
+- [ ] Crop / rotate integration
+- [ ] iCloud / Google Photos remote asset support
 
 ## 🌟 Mid-Term (Next Major Release)
 

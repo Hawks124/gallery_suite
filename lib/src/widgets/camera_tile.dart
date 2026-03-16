@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../enum/enum.dart';
 import '../pages/camera_screen.dart';
 
 /// A premium, live-preview camera tile displayed at position 0 of the
@@ -56,7 +57,9 @@ class _CameraTileWidgetState extends State<CameraTileWidget>
 
   @override
   void dispose() {
-    _previewController?.dispose().catchError((e) => debugPrint('Tile preview dispose error: $e'));
+    _previewController
+        ?.dispose()
+        .catchError((e) => debugPrint('Tile preview dispose error: $e'));
     _pulseCtrl.dispose();
     super.dispose();
   }
@@ -94,7 +97,7 @@ class _CameraTileWidgetState extends State<CameraTileWidget>
   Future<void> _openCamera() async {
     HapticFeedback.lightImpact();
 
-    // 💡 CRITICAL FIX: Dispose of the tile's preview controller BEFORE opening the 
+    // 💡 CRITICAL FIX: Dispose of the tile's preview controller BEFORE opening the
     // full-screen camera to prevent hardware collision and CameraX crashes on Android.
     final oldController = _previewController;
     if (mounted) {
@@ -103,7 +106,7 @@ class _CameraTileWidgetState extends State<CameraTileWidget>
         _previewController = null;
       });
     }
-    
+
     if (oldController != null) {
       try {
         await oldController.dispose();
@@ -183,7 +186,8 @@ class _CameraTileWidgetState extends State<CameraTileWidget>
             // Frosted overlay
             Container(
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: _previewReady ? 0.25 : 0.0),
+                color:
+                    Colors.black.withValues(alpha: _previewReady ? 0.25 : 0.0),
               ),
             ),
 
@@ -234,9 +238,9 @@ class _CameraTileWidgetState extends State<CameraTileWidget>
                     : 'Photo',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: _previewReady ? Colors.white : (widget.isDark
-                      ? Colors.white70
-                      : Colors.black54),
+                  color: _previewReady
+                      ? Colors.white
+                      : (widget.isDark ? Colors.white70 : Colors.black54),
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.3,

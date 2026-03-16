@@ -6,6 +6,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [1.2.0-beta.1] - 2026-03-16
+
+### ✨ New Features
+
+- **Draggable Swipe-To-Select**: Added iOS-style drag/swipe selection capabilities directly over the Masonry grid. Long press and drag finger to select multiple images rapidly. Includes intelligent auto-scrolling when nearing the top or bottom of the screen.
+
+---
+
 ## [1.1.0-dev.1] - 2026-03-16
 
 ### ✨ New Features
