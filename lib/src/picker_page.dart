@@ -149,7 +149,6 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   void dispose() {
     _scrollController.dispose();
     _chevronCtrl.dispose();
-    MediaService.cancelAll();
     super.dispose();
   }
 
@@ -315,7 +314,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
         initialChildSize: 0.48,
         minChildSize: 0.3,
         maxChildSize: 0.88,
-        expand: false,
+        expand: true,
         snap: true,
         snapSizes: const [0.48, 0.88],
         builder: (_, scrollController) => AlbumSelectorSheet(

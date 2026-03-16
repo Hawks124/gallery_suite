@@ -6,11 +6,28 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [1.1.0-dev.1] - 2026-03-16
+
+### ✨ New Features
+
+- **Native Camera Integration**: High-performance inline `CameraTileWidget` directly in the media grid using the official `camera` package.
+- **Premium Camera Screen**: Completely redesigned full-screen camera with Dribbble-inspired UI, smooth glassmorphism effects (`BackdropFilter`), and elegant pulsing animations.
+- **Cross-Platform**: Support for Android, iOS, Web, Windows, macOS, and Linux added to `camera` dependencies to maintain maximum pub.dev score.
+
+### 🐛 Bug Fixes
+
+- Fixed a severe `PlatformException` (CameraX surface texture collision on Android) by properly disposing the tile preview before launching the full-screen camera.
+- Completely eliminated the `MissingPluginException` crashes related to `PhotoManager.cancelAllRequest()` on unsupported devices/platforms.
+- Fixed `DraggableScrollableSheet` sizing issues in the album selector to properly respect `initialChildSize` and `maxChildSize`.
+
+---
+
 ## [1.0.0] - 2025-01-01
 
 ### 🎉 Initial Release
 
 #### Image Picker
+
 - Instagram-style **3-column masonry grid** with natural aspect-ratio tiles
 - **Multi-selection** with ordered number badges and animated selection overlay
 - **Bottom preview strip** (BackdropFilter blur) showing selected items with remove button
@@ -20,6 +37,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Infinite scroll pagination (80 items per page) with automatic load-more
 
 #### Video Picker
+
 - Same masonry grid with **play button overlay** on every tile
 - Tap → **slide-up bottom sheet** video preview (88% screen height)
 - Inline `VideoPlayer` with **auto-play**, play/pause tap, and seek bar
@@ -27,6 +45,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Handles loading state and file error gracefully
 
 #### Audio Picker
+
 - Full **list view** of audio files with album art thumbnails
 - **Inline `just_audio` playback** — tap tile to play/pause
 - Animated **mini player** (BackdropFilter blur) with seek bar, play/pause and close
@@ -34,6 +53,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Single-select with animated circle badge
 
 #### General
+
 - **Adaptive dark/light theme** — iOS-inspired color system, auto-follows system or overridable
 - `PickerConfig` for full customisation: primary color, max selection, media type, brightness, labels
 - Smooth entrance **slide-up page transition** (320 ms easeOutCubic)
@@ -43,12 +63,3 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Zero-dependency on `image_picker` or native OS dialogs — 100% in-app UI
 
 ---
-
-## Roadmap
-
-- [ ] GIF/sticker tab support
-- [ ] Camera shortcut tile (first grid cell)
-- [ ] Crop / rotate integration
-- [ ] Multiple video selection
-- [ ] iCloud / Google Photos remote asset support
-- [ ] Localization (i18n) support
