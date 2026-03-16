@@ -1,7 +1,10 @@
 name: gallery_suite
 description: >-
-  Premium in-app Flutter media picker for images, videos & audio. Features fully custom UI, masonry grids, multi-select, glassmorphism, and inline playback. No native dialogs.
-version: 1.0.0
+  Flutter media picker for images, videos & audio — fully in-app, no native OS
+  dialog. Masonry grid, multi-select, inline video preview, inline audio
+  playback, album switcher, dark/light theme. Drop-in replacement for
+  image_picker when you need a custom gallery UI.
+version: 1.1.0-dev.1
 homepage: https://github.com/Hawks124/gallery_suite
 repository: https://github.com/Hawks124/gallery_suite
 issue_tracker: https://github.com/Hawks124/gallery_suite/issues

@@ -57,11 +57,15 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
   String? _audioTitle;
 
   Future<void> _pickImages() async {
+    // 💡 UNIQUE FEATURE: Gallery Suite handles the heavy lifting UI and camera natively.
+    // By keeping `showCameraTile: true` (default), the user gets a live camera
+    // exactly at index 0 of the grid, with no extra native setup from you.
     final assets = await CustomMediaPicker.show(
       context: context,
       config: PickerConfig(
         requestType: RequestType.image,
         maxSelection: 10,
+        showCameraTile: true, // 📸 Built-in camera integration
         primaryColor: const Color(0xFF4F46E5),
         brightness: Theme.of(context).brightness,
         confirmText: 'Select',
@@ -71,6 +75,9 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
 
     if (assets == null || !mounted) return;
 
+    // 💡 BEST PRACTICE: The picker returns `AssetEntity` (from photo_manager)
+    // to keep scrolling at 60fps. You must extract the standard Dart `File`
+    // asynchronously before uploading them to your backend.
     final files = (await Future.wait(assets.map((e) => e.file)))
         .whereType<File>()
         .toList();
@@ -81,11 +88,14 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
   }
 
   Future<void> _pickVideo() async {
+    // 💡 The built-in videoplayer preview allows users to play
+    // and review the video inline BEFORE confirming.
     final assets = await CustomMediaPicker.show(
       context: context,
       config: PickerConfig(
         requestType: RequestType.video,
-        maxSelection: 1,
+        maxSelection: 1, // Videos are usually single-select
+        showCameraTile: true, // 📸 Allows recording video straight from the grid
         primaryColor: const Color(0xFFE11D48),
         brightness: Theme.of(context).brightness,
       ),
@@ -100,6 +110,8 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
   }
 
   Future<void> _pickAudio() async {
+    // 💡 Unlike most pickers, the Audio mode supports both inline
+    // playback (using just_audio) and multi-selection natively.
     final assets = await CustomMediaPicker.show(
       context: context,
       config: PickerConfig(
