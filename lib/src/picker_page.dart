@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,7 +7,9 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'models/picker_config.dart';
 import 'models/picker_theme.dart';
 import 'pages/audio_picker_page.dart';
+import 'pages/camera_screen.dart';
 import 'services/media_service.dart';
+import 'widgets/camera_tile.dart';
 import 'widgets/media_thumbnail.dart';
 import 'widgets/video_preview_sheet.dart';
 import 'widgets/send_button.dart';
@@ -237,6 +240,46 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     }
   }
 
+  Future<void> _onCameraCaptured(File file) async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final AssetEntity? savedAsset = await (
+        _isVideoMode
+          ? PhotoManager.editor.saveVideo(
+              file,
+              title: 'Captured_${DateTime.now().millisecondsSinceEpoch}.mp4',
+            )
+          : PhotoManager.editor.saveImageWithPath(
+              file.path,
+              title: 'Captured_${DateTime.now().millisecondsSinceEpoch}.jpg',
+            )
+      );
+
+      if (savedAsset != null) {
+        if (_isVideoMode || widget.config.maxSelection == 1) {
+          // Single select: return immediately
+          if (mounted) Navigator.of(context).pop([savedAsset]);
+        } else {
+          // Multi select: add to selection and reload grid
+          setState(() {
+            if (_selected.length < widget.config.maxSelection) {
+              _selected.add(savedAsset);
+            }
+          });
+          // Reload the current album to show the new picture at the top
+          await _loadAssets(reset: true);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error saving captured media: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   Future<void> _onVideoTap(AssetEntity asset) async {
     final confirmed = await VideoPreviewSheet.show(
       context,
@@ -451,6 +494,10 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       );
     }
 
+    // Determine if the camera tile should be shown
+    final showCamera = widget.config.showCameraTile;
+    final cameraOffset = showCamera ? 1 : 0;
+
     return MasonryGridView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.all(1.5),
@@ -459,15 +506,32 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       ),
       mainAxisSpacing: 1.5,
       crossAxisSpacing: 1.5,
-      itemCount: _assets.length + (_isLoadingMore ? 3 : 0),
+      itemCount: _assets.length + cameraOffset + (_isLoadingMore ? 3 : 0),
       itemBuilder: (ctx, i) {
-        if (i >= _assets.length) {
+        // Camera tile at position 0
+        if (showCamera && i == 0) {
+          return AspectRatio(
+            aspectRatio: 1.0,
+            child: CameraTileWidget(
+              primaryColor: widget.config.primaryColor,
+              isDark: _theme.isDark,
+              captureMode: _isVideoMode
+                  ? CameraCaptureMode.video
+                  : CameraCaptureMode.photo,
+              onCaptured: _onCameraCaptured,
+            ),
+          );
+        }
+
+        final assetIndex = i - cameraOffset;
+
+        if (assetIndex >= _assets.length) {
           return AspectRatio(
             aspectRatio: 1,
             child: ColoredBox(color: _theme.shimmerBase),
           );
         }
-        final asset = _assets[i];
+        final asset = _assets[assetIndex];
         final selIdx = _selectionIndex(asset);
         final isSelected = selIdx >= 0;
 

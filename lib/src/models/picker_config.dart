@@ -54,6 +54,16 @@ class PickerConfig {
   /// selection. Defaults to `'Annuler'`.
   final String cancelText;
 
+  /// Whether to show a live camera tile as the first item in the media grid.
+  ///
+  /// When `true` (default), a premium camera tile appears at position 0 in
+  /// the image/video grid. Tapping it launches a built-in camera screen
+  /// powered by the `camera` package. The captured photo or video is
+  /// automatically added to the selection.
+  ///
+  /// Set to `false` to hide the camera tile entirely.
+  final bool showCameraTile;
+
   /// Creates a [PickerConfig] with the given options.
   ///
   /// All parameters are optional — calling `const PickerConfig()` gives you
@@ -65,5 +75,6 @@ class PickerConfig {
     this.brightness,
     this.confirmText = 'Envoyer',
     this.cancelText = 'Annuler',
+    this.showCameraTile = true,
   });
 }

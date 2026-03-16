@@ -41,12 +41,14 @@
 ## 🚀 Quick Start
 
 **1. Add dependency**
+
 ```yaml
 dependencies:
   gallery_suite: ^1.0.0
 ```
 
 **2. Open the picker**
+
 ```dart
 import 'package:gallery_suite/gallery_suite.dart';
 
@@ -54,6 +56,7 @@ final assets = await CustomMediaPicker.show(context: context);
 ```
 
 **3. Get the file**
+
 ```dart
 if (assets != null) {
   final file = await assets.first.file;
@@ -79,6 +82,7 @@ The built-in `image_picker` delegates to the operating system's native media bro
 | Picker UI        | Native OS dialog  | WeChat-style grid      | Custom Masonry grid             |
 | Audio/Video UI   | System default    | Yes                    | Inline playback (Mini-player)   |
 | Multi-select     | Images only       | Yes                    | Yes (Images & Audio)            |
+| In-app Camera    | No                | No                     | Yes (Live tile & Custom UI)     |
 | UI Theming       | System restricted | Restricted             | Fully customizable per-instance |
 
 ---
@@ -86,22 +90,29 @@ The built-in `image_picker` delegates to the operating system's native media bro
 ## ✨ Features
 
 **Image picker**
+
+- Built-in Native Camera — live preview tile directly in the grid at position 0. Full custom `CameraScreen` with flash, flip, and recording support.
 - Masonry grid — photos display at their natural proportions, no forced square crops.
 - Multi-select with numbered badges showing order of selection.
 - Horizontal preview strip at the bottom with selected items.
 - Album switcher sheet (slide-up, drag to expand).
 
 **Video picker**
+
+- Built-in Native Camera — record videos directly from the live tile without leaving the app.
+
 - Same masonry grid with a duration badge on each tile.
 - Tap a tile → bottom sheet with a full inline video player.
 - Confirm button in the sheet — user can preview before deciding to send.
 
 **Audio picker**
+
 - List view with album art, track name, and duration for each file.
 - Tap a track to play or pause it inline.
 - Mini player. Selection is separated from playback.
 
 **All pickers**
+
 - Fully customizable theming via `PickerConfig.brightness` and `primaryColor`.
 - Haptic feedback and native-feeling micro-animations and _Glassmorphism_.
 - Smooth skeleton loaders and optimized pagination (80 items per page).
@@ -121,7 +132,7 @@ dependencies:
 
 ### Android Setup
 
-*(Supports API 21+)*
+_(Supports API 21+)_
 
 Inside `android/app/src/main/AndroidManifest.xml` `<manifest>` block:
 
@@ -130,8 +141,12 @@ Inside `android/app/src/main/AndroidManifest.xml` `<manifest>` block:
 <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 
+<!-- Required for the built-in camera tile -->
+<uses-permission android:name="android.permission.CAMERA" />
+
 <!-- Android 9 and below -->
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
 ```
 
 Inside the `<application>` block of the same file:
@@ -159,7 +174,7 @@ Inside the `<application>` block of the same file:
 
 ### iOS Setup
 
-*(Supports iOS 11+)*
+_(Supports iOS 11+)_
 
 Inside `ios/Runner/Info.plist`:
 
@@ -167,6 +182,12 @@ Inside `ios/Runner/Info.plist`:
 <!-- Required by photo_manager -->
 <key>NSPhotoLibraryUsageDescription</key>
 <string>Used to let you pick photos and videos to share.</string>
+
+<!-- Required for the built-in camera tile -->
+<key>NSCameraUsageDescription</key>
+<string>Used to let you take photos and videos directly from the app.</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>Used to record audio for videos.</string>
 
 <!-- Helpful for just_audio background compatibility -->
 <key>UIBackgroundModes</key>
@@ -223,6 +244,20 @@ final assets = await CustomMediaPicker.show(
 );
 ```
 
+### Disabling the Live Camera Tile
+
+By default, an integrated live camera tile appears at the `0` index of the image and video grids. This allows users to capture and send media seamlessly without leaving the picker. If you want to disable this and handle the camera yourself, simply set `showCameraTile: false`.
+
+```dart
+final assets = await CustomMediaPicker.show(
+  context: context,
+  config: PickerConfig(
+    requestType: RequestType.image,
+    showCameraTile: false, // Hides the built-in camera
+  ),
+);
+```
+
 ---
 
 ## 📤 Handling Selected Media (Upload Example)
@@ -231,11 +266,11 @@ While `gallery_suite` handles the complex UI of picking files, you will often wa
 
 ```dart
 final assets = await CustomMediaPicker.show(context: context);
-if (assets == null || assets.isEmpty) return; 
+if (assets == null || assets.isEmpty) return;
 
 // Extract the Dart `File` from the photo_manager `AssetEntity`
 final asset = assets.first;
-final file = await asset.file; 
+final file = await asset.file;
 
 if (file == null) return;
 
@@ -244,7 +279,7 @@ try {
 
   // MOCK: Your custom upload service
   final String downloadUrl = await myUploadService.uploadFile(
-    file: file, 
+    file: file,
     path: 'uploads/images/${asset.id}.jpg',
   );
 
@@ -256,7 +291,7 @@ try {
 }
 ```
 
-*Alternatively, wrap each asset in `MediaItem` to get typed convenience getters:*
+_Alternatively, wrap each asset in `MediaItem` to get typed convenience getters:_
 
 ```dart
 final items = assets.map((e) => MediaItem(asset: e)).toList();
@@ -267,14 +302,32 @@ print(items.first.isVideo); // bool
 
 ## ⚙️ PickerConfig API
 
-| Parameter      | Type          | Default             | Description                                 |
-| -------------- | ------------- | ------------------- | ------------------------------------------- |
-| `requestType`  | `RequestType` | `RequestType.image` | `image`, `video`, or `audio`                |
-| `maxSelection` | `int`         | `10`                | Max assets selectable                       |
-| `primaryColor` | `Color`       | `Color(0xFF2E7D32)` | Accent color for badges, buttons, seek bars |
-| `brightness`   | `Brightness?` | `null`              | Override theme; `null` = follow system      |
-| `confirmText`  | `String`      | `'Envoyer'`         | Send button label                           |
-| `cancelText`   | `String`      | `'Annuler'`         | Cancel button label                         |
+| Parameter        | Type          | Default             | Description                                 |
+| ---------------- | ------------- | ------------------- | ------------------------------------------- |
+| `requestType`    | `RequestType` | `RequestType.image` | `image`, `video`, or `audio`                |
+| `maxSelection`   | `int`         | `10`                | Max assets selectable                       |
+| `primaryColor`   | `Color`       | `Color(0xFF2E7D32)` | Accent color for badges, buttons, seek bars |
+| `brightness`     | `Brightness?` | `null`              | Override theme; `null` = follow system      |
+| `confirmText`    | `String`      | `'Envoyer'`         | Send button label                           |
+| `cancelText`     | `String`      | `'Annuler'`         | Cancel button label                         |
+| `showCameraTile` | `bool`        | `true`              | Show live camera capture tile in the grid   |
+
+---
+
+---
+
+## Performance notes
+
+- Thumbnails are decoded at 400 × 400 by `photo_manager`. `Image.memory` does not add a second decode step (`cacheWidth`/`cacheHeight` are intentionally omitted) — this is why thumbnails are sharp and not stretched.
+- Each grid tile is wrapped in `RepaintBoundary`; only the tapped tile repaints on selection.
+- A static `Map<String, Uint8List>` caches decoded thumbnails for the duration of the picker session. Call `MediaService.clearCache()` after closing the picker if memory is a concern.
+- Pagination loads 80 assets per page; the next page triggers when the scroll position is within 800 px of the end.
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE).
 
 ---
 
@@ -286,5 +339,6 @@ print(items.first.isVideo); // bool
 - **[flutter_staggered_grid_view](https://pub.dev/packages/flutter_staggered_grid_view)** — Responsible for the beautiful and fluid Masonry layout of our grids.
 - **[video_player](https://pub.dev/packages/video_player)** — Enabling our seamless, zero-latency inline video previews.
 - **[just_audio](https://pub.dev/packages/just_audio)** — The backbone of our integrated audio playback experience.
+- **[camera](https://pub.dev/packages/camera)** — Allowing us to build a premium, fully-integrated live camera capture experience into the grid.
 
 Thank you to the Flutter community for building the "bricks" that allowed us to create this "house". 🏠✨
