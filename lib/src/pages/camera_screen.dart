@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -242,52 +243,56 @@ class _CameraScreenState extends State<CameraScreen>
 
   Widget _buildCameraView() {
     final controller = _controller!;
-    final double aspectRatio = controller.value.aspectRatio;
+    // Using a 16:9 or 4:3 fit depending on the device to make it look premium
+    final size = MediaQuery.of(context).size;
+    var scale = size.aspectRatio * controller.value.aspectRatio;
+    if (scale < 1) scale = 1 / scale;
 
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Camera preview — fills the screen
-        Center(
-          child: AspectRatio(
-            aspectRatio: 1 / aspectRatio,
+        // Camera preview — scaled to fill screen with no borders
+        Transform.scale(
+          scale: scale,
+          child: Center(
             child: CameraPreview(controller),
           ),
         ),
 
-        // Subtle vignette overlay for premium feel
+        // Deep vignette and gradient overlay for premium depth
         Positioned.fill(
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: RadialGradient(
                 center: Alignment.center,
-                radius: 1.2,
+                radius: 1.5,
                 colors: [
                   Colors.transparent,
-                  Colors.black.withValues(alpha: 0.3),
+                  Colors.black.withValues(alpha: 0.6),
                 ],
+                stops: const [0.6, 1.0],
               ),
             ),
           ),
         ),
 
-        // Top controls (back, flash)
+        // Top controls (back, flash) with Glassmorphism
         Positioned(
           top: 0,
           left: 0,
           right: 0,
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildControlButton(
+                  _buildGlassButton(
                     icon: Icons.close_rounded,
                     onTap: () => Navigator.of(context).pop(null),
                   ),
                   if (_hasFlash)
-                    _buildControlButton(
+                    _buildGlassButton(
                       icon: _flashIcon,
                       onTap: _cycleFlashMode,
                     ),
@@ -297,94 +302,112 @@ class _CameraScreenState extends State<CameraScreen>
           ),
         ),
 
-        // Bottom controls (flip, capture/record, placeholder)
+        // Bottom controls (flip, capture/record)
         Positioned(
           bottom: 0,
           left: 0,
           right: 0,
-          child: SafeArea(
-            child: Container(
-              padding: const EdgeInsets.only(
-                left: 32,
-                right: 32,
-                bottom: 28,
-                top: 20,
-              ),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.7),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Flip camera button
-                  _cameras.length > 1
-                      ? RotationTransition(
-                          turns: Tween(begin: 0.0, end: 1.0)
-                              .animate(CurvedAnimation(
-                            parent: _flipAnimCtrl,
-                            curve: Curves.easeInOutBack,
-                          )),
-                          child: _buildControlButton(
-                            icon: Icons.flip_camera_ios_rounded,
-                            onTap: _switchCamera,
-                            size: 28,
-                          ),
-                        )
-                      : const SizedBox(width: 48),
-
-                  // Capture button
-                  _buildCaptureButton(),
-
-                  // Spacer for symmetry
-                  const SizedBox(width: 48),
+          child: Container(
+            padding: EdgeInsets.only(
+              left: 40,
+              right: 40,
+              bottom: MediaQuery.paddingOf(context).bottom + 32,
+              top: 40,
+            ),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.8),
+                  Colors.transparent,
                 ],
               ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Empty spacer or placeholder for symmetry
+                const SizedBox(width: 52),
+
+                // Grand Capture button
+                _buildPremiumCaptureButton(),
+
+                // Flip camera button
+                _cameras.length > 1
+                    ? RotationTransition(
+                        turns: Tween(begin: 0.0, end: 1.0)
+                            .animate(CurvedAnimation(
+                          parent: _flipAnimCtrl,
+                          curve: Curves.easeInOutBack,
+                        )),
+                        child: _buildGlassButton(
+                          icon: Icons.flip_camera_ios_rounded,
+                          onTap: _switchCamera,
+                          size: 26,
+                        ),
+                      )
+                    : const SizedBox(width: 52),
+              ],
             ),
           ),
         ),
 
-        // Recording indicator
+        // Recording indicator (Animated Pulse)
         if (_isRecording)
           Positioned(
-            top: 0,
+            top: MediaQuery.paddingOf(context).top + 16,
             left: 0,
             right: 0,
-            child: SafeArea(
-              child: Center(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 16),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.fiber_manual_record,
-                          color: Colors.white, size: 12),
-                      SizedBox(width: 6),
-                      Text(
-                        'REC',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.2,
+            child: Center(
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0.6, end: 1.0),
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeInOut,
+                builder: (context, value, child) {
+                  // Ping-pong loop calculation
+                  final opacity = (value - 0.5).abs() * 2;
+                  return Opacity(
+                    opacity: opacity.clamp(0.2, 1.0),
+                    child: child,
+                  );
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(30),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(
+                          color: Colors.redAccent.withValues(alpha: 0.5),
+                          width: 1,
                         ),
                       ),
-                    ],
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.fiber_manual_record,
+                              color: Colors.redAccent, size: 14),
+                          SizedBox(width: 6),
+                          Text(
+                            'REC',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -394,67 +417,85 @@ class _CameraScreenState extends State<CameraScreen>
     );
   }
 
-  Widget _buildCaptureButton() {
+  Widget _buildPremiumCaptureButton() {
     final isVideo = widget.captureMode == CameraCaptureMode.video;
+    final buttonColor = isVideo ? const Color(0xFFE11D48) : Colors.white;
 
     return GestureDetector(
       onTap: isVideo ? _toggleVideoRecording : _capturePhoto,
       child: ScaleTransition(
-        scale: Tween(begin: 1.0, end: 0.88).animate(CurvedAnimation(
+        scale: Tween(begin: 1.0, end: 0.85).animate(CurvedAnimation(
           parent: _captureAnimCtrl,
-          curve: Curves.easeInOut,
+          curve: Curves.easeOutCirc,
         )),
         child: Container(
-          width: 76,
-          height: 76,
+          width: 84,
+          height: 84,
+          padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-              color: Colors.white,
-              width: 4,
+              color: Colors.white.withValues(alpha: 0.8),
+              width: 3,
             ),
             boxShadow: [
               BoxShadow(
+                color: buttonColor.withValues(alpha: 0.2),
+                blurRadius: 24,
+                spreadRadius: 4,
+              ),
+              BoxShadow(
                 color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 12,
-                spreadRadius: 2,
+                spreadRadius: 1,
               ),
             ],
           ),
-          child: Container(
-            margin: const EdgeInsets.all(4),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
             decoration: BoxDecoration(
               shape: _isRecording ? BoxShape.rectangle : BoxShape.circle,
-              borderRadius: _isRecording ? BorderRadius.circular(8) : null,
+              borderRadius: _isRecording ? BorderRadius.circular(12) : null,
               color: isVideo
-                  ? (_isRecording ? Colors.red : Colors.red.shade400)
+                  ? (_isRecording ? buttonColor.withValues(alpha: 0.8) : buttonColor)
                   : Colors.white,
             ),
+            margin: EdgeInsets.all(_isRecording ? 18 : 2),
+            child: isVideo && !_isRecording
+                ? const Icon(Icons.videocam_rounded, color: Colors.white, size: 28)
+                : null,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildControlButton({
+  Widget _buildGlassButton({
     required IconData icon,
     required VoidCallback onTap,
-    double size = 24,
+    double size = 22,
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.black.withValues(alpha: 0.35),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.15),
-            width: 0.5,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(26),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+          child: Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.1),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
+            child: Icon(icon, color: Colors.white, size: size),
           ),
         ),
-        child: Icon(icon, color: Colors.white, size: size),
       ),
     );
   }
