@@ -6,7 +6,13 @@ class MediaService {
 
   static void clearCache() => _thumbnailCache.clear();
 
-  static void cancelAll() => PhotoManager.cancelAllRequest();
+  static void cancelAll() {
+    try {
+      PhotoManager.cancelAllRequest();
+    } catch (e) {
+      // Ignored: some versions/platforms throw MissingPluginException
+    }
+  }
 
   Future<bool> requestPermission() async {
     final result = await PhotoManager.requestPermissionExtend();

@@ -69,7 +69,7 @@ class _CameraScreenState extends State<CameraScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _controller?.dispose();
+    _controller?.dispose().catchError((e) => debugPrint('Screen dispose error: $e'));
     _captureAnimCtrl.dispose();
     _flipAnimCtrl.dispose();
     super.dispose();
@@ -80,7 +80,7 @@ class _CameraScreenState extends State<CameraScreen>
     if (_controller == null || !_controller!.value.isInitialized) return;
 
     if (state == AppLifecycleState.inactive) {
-      _controller?.dispose();
+      _controller?.dispose().catchError((e) => debugPrint('Lifecycle dispose error: $e'));
     } else if (state == AppLifecycleState.resumed) {
       _initializeCamera();
     }
@@ -98,7 +98,11 @@ class _CameraScreenState extends State<CameraScreen>
   }
 
   Future<void> _setupController(CameraDescription camera) async {
-    _controller?.dispose();
+    try {
+      await _controller?.dispose();
+    } catch (e) {
+      debugPrint('Old controller dispose error: $e');
+    }
 
     final controller = CameraController(
       camera,

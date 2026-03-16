@@ -56,7 +56,7 @@ class _CameraTileWidgetState extends State<CameraTileWidget>
 
   @override
   void dispose() {
-    _previewController?.dispose();
+    _previewController?.dispose().catchError((e) => debugPrint('Tile preview dispose error: $e'));
     _pulseCtrl.dispose();
     super.dispose();
   }
@@ -94,6 +94,24 @@ class _CameraTileWidgetState extends State<CameraTileWidget>
   Future<void> _openCamera() async {
     HapticFeedback.lightImpact();
 
+    // 💡 CRITICAL FIX: Dispose of the tile's preview controller BEFORE opening the 
+    // full-screen camera to prevent hardware collision and CameraX crashes on Android.
+    final oldController = _previewController;
+    if (mounted) {
+      setState(() {
+        _previewReady = false;
+        _previewController = null;
+      });
+    }
+    
+    if (oldController != null) {
+      try {
+        await oldController.dispose();
+      } catch (e) {
+        debugPrint('Error disposing preview controller: $e');
+      }
+    }
+
     final File? result = await Navigator.of(context).push<File?>(
       PageRouteBuilder(
         fullscreenDialog: true,
@@ -115,8 +133,13 @@ class _CameraTileWidgetState extends State<CameraTileWidget>
       ),
     );
 
-    if (result != null) {
+    if (result != null && mounted) {
       widget.onCaptured(result);
+    }
+
+    // 💡 Resume the preview after returning from the full-screen camera
+    if (mounted) {
+      _initPreview();
     }
   }
 
