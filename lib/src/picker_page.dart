@@ -254,6 +254,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
               title: 'Captured_${DateTime.now().millisecondsSinceEpoch}.jpg',
             ));
 
+      if (savedAsset == null) return; // ignore: unnecessary_null_comparison
+
       if (_isVideoMode || widget.config.maxSelection == 1) {
           // Single select: return immediately
           if (mounted) Navigator.of(context).pop([savedAsset]);
@@ -267,8 +269,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
           // Reload the current album to show the new picture at the top
           await _loadAssets(reset: true);
         }
-      }
-    } catch (e) {
+      } catch (e) {
       debugPrint('Error saving captured media: $e');
     } finally {
       if (mounted) {
