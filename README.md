@@ -54,19 +54,19 @@ dependencies:
   gallery_suite: ^1.0.0
 ```
 
-**2. Open the picker**
+**2. Open the picker and get the files**
+
+`CustomMediaPicker.show` returns a `List<MediaItem>` (or `null` if the user cancels).
 
 ```dart
 import 'package:gallery_suite/gallery_suite.dart';
 
 final assets = await CustomMediaPicker.show(context: context);
-```
-
-**3. Get the file**
-
-```dart
 if (assets != null) {
-  final file = await assets.first.file;
+  for (final item in assets) {
+    final file = await item.file;
+    // upload or preview `file`
+  }
 }
 ```
 
@@ -290,15 +290,15 @@ final assets = await CustomMediaPicker.show(
 
 ## 📤 Handling Selected Media (Upload Example)
 
-While `gallery_suite` handles the complex UI of picking files, you will often want to upload them to your backend. The `.show()` method returns a `List<AssetEntity>?`.
+While `gallery_suite` handles the complex UI of picking files, you will often want to upload them to your backend. The `.show()` method returns a `List<MediaItem>?`.
 
 ```dart
 final assets = await CustomMediaPicker.show(context: context);
 if (assets == null || assets.isEmpty) return;
 
-// Extract the Dart `File` from the photo_manager `AssetEntity`
-final asset = assets.first;
-final file = await asset.file;
+// Get the Dart `File` asynchronously from the `MediaItem`
+final item = assets.first;
+final file = await item.file;
 
 if (file == null) return;
 
@@ -308,7 +308,7 @@ try {
   // MOCK: Your custom upload service
   final String downloadUrl = await myUploadService.uploadFile(
     file: file,
-    path: 'uploads/images/${asset.id}.jpg',
+    path: 'uploads/images/${item.id}.jpg',
   );
 
   print('Uploaded successfully: $downloadUrl');
@@ -319,11 +319,11 @@ try {
 }
 ```
 
-_Alternatively, wrap each asset in `MediaItem` to get typed convenience getters:_
+_`MediaItem` also gives you typed convenience getters:_
 
 ```dart
-final items = assets.map((e) => MediaItem(asset: e)).toList();
-print(items.first.isVideo); // bool
+print(assets.first.isVideo);        // bool
+print(assets.first.aspectRatio);    // double
 ```
 
 ---
@@ -342,6 +342,7 @@ The entire look and feel is controlled via `PickerConfig`. Here is exactly what 
 | `cancelText`          | `String`      | `'Annuler'`         | Localized text for the cancel button in the app bar.                                                                                                              |
 | `showCameraTile`      | `bool`        | `true`              | When `true`, renders a live `camera` feed at index `0`. Supports both photo and video depending on `requestType`. Tap to open a full-screen Dribbble-inspired UI. |
 | `enableSwipeToSelect` | `bool`        | `true`              | When `true`, allows the user to long-press and drag their finger across the masonry grid to rapidly select items (iOS Photos style). Includes edge auto-scroll.   |
+| `useOriginalFile`     | `bool`        | `false`             | When `true`, fetches the absolute pristine original file rather than a system-optimized/compressed format from iOS or Android cache.                              |
 
 ---
 
@@ -351,9 +352,7 @@ We use [Semantic Versioning](https://semver.org/). This package is currently evo
 
 | Version           | Status    | Highlights                                                                       |
 | ----------------- | --------- | -------------------------------------------------------------------------------- |
-| **v1.0.0**        | ✅ Stable | Core engine: Masonry grid, audio/video picker, album selection, dark/light theme |
-| **v1.1.0-dev.1**  | 🔧 Dev    | Native Camera Integration (live tile + premium camera screen)                    |
-| **v1.2.0-beta.1** | 🧪 Beta   | Draggable Swipe-To-Select + stability bug fixes                                  |
+| **v1.0.0**        | ✅ Stable | Core engine (Grid, Video, Audio), Live Camera Tile, iOS-style swipe-to-select    |
 
 ---
 

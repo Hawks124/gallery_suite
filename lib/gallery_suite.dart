@@ -19,4 +19,4 @@ export 'src/models/picker_theme.dart' show PickerTheme;
 export 'src/services/media_service.dart' show MediaService;
 
 // ── Camera ──────────────────────────────────────────────────────────────────
-export 'src/pages/camera_screen.dart' show CameraCaptureMode;
+export 'src/pages/camera_screen.dart';

@@ -28,8 +28,14 @@ class MediaItem {
   /// The underlying [AssetEntity] from `photo_manager`.
   final AssetEntity asset;
 
+  /// Whether to fetch the absolute uncompressed original file from the OS.
+  final bool useOriginalFile;
+
   /// Creates a [MediaItem] wrapping the given [asset].
-  const MediaItem({required this.asset});
+  const MediaItem({
+    required this.asset,
+    this.useOriginalFile = false,
+  });
 
   /// The unique identifier of this asset on the device.
   String get id => asset.id;
@@ -65,7 +71,10 @@ class MediaItem {
 
   /// Returns the local [File] for this asset, or `null` if inaccessible.
   ///
-  /// This is an async operation — the file may need to be downloaded from
-  /// iCloud or Google Photos on first access.
-  Future<File?> toFile() => asset.file;
+  /// Depending on [useOriginalFile], this fetches either the OS-optimized file
+  /// or the absolute uncompressed original file.
+  Future<File?> get file => useOriginalFile ? asset.originFile : asset.file;
+  
+  /// Helper method equivalent to the [file] getter.
+  Future<File?> toFile() => file;
 }

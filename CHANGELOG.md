@@ -6,31 +6,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
-## [1.2.0-beta.1] - 2026-03-16
-
-### ✨ New Features
-
-- **Draggable Swipe-To-Select**: Added iOS-style drag/swipe selection capabilities directly over the Masonry grid. Long press and drag finger to select multiple images rapidly. Includes intelligent auto-scrolling when nearing the top or bottom of the screen.
-
----
-
-## [1.1.0-dev.1] - 2026-03-16
-
-### ✨ New Features
-
-- **Native Camera Integration**: High-performance inline `CameraTileWidget` directly in the media grid using the official `camera` package.
-- **Premium Camera Screen**: Completely redesigned full-screen camera with Dribbble-inspired UI, smooth glassmorphism effects (`BackdropFilter`), and elegant pulsing animations.
-- **Cross-Platform**: Support for Android, iOS, Web, Windows, macOS, and Linux added to `camera` dependencies to maintain maximum pub.dev score.
-
-### 🐛 Bug Fixes
-
-- Fixed a severe `PlatformException` (CameraX surface texture collision on Android) by properly disposing the tile preview before launching the full-screen camera.
-- Completely eliminated the `MissingPluginException` crashes related to `PhotoManager.cancelAllRequest()` on unsupported devices/platforms.
-- Fixed `DraggableScrollableSheet` sizing issues in the album selector to properly respect `initialChildSize` and `maxChildSize`.
-
----
-
-## [1.0.0] - 2025-01-01
+## [1.0.0] - 2026-03-20
 
 ### 🎉 Initial Release
 
@@ -38,6 +14,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - Instagram-style **3-column masonry grid** with natural aspect-ratio tiles
 - **Multi-selection** with ordered number badges and animated selection overlay
+- **Draggable Swipe-To-Select**: iOS-style drag/swipe selection capabilities directly over the Masonry grid. Long press and drag finger to select multiple images rapidly. Includes intelligent auto-scrolling.
+- **Native Camera Integration**: High-performance inline `CameraTileWidget` directly in the media grid using the official `camera` package.
+- **Premium Camera Screen**: Completely redesigned full-screen camera with Dribbble-inspired UI, smooth glassmorphism effects (`BackdropFilter`), and elegant pulsing animations.
 - **Bottom preview strip** (BackdropFilter blur) showing selected items with remove button
 - **DraggableScrollableSheet album switcher** with cover thumbnails and asset count
 - **Pulsing skeleton** loading screen with realistic masonry proportions
@@ -63,11 +42,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 #### General
 
 - **Adaptive dark/light theme** — iOS-inspired color system, auto-follows system or overridable
-- `PickerConfig` for full customisation: primary color, max selection, media type, brightness, labels
+- `PickerConfig` for full customisation: primary color, max selection, media type, brightness, labels, and `useOriginalFile` option for uncompressed assets.
 - Smooth entrance **slide-up page transition** (320 ms easeOutCubic)
 - `HapticFeedback` on selection and limit hit
 - Permission denied screen with settings CTA
 - Shared **`LRU thumbnail cache`** across all pickers via `MediaService`
 - Zero-dependency on `image_picker` or native OS dialogs — 100% in-app UI
+- **Cross-Platform**: Support for Android, iOS, Web, Windows, macOS, and Linux.
 
 ---

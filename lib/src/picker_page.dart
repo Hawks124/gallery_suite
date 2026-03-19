@@ -52,15 +52,15 @@ class CustomMediaPicker {
   /// - [config] — optional [PickerConfig]; defaults to an image picker with
   ///   up to 10 items selectable.
   ///
-  /// Returns `null` if the user cancels, or a non-empty [List<AssetEntity>]
+  /// Returns `null` if the user cancels, or a non-empty [List<MediaItem>]
   /// with the selected assets.
-  static Future<List<AssetEntity>?> show({
+  static Future<List<MediaItem>?> show({
     required BuildContext context,
     PickerConfig config = const PickerConfig(),
-  }) {
+  }) async {
     final isAudio = config.requestType == RequestType.audio;
 
-    return Navigator.of(context).push<List<AssetEntity>?>(
+    final result = await Navigator.of(context).push<List<AssetEntity>?>(
       PageRouteBuilder(
         fullscreenDialog: true,
         transitionDuration: const Duration(milliseconds: 320),
@@ -81,6 +81,13 @@ class CustomMediaPicker {
         },
       ),
     );
+
+    if (result != null && result.isNotEmpty) {
+      return result
+          .map((e) => MediaItem(asset: e, useOriginalFile: config.useOriginalFile))
+          .toList();
+    }
+    return null;
   }
 }
 

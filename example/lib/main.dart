@@ -108,6 +108,11 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         // Force a specific brightness, or omit to follow the system theme.
         brightness: Theme.of(context).brightness,
 
+        // 🖼️ Original File vs System Cache:
+        // Set to true to fetch the pristine bytes ignoring OS-level HEIC->JPG compression.
+        // Defaults to false for speed and OS-level compatibility.
+        useOriginalFile: false,
+
         // Localized button labels.
         confirmText: 'Select',
         cancelText: 'Cancel',
@@ -116,9 +121,9 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
 
     if (assets == null || !mounted) return;
 
-    // The picker returns `List<AssetEntity>` (from photo_manager) for
-    // maximum scroll performance. Extract standard Dart `File` objects
-    // asynchronously before uploading to your backend.
+    // The picker returns `List<MediaItem>`, a convenient wrapper around
+    // `AssetEntity`. Extract standard Dart `File` objects asynchronously
+    // before uploading to your backend.
     final files = (await Future.wait(assets.map((e) => e.file)))
         .whereType<File>()
         .toList();
@@ -222,7 +227,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      'Gallery Suite v1.2.0-beta.1',
+                      'Gallery Suite v1.0.0',
                       style: TextStyle(
                         color: isDark
                             ? const Color(0xFFA5B4FC)

@@ -4,7 +4,7 @@ description: >-
   dialog. Masonry grid, multi-select, inline video preview, inline audio
   playback, album switcher, dark/light theme. Drop-in replacement for
   image_picker when you need a custom gallery UI.
-version: 1.1.0-beta.1
+version: 1.0.0
 homepage: https://github.com/Hawks124/gallery_suite
 repository: https://github.com/Hawks124/gallery_suite
 issue_tracker: https://github.com/Hawks124/gallery_suite/issues

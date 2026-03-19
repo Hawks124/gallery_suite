@@ -52,6 +52,14 @@ class PickerConfig {
   /// selection. Defaults to `'Annuler'`.
   final String cancelText;
 
+  /// Whether to use the original, uncompressed file (guaranteed unchanged by the OS).
+  ///
+  /// On iOS, `photo_manager` may sometimes return a compressed or converted
+  /// image (e.g. HEIC -> JPG) when accessing the asset file. Setting this to
+  /// `true` ensures you receive the pristine `.originFile`.
+  /// Defaults to `false` (which prefers speed / OS-level compatibility over pristine quality).
+  final bool useOriginalFile;
+
   /// Creates a [PickerConfig] with the given options.
   ///
   /// All parameters are optional — calling `const PickerConfig()` gives you
@@ -61,6 +69,7 @@ class PickerConfig {
     this.maxSelection = 10,
     this.showCameraTile = true,
     this.enableSwipeToSelect = true,
+    this.useOriginalFile = false,
     this.primaryColor = const Color(0xFF007AFF),
     this.brightness,
     this.confirmText = 'Sélectionner',
