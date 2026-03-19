@@ -244,7 +244,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     setState(() => _isLoading = true);
 
     try {
-      final AssetEntity? savedAsset = await (_isVideoMode
+      final savedAsset = await (_isVideoMode
           ? PhotoManager.editor.saveVideo(
               file,
               title: 'Captured_${DateTime.now().millisecondsSinceEpoch}.mp4',
@@ -254,8 +254,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
               title: 'Captured_${DateTime.now().millisecondsSinceEpoch}.jpg',
             ));
 
-      if (savedAsset != null) {
-        if (_isVideoMode || widget.config.maxSelection == 1) {
+      if (_isVideoMode || widget.config.maxSelection == 1) {
           // Single select: return immediately
           if (mounted) Navigator.of(context).pop([savedAsset]);
         } else {

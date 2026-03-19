@@ -354,7 +354,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         boxShadow: [
           if (!isDark)
             BoxShadow(
-              color: color.withOpacity(0.08),
+              color: color.withValues(alpha: 0.08),
               blurRadius: 24,
               offset: const Offset(0, 12),
             ),
@@ -366,8 +366,8 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(24),
-          highlightColor: color.withOpacity(0.05),
-          splashColor: color.withOpacity(0.1),
+          highlightColor: color.withValues(alpha: 0.05),
+          splashColor: color.withValues(alpha: 0.1),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -387,7 +387,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: color.withOpacity(0.3),
+                            color: color.withValues(alpha: 0.3),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -462,7 +462,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),

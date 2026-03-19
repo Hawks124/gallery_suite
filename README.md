@@ -70,8 +70,28 @@ if (assets != null) {
 }
 ```
 
+> [!TIP]
+> By default, `gallery_suite` uses the OS-level cache (which might be compressed). To get the absolute original bytes, set `useOriginalFile: true` in your `PickerConfig`.
+
 > [!IMPORTANT]
 > Don't forget to add **Permissions** in your `AndroidManifest.xml` and `Info.plist`. [See Setup](#-installation--setup).
+
+---
+
+## 📸 Getting Original Quality Files
+
+On some platforms (especially iOS), the operating system might convert high-efficiency formats (HEIC) to compressed JPEG when apps request a "file" from the library. This can lead to a slight loss in quality.
+
+If your app requires the **pristine, uncompressed original bytes**, use the `useOriginalFile` option:
+
+```dart
+final assets = await CustomMediaPicker.show(
+  context: context,
+  config: PickerConfig(
+    useOriginalFile: true, // 💎 Ensures no OS-level compression
+  ),
+);
+```
 
 ---
 

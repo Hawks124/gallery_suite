@@ -179,7 +179,9 @@ class _CameraScreenState extends State<CameraScreen>
   Future<void> _capturePhoto() async {
     if (_isCapturing ||
         _controller == null ||
-        !_controller!.value.isInitialized) return;
+        !_controller!.value.isInitialized) {
+      return;
+    }
 
     setState(() => _isCapturing = true);
     HapticFeedback.mediumImpact();

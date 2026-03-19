@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import '../services/media_service.dart';
+import '../pages/fullscreen_preview_page.dart';
 
 class MediaThumbnailWidget extends StatefulWidget {
   final AssetEntity asset;
@@ -321,21 +322,34 @@ class _SelectedPreviewItemState extends State<SelectedPreviewItem>
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: _data != null
-                  ? Image.memory(
-                      _data!,
-                      width: 66,
-                      height: 66,
-                      fit: BoxFit.cover,
-                      gaplessPlayback: true,
-                    )
-                  : Container(
-                      width: 66,
-                      height: 66,
-                      color: const Color(0xFF2C2C2E),
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    fullscreenDialog: true,
+                    builder: (_) => FullscreenPreviewPage(
+                      asset: widget.asset,
+                      thumbnail: _data,
                     ),
+                  ),
+                );
+              },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: _data != null
+                    ? Image.memory(
+                        _data!,
+                        width: 66,
+                        height: 66,
+                        fit: BoxFit.cover,
+                        gaplessPlayback: true,
+                      )
+                    : Container(
+                        width: 66,
+                        height: 66,
+                        color: const Color(0xFF2C2C2E),
+                      ),
+              ),
             ),
             Positioned(
               top: -5,

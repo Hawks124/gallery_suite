@@ -115,6 +115,8 @@ class _CameraTileWidgetState extends State<CameraTileWidget>
       }
     }
 
+    if (!mounted) return;
+
     final File? result = await Navigator.of(context).push<File?>(
       PageRouteBuilder(
         fullscreenDialog: true,
