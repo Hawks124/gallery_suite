@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../gallery_suite.dart';
 import 'enum/enum.dart';
 import 'pages/audio_picker_page.dart';
+import 'services/thumbnail_decode_queue.dart';
 import 'widgets/suite_widgets.dart';
 
 /// The main entry point for the custom media picker.
@@ -105,7 +107,7 @@ class _MediaPickerPage extends StatefulWidget {
 
 class _MediaPickerPageState extends State<_MediaPickerPage>
     with SingleTickerProviderStateMixin {
-  final MediaService _service = MediaService();
+  final MediaService _service = MediaService.instance;
   final ScrollController _scrollController = ScrollController();
 
   List<AssetPathEntity> _albums = [];
@@ -119,7 +121,9 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   bool _permissionDenied = false;
   int _page = 0;
 
-  static const int _pageSize = 80;
+  /// Initial page loads 80 items; subsequent pages fetch 120 for fewer
+  /// round-trips on large libraries.
+  int get _pageSize => _page == 0 ? 80 : 120;
 
   late AnimationController _chevronCtrl;
 
@@ -130,6 +134,13 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   @override
   void initState() {
     super.initState();
+
+    // Apply performance config to the shared decode queue.
+    _service.decodeQueue = ThumbnailDecodeQueue(
+      maxConcurrent: widget.config.maxConcurrentDecodes,
+      maxCacheEntries: widget.config.thumbnailCacheSize,
+    );
+
     _chevronCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 220),
@@ -212,10 +223,34 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   }
 
   void _onScroll() {
+    // ── Pagination trigger (1500px = ~2 screens ahead) ────────────────────
     if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 800) {
+        _scrollController.position.maxScrollExtent - 1500) {
       if (!_isLoadingMore && _hasMore && !_isLoading) _loadAssets();
     }
+
+    // ── Prefetch thumbnails for items about to come on screen ────────────
+    if (widget.config.prefetchEnabled && _assets.isNotEmpty) {
+      _prefetchVisibleRange();
+    }
+  }
+
+  /// Pre-loads thumbnails for the next ~30 items beyond the current viewport.
+  void _prefetchVisibleRange() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    final viewportHeight = position.viewportDimension;
+    final scrollPixels = position.pixels;
+
+    // Estimate which asset index we're at (~110px per row, 3 columns).
+    final estimatedRowHeight = 110.0;
+    final currentRow = (scrollPixels / estimatedRowHeight).floor();
+    final visibleRows = (viewportHeight / estimatedRowHeight).ceil();
+    final startIdx = (currentRow + visibleRows) * 3; // just past viewport
+    final endIdx = math.min(startIdx + 30, _assets.length);
+
+    if (startIdx >= _assets.length) return;
+    _service.prefetchThumbnails(_assets.sublist(startIdx, endIdx));
   }
 
   Future<void> _switchAlbum(AssetPathEntity album) async {

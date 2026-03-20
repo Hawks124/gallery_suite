@@ -35,7 +35,7 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
     with SingleTickerProviderStateMixin {
   Uint8List? _thumbnail;
   bool _loading = true;
-  final MediaService _service = MediaService();
+  final MediaService _service = MediaService.instance;
   late AnimationController _pulseCtrl;
   late Animation<double> _pulseAnim;
   bool _isPressed = false;
@@ -55,6 +55,8 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
   void didUpdateWidget(MediaThumbnailWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.asset.id != widget.asset.id) {
+      // New asset — restart shimmer and load new thumbnail.
+      _pulseCtrl.repeat(reverse: true);
       setState(() {
         _thumbnail = null;
         _loading = true;
@@ -72,6 +74,8 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
   Future<void> _loadThumbnail() async {
     final data = await _service.getThumbnail(widget.asset);
     if (mounted) {
+      // Stop the shimmer animation to save GPU resources.
+      _pulseCtrl.stop();
       setState(() {
         _thumbnail = data;
         _loading = false;

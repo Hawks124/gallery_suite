@@ -108,6 +108,12 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         // Force a specific brightness, or omit to follow the system theme.
         brightness: Theme.of(context).brightness,
 
+        // 🚀 Architecture & Performance: 
+        // Tuned for 10,000+ photo libraries on ProMotion displays.
+        thumbnailCacheSize: 200,     // LRU cache limit
+        maxConcurrentDecodes: 3,     // Prevents frame drops during scroll
+        prefetchEnabled: true,       // Preloads off-screen items to prevent pop-in
+
         // 🖼️ Original File vs System Cache:
         // Set to true to fetch the pristine bytes ignoring OS-level HEIC->JPG compression.
         // Defaults to false for speed and OS-level compatibility.

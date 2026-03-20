@@ -60,6 +60,26 @@ class PickerConfig {
   /// Defaults to `false` (which prefers speed / OS-level compatibility over pristine quality).
   final bool useOriginalFile;
 
+  // ── Performance Tuning ──────────────────────────────────────────────────────
+
+  /// Maximum number of thumbnails kept in the LRU cache.
+  ///
+  /// Higher values use more memory but reduce re-decoding when scrolling
+  /// back and forth. Defaults to `200` (~2–3 screens of content).
+  final int thumbnailCacheSize;
+
+  /// Maximum number of thumbnails decoded simultaneously.
+  ///
+  /// Lower values reduce frame drops at the cost of slightly slower
+  /// initial loading. Defaults to `3`.
+  final int maxConcurrentDecodes;
+
+  /// Whether to pre-load thumbnails for items just off-screen during scroll.
+  ///
+  /// When `true` (default), the picker pre-warms the cache for the next
+  /// ~30 items in the scroll direction, eliminating visible pop-in.
+  final bool prefetchEnabled;
+
   /// Creates a [PickerConfig] with the given options.
   ///
   /// All parameters are optional — calling `const PickerConfig()` gives you
@@ -74,5 +94,8 @@ class PickerConfig {
     this.brightness,
     this.confirmText = 'Sélectionner',
     this.cancelText = 'Annuler',
+    this.thumbnailCacheSize = 200,
+    this.maxConcurrentDecodes = 3,
+    this.prefetchEnabled = true,
   });
 }

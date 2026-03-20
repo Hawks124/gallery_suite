@@ -363,6 +363,9 @@ The entire look and feel is controlled via `PickerConfig`. Here is exactly what 
 | `showCameraTile`      | `bool`        | `true`              | When `true`, renders a live `camera` feed at index `0`. Supports both photo and video depending on `requestType`. Tap to open a full-screen Dribbble-inspired UI. |
 | `enableSwipeToSelect` | `bool`        | `true`              | When `true`, allows the user to long-press and drag their finger across the masonry grid to rapidly select items (iOS Photos style). Includes edge auto-scroll.   |
 | `useOriginalFile`     | `bool`        | `false`             | When `true`, fetches the absolute pristine original file rather than a system-optimized/compressed format from iOS or Android cache.                              |
+| `thumbnailCacheSize`   | `int`         | `200`               | Maximum number of thumbnails kept in the LRU memory cache. A value of 200 ensures buttery scrolling over 2–3 screens of content.                               |
+| `maxConcurrentDecodes`| `int`         | `3`                 | Maximum simultaneous thumbnail decodes. Limiting this ensures scrolling remains 60fps+ by preventing thread starvation on large grids.                           |
+| `prefetchEnabled`     | `bool`        | `true`              | When `true`, the picker intelligently pre-loads thumbnails for the next 30 items that are about to appear on-screen during scrolling, eliminating pop-in.         |
 
 ---
 
@@ -372,16 +375,18 @@ We use [Semantic Versioning](https://semver.org/). This package is currently evo
 
 | Version           | Status    | Highlights                                                                       |
 | ----------------- | --------- | -------------------------------------------------------------------------------- |
-| **v1.0.0**        | ✅ Stable | Core engine (Grid, Video, Audio), Live Camera Tile, iOS-style swipe-to-select    |
+| **v1.0.0**        | ✅ Stable | Core engine (Grid, Video, Audio), Live Camera Tile, iOS-style swipe-to-select, Heavy Performance Optimizations (LRU Cache, Decode Queue, Prefetching) |
 
 ---
 
 ## ⚡ Performance Notes
 
-- Thumbnails are decoded at 400 × 400 by `photo_manager`. `Image.memory` does not add a second decode step (`cacheWidth`/`cacheHeight` are intentionally omitted) — this is why thumbnails are sharp and not stretched.
-- Each grid tile is wrapped in `RepaintBoundary`; only the tapped tile repaints on selection.
-- A static `Map<String, Uint8List>` caches decoded thumbnails for the duration of the picker session. Call `MediaService.clearCache()` after closing the picker if memory is a concern.
-- Pagination loads 80 assets per page; the next page triggers when the scroll position is within 800 px of the end.
+- **Intelligent Pre-fetching**: Tiles load before they even enter the screen `(viewport + 30 items)` via `MediaService.prefetchThumbnails`.
+- **Concurrency Throttling**: A custom `ThumbnailDecodeQueue` ensures that no more than 3 high-resolution thumbnails decode simultaneously, preserving frame budgets on 120Hz ProMotion displays.
+- **LRU Cache & Memory Management**: Decoded thumbnails are held in a global `LinkedHashMap<String, Uint8List>` capped at `thumbnailCacheSize` (default: 200) and 50MB. Older images are automatically evicted to prevent OOM errors on 10,000+ asset libraries.
+- **Optimized UI Layer**: Each grid tile is wrapped in `RepaintBoundary`. The pulsing animation controllers are completely stopped once an image loads to save GPU processing.
+- Pagination automatically adapts: loading 80 assets initially, then 120 per page, triggering aggressively at 1500px from the bottom.
+
 
 ---
 

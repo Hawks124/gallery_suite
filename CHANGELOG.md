@@ -39,14 +39,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Track title cleaned of file extensions, duration displayed
 - Single-select with animated circle badge
 
+#### Performance & Architecture (10,000+ Assets)
+
+- **Frame-Budget-Aware Decoding**: Added `ThumbnailDecodeQueue` that limits concurrent thumb decodes to 3, ensuring buttery smooth 60/120fps scrolling.
+- **LRU Memory Cache**: Replaced unbounded map with an intelligent LRU cache (`thumbnailCacheSize` = 200, max 50MB) with auto-eviction to prevent OOM errors.
+- **Scroll-Aware Prefetching**: Grid intelligently pre-loads the next ~30 thumbnails before they enter the screen (`prefetchEnabled`), eliminating UI pop-in.
+- Pagination heavily tuned: now triggers at 1500px instead of 800px, and fetches adaptive page sizes (80 initial, 120 subsequent) for fewer round-trips.
+- Singleton `MediaService` architecture for unified resource tracking.
+- `AnimationController` optimizations (GPU saver): Shimmer effects now completely stop ticking once the thumbnail loads.
+
 #### General
 
 - **Adaptive dark/light theme** — iOS-inspired color system, auto-follows system or overridable
 - `PickerConfig` for full customisation: primary color, max selection, media type, brightness, labels, and `useOriginalFile` option for uncompressed assets.
+- Exposes `thumbnailCacheSize`, `maxConcurrentDecodes`, and `prefetchEnabled` via `PickerConfig`.
 - Smooth entrance **slide-up page transition** (320 ms easeOutCubic)
 - `HapticFeedback` on selection and limit hit
 - Permission denied screen with settings CTA
-- Shared **`LRU thumbnail cache`** across all pickers via `MediaService`
 - Zero-dependency on `image_picker` or native OS dialogs — 100% in-app UI
 - **Cross-Platform**: Support for Android, iOS, Web, Windows, macOS, and Linux.
 
