@@ -3,10 +3,22 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+/// A full-screen, zoomable preview page for a single media asset.
+///
+/// When the user taps a selected thumbnail in the bottom preview strip,
+/// this page is pushed as a full-screen dialog. It first shows the low-res
+/// [thumbnail] (if available) while loading the full-resolution file from
+/// disk, then swaps to the high-res version once ready.
+///
+/// Supports pinch-to-zoom via [InteractiveViewer].
 class FullscreenPreviewPage extends StatefulWidget {
+  /// The asset to display in full resolution.
   final AssetEntity asset;
+
+  /// An optional low-res thumbnail to display while the full file loads.
   final Uint8List? thumbnail;
 
+  /// Creates a [FullscreenPreviewPage] for the given [asset].
   const FullscreenPreviewPage({
     super.key,
     required this.asset,

@@ -1,16 +1,42 @@
 import 'dart:typed_data';
 import 'package:photo_manager/photo_manager.dart';
 
+/// Service that handles media permissions, album fetching, asset loading,
+/// and thumbnail caching for the Gallery Suite picker.
+///
+/// [MediaService] wraps the `photo_manager` plugin and adds an in-memory
+/// [Uint8List] thumbnail cache so the same thumbnail is never decoded twice
+/// during a single picker session.
+///
+/// Example:
+/// ```dart
+/// final service = MediaService();
+/// final hasAccess = await service.requestPermission();
+/// if (hasAccess) {
+///   final albums = await service.getAlbums(RequestType.image);
+/// }
+/// ```
 class MediaService {
+  /// In-memory thumbnail cache keyed by asset ID (or a derived key).
   static final Map<String, Uint8List> _thumbnailCache = {};
 
+  /// Clears all cached thumbnails.
+  ///
+  /// Call this when you want to free memory – typically when the picker
+  /// is dismissed.
   static void clearCache() => _thumbnailCache.clear();
 
+  /// Requests permission from the OS to access the photo library.
+  ///
+  /// Returns `true` if the user granted full or limited access.
   Future<bool> requestPermission() async {
     final result = await PhotoManager.requestPermissionExtend();
     return result.isAuth || result.isLimited;
   }
 
+  /// Fetches the list of albums (aka asset paths) for the given [requestType].
+  ///
+  /// Albums are ordered by creation date (newest first).
   Future<List<AssetPathEntity>> getAlbums(RequestType requestType) async {
     return PhotoManager.getAssetPathList(
       type: requestType,
@@ -22,6 +48,9 @@ class MediaService {
     );
   }
 
+  /// Fetches a page of assets from the given [album].
+  ///
+  /// Uses cursor-based pagination via [page] and [pageSize].
   Future<List<AssetEntity>> getAssets({
     required AssetPathEntity album,
     required int page,
@@ -30,7 +59,10 @@ class MediaService {
     return album.getAssetListPaged(page: page, size: pageSize);
   }
 
-  /// High-quality thumbnail for masonry grid (400×400, quality 90)
+  /// Returns a high-quality 400×400 thumbnail for the masonry grid.
+  ///
+  /// Results are cached in memory so subsequent calls for the same [asset]
+  /// return instantly.
   Future<Uint8List?> getThumbnail(AssetEntity asset) async {
     final cached = _thumbnailCache[asset.id];
     if (cached != null) return cached;
@@ -45,7 +77,10 @@ class MediaService {
     return data;
   }
 
-  /// Medium thumbnail for bottom preview strip (120×120, quality 85)
+  /// Returns a medium 120×120 thumbnail for the bottom preview strip.
+  ///
+  /// The cache key is suffixed with `_preview` to avoid collisions with the
+  /// higher-resolution grid thumbnail.
   Future<Uint8List?> getPreviewThumbnail(AssetEntity asset) async {
     final key = '${asset.id}_preview';
     final cached = _thumbnailCache[key];
@@ -61,7 +96,10 @@ class MediaService {
     return data;
   }
 
-  /// Small thumbnail for album cover (80×80, quality 70)
+  /// Returns a small 80×80 thumbnail used as the album cover in the
+  /// album-switcher bottom sheet.
+  ///
+  /// Returns `null` if the album is empty.
   Future<Uint8List?> getAlbumCoverThumbnail(AssetPathEntity album) async {
     final key = 'album_cover_${album.id}';
     final cached = _thumbnailCache[key];
