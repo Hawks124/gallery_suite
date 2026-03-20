@@ -1,0 +1,4 @@
+dartdoc:
+  include:
+    - gallery_suite
+  showUndocumentedCategories: false

@@ -1,0 +1,4 @@
+# Force LF line endings for Dart files (avoids dartdoc 9.0.4 CRLF crash)
+*.dart text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
