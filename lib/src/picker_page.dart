@@ -158,9 +158,10 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final brightness =
-        widget.config.brightness ?? MediaQuery.of(context).platformBrightness;
-    _theme = PickerTheme(brightness == Brightness.dark);
+    final isDark = widget.config.brightness == Brightness.dark ||
+        (widget.config.brightness == null &&
+            MediaQuery.of(context).platformBrightness == Brightness.dark);
+    _theme = PickerTheme(isDark, widget.config.themeData);
   }
 
   @override

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'picker_theme.dart';
 
 /// Configuration for [CustomMediaPicker].
 ///
@@ -81,6 +82,12 @@ class PickerConfig {
   /// ~30 items in the scroll direction, eliminating visible pop-in.
   final bool prefetchEnabled;
 
+  /// Detailed theme overrides for backgrounds, surfaces, and text colors.
+  ///
+  /// When provided, these colors take precedence over the defaults resolved
+  /// from [brightness].
+  final PickerThemeData? themeData;
+
   /// Callback fired when the user taps an image in the selected strip.
   ///
   /// You can use this to launch your own external image editor (like `pro_image_editor`).
@@ -88,7 +95,9 @@ class PickerConfig {
   /// the UI and return the edited file in the final result.
   ///
   /// Requires [RequestType.image] or mixed mode.
-  final Future<File?> Function(BuildContext context, AssetEntity asset, File originalFile)? onEditMedia;
+  final Future<File?> Function(
+          BuildContext context, AssetEntity asset, File originalFile)?
+      onEditMedia;
 
   /// Creates a [PickerConfig] with the given options.
   ///
@@ -108,5 +117,6 @@ class PickerConfig {
     this.maxConcurrentDecodes = 3,
     this.prefetchEnabled = true,
     this.onEditMedia,
+    this.themeData,
   });
 }

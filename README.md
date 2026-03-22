@@ -107,6 +107,7 @@ Unlike other pickers that force you to download massive editor dependencies or b
   - [👆 Disabling Swipe-To-Select](#-disabling-swipe-to-select)
   - [📤 Handling Selected Media (Upload Example)](#-handling-selected-media-upload-example)
   - [🎨 UI Theming & Customization](#-ui-theming--customization)
+    - [PickerThemeData Tokens](#pickerthemedata-tokens)
 - [⚙️ PickerConfig API](#️-pickerconfig-api)
 - [⚡ Performance Notes](#-performance-notes)
 - [🚀 Version History & Roadmap](#-version-history--roadmap)
@@ -425,12 +426,41 @@ final assets = await CustomMediaPicker.show(
     // Set your brand's primary color for buttons, badges, and checkmarks
     primaryColor: const Color(0xFFE91E63), // Pink
 
+    // Advanced: Deep override of every surface/text token
+    themeData: const PickerThemeData(
+      background: Color(0xFF0A0A1A),     // Deep cinematic background
+      surface: Color(0xFF12122A),        // Cards and sheets
+      elevated: Color(0xFF1E1E3A),       // Elevated buttons/tiles
+      primaryText: Colors.white,         // Titles
+      secondaryText: Color(0xFF8888BB),  // Subtitles and captions
+      separator: Color(0xFF222244),      // Thin lines
+      divider: Color(0xFF2A2A5A),        // Visual break lines
+      shimmerBase: Color(0xFF12122A),    // Skeleton loader back
+      shimmerHighlight: Color(0xFF1E1E3A), // Skeleton loader flash
+    ),
+
     // Customize the button labels
     confirmText: 'Envoyer',
     cancelText: 'Retour',
   ),
 );
 ```
+
+#### `PickerThemeData` Tokens
+
+For maximum design flexibility, you can override any of these specific tokens:
+
+| Token              | Description                                                             |
+| ------------------ | ----------------------------------------------------------------------- |
+| `background`       | The overall page background color.                                      |
+| `surface`          | Background for sheets (Albums) and grid items.                          |
+| `elevated`         | Background for circular buttons (Close, Play) and highlighted states.   |
+| `primaryText`      | Main font color for titles and selections.                              |
+| `secondaryText`    | Muted font color for counts, durations, and empty states.               |
+| `separator`        | Color for 0.5px thin borders and lines.                                 |
+| `divider`          | Color for larger section breaks.                                        |
+| `shimmerBase`      | The background color of the skeleton loader while images are streaming. |
+| `shimmerHighlight` | The "flash" animation color of the skeleton loader.                     |
 
 ---
 
@@ -451,7 +481,8 @@ The entire look and feel is controlled via `PickerConfig`. Here is exactly what 
 | `useOriginalFile`      | `bool`        | `false`             | When `true`, fetches the absolute pristine original file rather than a system-optimized/compressed format from iOS or Android cache.                              |
 | `thumbnailCacheSize`   | `int`         | `200`               | Maximum number of thumbnails kept in the LRU memory cache. A value of 200 ensures buttery scrolling over 2–3 screens of content.                                  |
 | `maxConcurrentDecodes` | `int`         | `3`                 | Maximum simultaneous thumbnail decodes. Limiting this ensures scrolling remains 60fps+ by preventing thread starvation on large grids.                            |
-| `prefetchEnabled`      | `bool`        | `true`              | When `true`, the picker intelligently pre-loads thumbnails for the next 30 items that are about to appear on-screen during scrolling, eliminating pop-in.         |
+| `prefetchEnabled`      | `bool`            | `true`              | When `true`, the picker intelligently pre-loads thumbnails for the next 30 items that are about to appear on-screen during scrolling, eliminating pop-in.         |
+| `themeData`            | `PickerThemeData?`| `null`              | Provides full control over individual UI colors (background, surface, text, etc.) which take precedence over the defaults resolved from `brightness`.            |
 
 ---
 
@@ -469,10 +500,9 @@ The entire look and feel is controlled via `PickerConfig`. Here is exactly what 
 
 We use [Semantic Versioning](https://semver.org/). This package is currently evolving rapidly:
 
-| Version    | Status    | Highlights                                                                                                                                            |
-| ---------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **v1.0.0** | ✅ Stable | Core engine (Grid, Video, Audio), Live Camera Tile, iOS-style swipe-to-select, Heavy Performance Optimizations (LRU Cache, Decode Queue, Prefetching) |
-| **v1.1.0** | ✅ Stable | Injectable Bring Your Own Editor (BYOE) Architecture, Dart-side Inline Media Filtering / Search engine                                                |
+| Version    | Status    | Highlights                                                                                                                                                                                                                                                    |
+| ---------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **v1.0.0** | ✅ Stable | Core engine (Grid, Video, Audio), Live Camera Tile, iOS-style swipe-to-select, Heavy Performance Optimizations (LRU Cache, Decode Queue, Prefetching), Injectable Bring Your Own Editor (BYOE) Architecture, Dart-side Inline Media Filtering / Search engine |
 
 ---
 
