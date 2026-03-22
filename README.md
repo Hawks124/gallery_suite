@@ -10,7 +10,7 @@
 [![pub points](https://img.shields.io)](https://pub.dev)
 [![popularity](https://img.shields.io)](https://pub.dev)
 [![likes](https://img.shields.io)](https://pub.dev)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Flutter](https://img.shields.io/badge/Flutter-3.10%2B-blue.svg)](https://flutter.dev)
 [![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-lightgrey.svg)](https://flutter.dev)
 
@@ -478,7 +478,7 @@ We use [Semantic Versioning](https://semver.org/). This package is currently evo
 
 ## 📜 License
 
-MIT — see [LICENSE](LICENSE).
+Apache 2.0 — see [LICENSE](LICENSE).
 
 ---
 
