@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -80,6 +81,15 @@ class PickerConfig {
   /// ~30 items in the scroll direction, eliminating visible pop-in.
   final bool prefetchEnabled;
 
+  /// Callback fired when the user taps an image in the selected strip.
+  ///
+  /// You can use this to launch your own external image editor (like `pro_image_editor`).
+  /// If the user saves the edit, return the new [File]. The picker will instantly update
+  /// the UI and return the edited file in the final result.
+  ///
+  /// Requires [RequestType.image] or mixed mode.
+  final Future<File?> Function(BuildContext context, AssetEntity asset, File originalFile)? onEditMedia;
+
   /// Creates a [PickerConfig] with the given options.
   ///
   /// All parameters are optional — calling `const PickerConfig()` gives you
@@ -97,5 +107,6 @@ class PickerConfig {
     this.thumbnailCacheSize = 200,
     this.maxConcurrentDecodes = 3,
     this.prefetchEnabled = true,
+    this.onEditMedia,
   });
 }

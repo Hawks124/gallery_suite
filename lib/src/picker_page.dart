@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui';
@@ -62,7 +63,7 @@ class CustomMediaPicker {
   }) async {
     final isAudio = config.requestType == RequestType.audio;
 
-    final result = await Navigator.of(context).push<List<AssetEntity>?>(
+    return await Navigator.of(context).push<List<MediaItem>?>(
       PageRouteBuilder(
         fullscreenDialog: true,
         transitionDuration: const Duration(milliseconds: 320),
@@ -83,13 +84,6 @@ class CustomMediaPicker {
         },
       ),
     );
-
-    if (result != null && result.isNotEmpty) {
-      return result
-          .map((e) => MediaItem(asset: e, useOriginalFile: config.useOriginalFile))
-          .toList();
-    }
-    return null;
   }
 }
 
@@ -115,11 +109,23 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   List<AssetEntity> _assets = [];
   final List<AssetEntity> _selected = [];
 
+  // BYOE Edited Files State
+  final Map<String, File> _editedFiles = {};
+
   bool _isLoading = true;
   bool _isLoadingMore = false;
   bool _hasMore = true;
   bool _permissionDenied = false;
   int _page = 0;
+
+  // Search State
+  bool _isSearching = false;
+  String _searchQuery = '';
+  List<AssetEntity> _searchResults = [];
+  bool _isSearchLoading = false;
+  Timer? _searchDebounce;
+  final TextEditingController _searchCtrl = TextEditingController();
+  final FocusNode _searchFocus = FocusNode();
 
   /// Initial page loads 80 items; subsequent pages fetch 120 for fewer
   /// round-trips on large libraries.
@@ -159,9 +165,52 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
+    _searchCtrl.dispose();
+    _searchFocus.dispose();
     _scrollController.dispose();
     _chevronCtrl.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () async {
+      final trimmed = query.trim();
+      if (trimmed.isEmpty) {
+        setState(() {
+          _searchQuery = '';
+          _searchResults = [];
+          _isSearchLoading = false;
+          _isSearching = false;
+        });
+        return;
+      }
+
+      setState(() {
+        _searchQuery = trimmed;
+        _isSearchLoading = true;
+        _isSearching = true;
+      });
+
+      try {
+        if (_currentAlbum != null) {
+          final results = await _service.searchAssets(_currentAlbum!, trimmed);
+          if (mounted && _searchQuery == trimmed) {
+            setState(() {
+              _searchResults = results;
+              _isSearchLoading = false;
+            });
+            if (results.isNotEmpty && widget.config.prefetchEnabled) {
+              _service.prefetchThumbnails(results.take(30).toList());
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint('Search error: $e');
+        if (mounted) setState(() => _isSearchLoading = false);
+      }
+    });
   }
 
   Future<void> _initialize() async {
@@ -292,19 +341,19 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       if (savedAsset == null) return; // ignore: unnecessary_null_comparison
 
       if (_isVideoMode || widget.config.maxSelection == 1) {
-          // Single select: return immediately
-          if (mounted) Navigator.of(context).pop([savedAsset]);
-        } else {
-          // Multi select: add to selection and reload grid
-          setState(() {
-            if (_selected.length < widget.config.maxSelection) {
-              _selected.add(savedAsset);
-            }
-          });
-          // Reload the current album to show the new picture at the top
-          await _loadAssets(reset: true);
-        }
-      } catch (e) {
+        // Single select: return immediately
+        if (mounted) Navigator.of(context).pop([savedAsset]);
+      } else {
+        // Multi select: add to selection and reload grid
+        setState(() {
+          if (_selected.length < widget.config.maxSelection) {
+            _selected.add(savedAsset);
+          }
+        });
+        // Reload the current album to show the new picture at the top
+        await _loadAssets(reset: true);
+      }
+    } catch (e) {
       debugPrint('Error saving captured media: $e');
     } finally {
       if (mounted) {
@@ -329,9 +378,20 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       _selected.indexWhere((e) => e.id == asset.id);
 
   void _onConfirm() {
-    Navigator.of(context).pop(
-      _selected.isEmpty ? null : List<AssetEntity>.from(_selected),
-    );
+    if (_selected.isEmpty) {
+      Navigator.of(context).pop(null);
+      return;
+    }
+
+    final items = _selected.map((asset) {
+      return MediaItem(
+        asset: asset,
+        useOriginalFile: widget.config.useOriginalFile,
+        editedFile: _editedFiles[asset.id],
+      );
+    }).toList();
+
+    Navigator.of(context).pop(items);
   }
 
   void _showAlbumSheet() {
@@ -485,6 +545,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     return Column(
       children: [
         Container(height: 0.5, color: _theme.separator),
+        _buildInlineSearchBar(),
         Expanded(child: _buildGrid()),
         if (!_isVideoMode)
           AnimatedSize(
@@ -498,10 +559,88 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     );
   }
 
-  Widget _buildGrid() {
-    if (_isLoading) return PulsingSkeletonGrid(theme: _theme);
+  Widget _buildInlineSearchBar() {
+    return Container(
+      color: _theme.surface,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      child: Container(
+        height: 38,
+        decoration: BoxDecoration(
+          color: _theme.background, // Contrast against surface
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: TextField(
+          controller: _searchCtrl,
+          focusNode: _searchFocus,
+          style: TextStyle(color: _theme.primaryText, fontSize: 16),
+          textInputAction: TextInputAction.search,
+          onChanged: _onSearchChanged,
+          decoration: InputDecoration(
+            hintText: 'Rechercher par nom...',
+            hintStyle:
+                TextStyle(color: _theme.secondaryText.withValues(alpha: 0.5)),
+            prefixIcon:
+                Icon(Icons.search, color: _theme.secondaryText, size: 20),
+            suffixIcon: _searchQuery.isNotEmpty
+                ? IconButton(
+                    icon: Icon(Icons.cancel,
+                        color: _theme.secondaryText, size: 16),
+                    onPressed: () {
+                      _searchCtrl.clear();
+                      _onSearchChanged('');
+                      _searchFocus.unfocus();
+                    },
+                  )
+                : null,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide(color: Colors.transparent),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide(color: Colors.transparent),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide(color: _theme.elevated),
+            ),
+            contentPadding: const EdgeInsets.symmetric(vertical: 9.5),
+          ),
+        ),
+      ),
+    );
+  }
 
-    if (_assets.isEmpty) {
+  Widget _buildGrid() {
+    if (_isLoading || (_isSearching && _isSearchLoading)) {
+      return PulsingSkeletonGrid(theme: _theme);
+    }
+
+    if (_isSearching && _searchQuery.isNotEmpty && _searchResults.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.search_off_rounded,
+                size: 56, color: _theme.secondaryText),
+            const SizedBox(height: 16),
+            Text(
+              'Aucun résultat pour "$_searchQuery"',
+              style: TextStyle(
+                color: _theme.secondaryText,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final displayAssets =
+        (_isSearching && _searchQuery.isNotEmpty) ? _searchResults : _assets;
+
+    if (!_isSearching && _assets.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -528,9 +667,13 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     }
 
     // Determine if the camera tile should be shown
-    final showCamera = widget.config.showCameraTile;
+    final showCamera = !_isSearching && widget.config.showCameraTile;
     final cameraOffset = showCamera ? 1 : 0;
     final enableSwipe = !_isVideoMode && widget.config.enableSwipeToSelect;
+
+    // Pagination only when not searching
+    final bool isLoadingMoreAssets = _isSearching ? false : _isLoadingMore;
+    final int extraLoadingItems = isLoadingMoreAssets ? 3 : 0;
 
     return DraggableSelectionGrid(
         scrollController: _scrollController,
@@ -551,7 +694,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
           ),
           mainAxisSpacing: 1.5,
           crossAxisSpacing: 1.5,
-          itemCount: _assets.length + cameraOffset + (_isLoadingMore ? 3 : 0),
+          itemCount: displayAssets.length + cameraOffset + extraLoadingItems,
           itemBuilder: (ctx, i) {
             // Camera tile at position 0
             if (showCamera && i == 0) {
@@ -570,13 +713,13 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
             final assetIndex = i - cameraOffset;
 
-            if (assetIndex >= _assets.length) {
+            if (assetIndex >= displayAssets.length) {
               return AspectRatio(
                 aspectRatio: 1,
                 child: ColoredBox(color: _theme.shimmerBase),
               );
             }
-            final asset = _assets[assetIndex];
+            final asset = displayAssets[assetIndex];
             final selIdx = _selectionIndex(asset);
             final isSelected = selIdx >= 0;
 
@@ -624,13 +767,43 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             itemCount: _selected.length,
-            itemBuilder: (_, i) => SelectedPreviewItem(
-              key: ValueKey(_selected[i].id),
-              asset: _selected[i],
-              index: i + 1,
-              primaryColor: widget.config.primaryColor,
-              onRemove: () => _toggleSelection(_selected[i]),
-            ),
+            itemBuilder: (_, i) {
+              final asset = _selected[i];
+              return SelectedPreviewItem(
+                key: ValueKey(asset.id),
+                asset: asset,
+                index: i + 1,
+                primaryColor: widget.config.primaryColor,
+                onRemove: () => _toggleSelection(asset),
+                editedFile: _editedFiles[asset.id],
+                onEdit: (widget.config.onEditMedia != null && asset.type == AssetType.image)
+                    ? () async {
+                        HapticFeedback.lightImpact();
+                        try {
+                          final originalFile = widget.config.useOriginalFile 
+                              ? await asset.originFile 
+                              : await asset.file;
+                          
+                          if (originalFile == null || !mounted) return;
+
+                          final newFile = await widget.config.onEditMedia!(
+                            context,
+                            asset,
+                            originalFile,
+                          );
+
+                          if (newFile != null && mounted) {
+                            setState(() {
+                              _editedFiles[asset.id] = newFile;
+                            });
+                          }
+                        } catch (e) {
+                          debugPrint('Error invoking onEditMedia: $e');
+                        }
+                      }
+                    : null,
+              );
+            },
           ),
         ),
       ),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:photo_manager/photo_manager.dart';
 import '../models/picker_config.dart';
 import '../models/picker_theme.dart';
 import '../services/media_service.dart';
+import '../models/media_item.dart' as my_models;
 import '../widgets/audio_tile.dart';
 import '../widgets/send_button.dart';
 
@@ -34,6 +36,15 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
   bool _permissionDenied = false;
   int _page = 0;
   static const int _pageSize = 50;
+
+  // Search State
+  bool _isSearching = false;
+  String _searchQuery = '';
+  List<AssetEntity> _searchResults = [];
+  bool _isSearchLoading = false;
+  Timer? _searchDebounce;
+  final TextEditingController _searchCtrl = TextEditingController();
+  final FocusNode _searchFocus = FocusNode();
 
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
@@ -75,10 +86,50 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
+    _searchCtrl.dispose();
+    _searchFocus.dispose();
     _player.dispose();
     _scrollController.dispose();
-    // MediaService.cancelAll();
     super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 300), () async {
+      final trimmed = query.trim();
+      if (trimmed.isEmpty) {
+        setState(() {
+          _searchQuery = '';
+          _searchResults = [];
+          _isSearchLoading = false;
+          _isSearching = false;
+        });
+        return;
+      }
+
+      setState(() {
+        _searchQuery = trimmed;
+        _isSearchLoading = true;
+        _isSearching = true;
+      });
+
+      try {
+        final albums = await _service.getAlbums(widget.config.requestType);
+        if (albums.isNotEmpty) {
+          final results = await _service.searchAssets(albums.first, trimmed);
+          if (mounted && _searchQuery == trimmed) {
+            setState(() {
+              _searchResults = results;
+              _isSearchLoading = false;
+            });
+          }
+        }
+      } catch (e) {
+        debugPrint('Search error: $e');
+        if (mounted) setState(() => _isSearchLoading = false);
+      }
+    });
   }
 
   Future<void> _initialize() async {
@@ -202,7 +253,15 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
   void _onConfirm() {
     if (_selected.isEmpty) return;
     _player.stop();
-    Navigator.of(context).pop(_selected);
+
+    final items = _selected.map((asset) {
+      return my_models.MediaItem(
+        asset: asset,
+        useOriginalFile: widget.config.useOriginalFile,
+      );
+    }).toList();
+
+    Navigator.of(context).pop(items);
   }
 
   String _fmt(Duration d) {
@@ -298,26 +357,102 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
     return Column(
       children: [
         Container(height: 0.5, color: _theme.separator),
+        _buildInlineSearchBar(),
         Expanded(child: _buildList()),
         if (_playingAsset != null) _buildMiniPlayer(),
       ],
     );
   }
 
+  Widget _buildInlineSearchBar() {
+    return Container(
+      color: _theme.surface,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      child: Container(
+        height: 38,
+        decoration: BoxDecoration(
+          color: _theme.background,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: TextField(
+          controller: _searchCtrl,
+          focusNode: _searchFocus,
+          style: TextStyle(color: _theme.primaryText, fontSize: 16),
+          textInputAction: TextInputAction.search,
+          onChanged: _onSearchChanged,
+          decoration: InputDecoration(
+            hintText: 'Rechercher par nom...',
+            hintStyle:
+                TextStyle(color: _theme.secondaryText.withValues(alpha: 0.5)),
+            prefixIcon:
+                Icon(Icons.search, color: _theme.secondaryText, size: 20),
+            suffixIcon: _searchQuery.isNotEmpty
+                ? IconButton(
+                    icon: Icon(Icons.cancel,
+                        color: _theme.secondaryText, size: 16),
+                    onPressed: () {
+                      _searchCtrl.clear();
+                      _onSearchChanged('');
+                      _searchFocus.unfocus();
+                    },
+                  )
+                : null,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: const BorderSide(color: Colors.transparent),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: const BorderSide(color: Colors.transparent),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30),
+              borderSide: BorderSide(color: _theme.elevated),
+            ),
+            contentPadding: const EdgeInsets.symmetric(vertical: 9.5),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildList() {
-    if (_isLoading) {
+    if (_isLoading || (_isSearching && _isSearchLoading)) {
       return Center(
         child: CircularProgressIndicator(
             color: widget.config.primaryColor, strokeWidth: 2),
       );
     }
 
-    if (_assets.isEmpty) {
+    if (_isSearching && _searchQuery.isNotEmpty && _searchResults.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.music_note_outlined,
+            Icon(Icons.search_off_rounded,
+                size: 56, color: _theme.secondaryText),
+            const SizedBox(height: 16),
+            Text(
+              'Aucun résultat pour "$_searchQuery"',
+              style: TextStyle(
+                  color: _theme.secondaryText,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final displayAssets =
+        (_isSearching && _searchQuery.isNotEmpty) ? _searchResults : _assets;
+
+    if (!_isSearching && _assets.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.library_music_outlined,
                 size: 56, color: _theme.secondaryText),
             const SizedBox(height: 16),
             Text(
@@ -332,13 +467,15 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
       );
     }
 
+    final bool isLoadingMoreAssets = _isSearching ? false : _isLoadingMore;
+
     return ListView.separated(
       controller: _scrollController,
-      itemCount: _assets.length + (_isLoadingMore ? 1 : 0),
+      itemCount: displayAssets.length + (isLoadingMoreAssets ? 1 : 0),
       separatorBuilder: (_, __) =>
           Divider(height: 0.5, color: _theme.divider, indent: 82),
       itemBuilder: (_, i) {
-        if (i >= _assets.length) {
+        if (i >= displayAssets.length) {
           return SizedBox(
             height: 72,
             child: Center(
@@ -347,7 +484,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
             ),
           );
         }
-        final asset = _assets[i];
+        final asset = displayAssets[i];
         return AudioTile(
           asset: asset,
           isPlaying: _playingAsset?.id == asset.id && _isPlaying,

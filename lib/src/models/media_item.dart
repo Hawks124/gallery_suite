@@ -31,10 +31,15 @@ class MediaItem {
   /// Whether to fetch the absolute uncompressed original file from the OS.
   final bool useOriginalFile;
 
+  /// An explicitly provided edited File (e.g. from an image cropper/editor).
+  /// If provided, [file] will always return this instance instead of querying the OS.
+  final File? editedFile;
+
   /// Creates a [MediaItem] wrapping the given [asset].
   const MediaItem({
     required this.asset,
     this.useOriginalFile = false,
+    this.editedFile,
   });
 
   /// The unique identifier of this asset on the device.
@@ -72,8 +77,10 @@ class MediaItem {
   /// Returns the local [File] for this asset, or `null` if inaccessible.
   ///
   /// Depending on [useOriginalFile], this fetches either the OS-optimized file
-  /// or the absolute uncompressed original file.
-  Future<File?> get file => useOriginalFile ? asset.originFile : asset.file;
+  /// or the absolute uncompressed original file. If [editedFile] is set, returns it directly.
+  Future<File?> get file => editedFile != null 
+      ? Future.value(editedFile) 
+      : (useOriginalFile ? asset.originFile : asset.file);
   
   /// Helper method equivalent to the [file] getter.
   Future<File?> toFile() => file;

@@ -25,23 +25,93 @@
 
 ---
 
+## 🤔 Why Gallery Suite?
+
+The built-in `image_picker` delegates to the operating system's native media browser. That works, but you give up control: the UI looks different on every Android version, it doesn't match your app's theme, and it can't do anything beyond handing you a file path.
+
+`gallery_suite` builds the entire picker inside Flutter. You get a consistent, premium UI on every device, and because it owns the UI, it provides a much richer experience (like playing a video preview or an audio track before the user commits to sending it).
+
+### 🚀 Zero Bloatware & Extreme Performance
+
+Unlike other pickers that force you to download massive editor dependencies or bloated video trimmers, `gallery_suite` keeps its core **100% pristine and lightweight**.
+
+- **120fps Ready**: Powered by a custom `ThumbnailDecodeQueue` and LRU memory caching, the grid stays buttery smooth even when rapidly scrolling through 10,000+ assets.
+- **Architecture by Injection**: We provide elegant, decoupled hooks. Want to crop an image? Pass your favorite editor to our `onEditMedia` callback. Our UI seamlessly integrates it without adding a single megabyte to the package's core footprint.
+
+**Compared to similar packages:**
+
+| Feature            | `image_picker`    | `wechat_assets_picker` | `gallery_suite`                     |
+| ------------------ | ----------------- | ---------------------- | ----------------------------------- |
+| Assets supported   | Image, Video      | Image, Video, Audio    | Image, Video, Audio                 |
+| Picker UI          | Native OS dialog  | WeChat-style grid      | Custom Masonry grid                 |
+| Audio/Video UI     | System default    | Yes                    | Inline playback (Mini-player)       |
+| Multi-select       | Images only       | Yes                    | Yes (Images & Audio)                |
+| In-app Camera      | No                | No                     | ✅ Yes (Live tile & Custom UI)      |
+| Swipe-To-Select    | No                | No                     | ✅ Yes (iOS Photos style)           |
+| Inline Search      | No                | No                     | ✅ Yes (Cross-platform Dart filter) |
+| BYOE Image Editing | No                | No                     | ✅ Yes (Dependency Injection)       |
+| UI Theming         | System restricted | Restricted             | Fully customizable per-instance     |
+
+---
+
+## ✨ Features
+
+**Image Picker**
+
+- 📸 **Built-in Native Camera** — live preview tile directly in the grid at position 0. Full custom `CameraScreen` with flash, flip, and recording support. Can be disabled via `showCameraTile: false`.
+- 👆 **iOS-style Swipe-To-Select** — long press and drag your finger to rapidly select multiple images in one fluid motion. Includes intelligent auto-scrolling near screen edges. Can be disabled via `enableSwipeToSelect: false`.
+- Masonry grid — photos display at their natural proportions, no forced square crops.
+- Multi-select with numbered badges showing order of selection.
+- Horizontal preview strip at the bottom with selected items.
+- Album switcher sheet (slide-up, drag to expand).
+
+**Video Picker**
+
+- Built-in Native Camera — record videos directly from the live tile without leaving the app.
+- Same masonry grid with a duration badge on each tile.
+- Tap a tile → bottom sheet with a full inline video player.
+- Confirm button in the sheet — user can preview before deciding to send.
+
+**Audio Picker**
+
+- List view with album art, track name, and duration for each file.
+- Tap a track to play or pause it inline.
+- Mini player. Selection is separated from playback.
+
+**All Pickers**
+
+- 🔍 **Inline Asset Search** — Instantly filter your entire media library by filename/title with a beautiful iOS-style frosted search bar. Uses lightning-fast Dart-side memory filtering.
+- 🖌️ **Bring Your Own Editor (BYOE) Architecture** — Why bloat your app with forced editors? Pass your favorite editor (like `pro_image_editor`) to the `onEditMedia` callback. The picker natively intercepts the edit, displays an elegant Pencil badge overlay, and flawlessly updates the preview strip to the new edited image.
+- Fully customizable theming via `PickerConfig.brightness` and `primaryColor`.
+- Haptic feedback and native-feeling micro-animations and _Glassmorphism_.
+- Smooth skeleton loaders and optimized pagination (80 items per page).
+
+---
+
 ## 📑 Table of Contents
 
-- [🚀 Quick Start](#-quick-start)
 - [🤔 Why Gallery Suite?](#-why-gallery-suite)
 - [✨ Features](#-features)
+- [🚀 Quick Start](#-quick-start)
 - [📦 Installation & Setup](#-installation--setup)
-- [💻 Usage](#-usage)
-  - [Pick Images](#pick-images)
-  - [Pick a Video](#pick-a-video)
-  - [Pick Audio](#pick-audio)
-  - [Disabling the Live Camera Tile](#disabling-the-live-camera-tile)
-  - [Disabling Swipe-To-Select](#disabling-swipe-to-select)
-- [📤 Handling Selected Media (Upload Example)](#-handling-selected-media-upload-example)
-- [⚙️ PickerConfig API](#%EF%B8%8F-pickerconfig-api)
-- [🚀 Version History & Roadmap](#-version-history--roadmap)
+  - [Android Setup](#android-setup)
+  - [iOS Setup](#ios-setup)
+- [💻 Core Usage](#-core-usage)
+  - [📸 Pick Images](#-pick-images)
+  - [🎬 Pick a Video](#-pick-a-video)
+  - [🎵 Pick Audio](#-pick-audio)
+- [🧠 Advanced Capabilities](#-advanced-capabilities)
+  - [🖌️ Bring Your Own Editor (BYOE) Architecture](#️-bring-your-own-editor-byoe-architecture)
+  - [📸 Getting Original Quality Files](#-getting-original-quality-files)
+  - [🚫 Disabling the Live Camera Tile](#-disabling-the-live-camera-tile)
+  - [👆 Disabling Swipe-To-Select](#-disabling-swipe-to-select)
+  - [📤 Handling Selected Media (Upload Example)](#-handling-selected-media-upload-example)
+  - [🎨 UI Theming & Customization](#-ui-theming--customization)
+- [⚙️ PickerConfig API](#️-pickerconfig-api)
 - [⚡ Performance Notes](#-performance-notes)
-- [📝 License & Acknowledgements](#-license--acknowledgements)
+- [🚀 Version History & Roadmap](#-version-history--roadmap)
+- [📜 License](#-license)
+- [❤️ Acknowledgements & Credits](#️-acknowledgements--credits)
 
 ---
 
@@ -78,85 +148,9 @@ if (assets != null) {
 
 ---
 
-## 📸 Getting Original Quality Files
-
-On some platforms (especially iOS), the operating system might convert high-efficiency formats (HEIC) to compressed JPEG when apps request a "file" from the library. This can lead to a slight loss in quality.
-
-If your app requires the **pristine, uncompressed original bytes**, use the `useOriginalFile` option:
-
-```dart
-final assets = await CustomMediaPicker.show(
-  context: context,
-  config: PickerConfig(
-    useOriginalFile: true, // 💎 Ensures no OS-level compression
-  ),
-);
-```
-
----
-
-## 🤔 Why Gallery Suite?
-
-The built-in `image_picker` delegates to the operating system's native media browser. That works, but you give up control: the UI looks different on every Android version, it doesn't match your app's theme, and it can't do anything beyond handing you a file path.
-
-`gallery_suite` builds the entire picker inside Flutter. You get a consistent, premium UI on every device, and because it owns the UI, it provides a much richer experience (like playing a video preview or an audio track before the user commits to sending it).
-
-**Compared to similar packages:**
-
-| Feature          | `image_picker`    | `wechat_assets_picker` | `gallery_suite`                 |
-| ---------------- | ----------------- | ---------------------- | ------------------------------- |
-| Assets supported | Image, Video      | Image, Video, Audio    | Image, Video, Audio             |
-| Picker UI        | Native OS dialog  | WeChat-style grid      | Custom Masonry grid             |
-| Audio/Video UI   | System default    | Yes                    | Inline playback (Mini-player)   |
-| Multi-select     | Images only       | Yes                    | Yes (Images & Audio)            |
-| In-app Camera    | No                | No                     | ✅ Yes (Live tile & Custom UI)  |
-| Swipe-To-Select  | No                | No                     | ✅ Yes (iOS Photos style)       |
-| UI Theming       | System restricted | Restricted             | Fully customizable per-instance |
-
----
-
-## ✨ Features
-
-**Image Picker**
-
-- 📸 **Built-in Native Camera** — live preview tile directly in the grid at position 0. Full custom `CameraScreen` with flash, flip, and recording support. Can be disabled via `showCameraTile: false`.
-- 👆 **iOS-style Swipe-To-Select** — long press and drag your finger to rapidly select multiple images in one fluid motion. Includes intelligent auto-scrolling near screen edges. Can be disabled via `enableSwipeToSelect: false`.
-- Masonry grid — photos display at their natural proportions, no forced square crops.
-- Multi-select with numbered badges showing order of selection.
-- Horizontal preview strip at the bottom with selected items.
-- Album switcher sheet (slide-up, drag to expand).
-
-**Video Picker**
-
-- Built-in Native Camera — record videos directly from the live tile without leaving the app.
-- Same masonry grid with a duration badge on each tile.
-- Tap a tile → bottom sheet with a full inline video player.
-- Confirm button in the sheet — user can preview before deciding to send.
-
-**Audio Picker**
-
-- List view with album art, track name, and duration for each file.
-- Tap a track to play or pause it inline.
-- Mini player. Selection is separated from playback.
-
-**All Pickers**
-
-- Fully customizable theming via `PickerConfig.brightness` and `primaryColor`.
-- Haptic feedback and native-feeling micro-animations and _Glassmorphism_.
-- Smooth skeleton loaders and optimized pagination (80 items per page).
-
----
-
 ## 📦 Installation & Setup
 
-1. Add the dependency to your `pubspec.yaml`:
-
-```yaml
-dependencies:
-  gallery_suite: ^1.0.0
-```
-
-2. Because this package accesses the device's native media library, **you must configure native permissions before using it.** It will crash or show a "Permission Denied" screen if you skip this step.
+Because this package accesses the device's native media library, **you must configure native permissions before using it.** It will crash or show a "Permission Denied" screen if you skip this step.
 
 ### Android Setup
 
@@ -226,7 +220,7 @@ Inside `ios/Runner/Info.plist`:
 
 ---
 
-## 💻 Usage
+## 💻 Core Usage
 
 First, import the package and `photo_manager` (which provides the `RequestType` enum):
 
@@ -235,7 +229,7 @@ import 'package:gallery_suite/gallery_suite.dart';
 import 'package:photo_manager/photo_manager.dart';
 ```
 
-### Pick Images
+### 📸 Pick Images
 
 ```dart
 // Full-featured: Camera tile + Swipe-to-select + Multi-select
@@ -252,7 +246,7 @@ final assets = await CustomMediaPicker.show(
 );
 ```
 
-### Pick a Video
+### 🎬 Pick a Video
 
 ```dart
 final assets = await CustomMediaPicker.show(
@@ -265,7 +259,7 @@ final assets = await CustomMediaPicker.show(
 );
 ```
 
-### Pick Audio
+### 🎵 Pick Audio
 
 ```dart
 final assets = await CustomMediaPicker.show(
@@ -278,7 +272,80 @@ final assets = await CustomMediaPicker.show(
 );
 ```
 
-### Disabling the Live Camera Tile
+---
+
+## 🧠 Advanced Capabilities
+
+### 🖌️ Bring Your Own Editor (BYOE) Architecture
+
+Why force your users to download a bloated media picker that comes packed with heavy image editing dependencies they don't even use?
+
+`gallery_suite` introduces a pristine **Dependency Injection** architecture for media editing. You can pass your favorite image editor (like `pro_image_editor`, `image_cropper`, etc.) directly into the picker via the `onEditMedia` callback.
+
+The picker will automatically:
+
+1. Display an elegant **Edit Pencil overlay** on selected images.
+2. Yield execution to your custom editor route.
+3. Intercept the edited file and **seamlessly transition the UI** in the selected preview strip without requiring a server upload!
+
+#### Example: Integrating `pro_image_editor`
+
+```dart
+final assets = await CustomMediaPicker.show(
+  context: context,
+  config: PickerConfig(
+    // ...
+    onEditMedia: (ctx, asset, file) async {
+      // Only allow editing for images
+      if (asset.type != AssetType.image) return null;
+
+      // 1. Push your favorite editor route
+      return await Navigator.of(ctx).push<File?>(
+        MaterialPageRoute(
+          builder: (editorCtx) => ProImageEditor.file(
+            file,
+            callbacks: ProImageEditorCallbacks(
+              onImageEditingComplete: (bytes) async {
+                // 2. Save the edited bytes to a temporary file
+                final tempDir = Directory.systemTemp.path;
+                final newFile = File('$tempDir/edited.jpg');
+                await newFile.writeAsBytes(bytes);
+
+                // 3. Pop the editor and return the new File to the picker!
+                if (editorCtx.mounted) {
+                  Navigator.of(editorCtx).pop(newFile);
+                }
+              },
+              onCloseEditor: (_) {
+                if (editorCtx.mounted) {
+                  Navigator.of(editorCtx).pop(null);
+                }
+              },
+            ),
+          ),
+        ),
+      );
+    },
+  ),
+);
+```
+
+### 📸 Getting Original Quality Files
+
+On some platforms (especially iOS), the operating system might convert high-efficiency formats (HEIC) to compressed JPEG when apps request a "file" from the library. This can lead to a slight loss in quality.
+
+If your app requires the **pristine, uncompressed original bytes**, use the `useOriginalFile` option:
+
+```dart
+final assets = await CustomMediaPicker.show(
+  context: context,
+  config: PickerConfig(
+    useOriginalFile: true, // 💎 Ensures no OS-level compression
+  ),
+);
+```
+
+### 🚫 Disabling the Live Camera Tile
 
 By default, an integrated live camera tile appears at the `0` index of the image and video grids. This allows users to capture and send media seamlessly without leaving the picker. If you want to disable this and handle the camera yourself, simply set `showCameraTile: false`.
 
@@ -292,7 +359,7 @@ final assets = await CustomMediaPicker.show(
 );
 ```
 
-### Disabling Swipe-To-Select
+### 👆 Disabling Swipe-To-Select
 
 The iOS-style swipe-to-select is enabled by default. If you prefer a classic tap-only selection, simply set `enableSwipeToSelect: false`.
 
@@ -306,9 +373,7 @@ final assets = await CustomMediaPicker.show(
 );
 ```
 
----
-
-## 📤 Handling Selected Media (Upload Example)
+### 📤 Handling Selected Media (Upload Example)
 
 While `gallery_suite` handles the complex UI of picking files, you will often want to upload them to your backend. The `.show()` method returns a `List<MediaItem>?`.
 
@@ -346,36 +411,47 @@ print(assets.first.isVideo);        // bool
 print(assets.first.aspectRatio);    // double
 ```
 
+### 🎨 UI Theming & Customization
+
+`gallery_suite` is built to seamlessly blend into your app's existing design system. You can easily switch between Light and Dark modes, or enforce a specific brand color.
+
+```dart
+final assets = await CustomMediaPicker.show(
+  context: context,
+  config: PickerConfig(
+    // Enforce dark mode regardless of system settings
+    brightness: Brightness.dark,
+
+    // Set your brand's primary color for buttons, badges, and checkmarks
+    primaryColor: const Color(0xFFE91E63), // Pink
+
+    // Customize the button labels
+    confirmText: 'Envoyer',
+    cancelText: 'Retour',
+  ),
+);
+```
+
 ---
 
 ## ⚙️ PickerConfig API
 
 The entire look and feel is controlled via `PickerConfig`. Here is exactly what you can configure:
 
-| Parameter             | Type          | Default             | Description                                                                                                                                                       |
-| --------------------- | ------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `requestType`         | `RequestType` | `RequestType.image` | The specific gallery to open (`image`, `video`, or `audio`).                                                                                                      |
-| `maxSelection`        | `int`         | `10`                | The maximum number of assets the user can select. Used in Images and Audio. Video is currently single-select.                                                     |
-| `primaryColor`        | `Color`       | `Color(0xFF007AFF)` | The global accent color for checkmarks, badges, seek-bars, and confirm buttons.                                                                                   |
-| `brightness`          | `Brightness?` | `null`              | Force a specific theme (`Brightness.dark` or `light`). If `null`, it automatically follows the system `Theme.of(context)`.                                        |
-| `confirmText`         | `String`      | `'Sélectionner'`    | Localized text for the final send/done button.                                                                                                                    |
-| `cancelText`          | `String`      | `'Annuler'`         | Localized text for the cancel button in the app bar.                                                                                                              |
-| `showCameraTile`      | `bool`        | `true`              | When `true`, renders a live `camera` feed at index `0`. Supports both photo and video depending on `requestType`. Tap to open a full-screen Dribbble-inspired UI. |
-| `enableSwipeToSelect` | `bool`        | `true`              | When `true`, allows the user to long-press and drag their finger across the masonry grid to rapidly select items (iOS Photos style). Includes edge auto-scroll.   |
-| `useOriginalFile`     | `bool`        | `false`             | When `true`, fetches the absolute pristine original file rather than a system-optimized/compressed format from iOS or Android cache.                              |
-| `thumbnailCacheSize`   | `int`         | `200`               | Maximum number of thumbnails kept in the LRU memory cache. A value of 200 ensures buttery scrolling over 2–3 screens of content.                               |
-| `maxConcurrentDecodes`| `int`         | `3`                 | Maximum simultaneous thumbnail decodes. Limiting this ensures scrolling remains 60fps+ by preventing thread starvation on large grids.                           |
-| `prefetchEnabled`     | `bool`        | `true`              | When `true`, the picker intelligently pre-loads thumbnails for the next 30 items that are about to appear on-screen during scrolling, eliminating pop-in.         |
-
----
-
-## 🚀 Version History & Roadmap
-
-We use [Semantic Versioning](https://semver.org/). This package is currently evolving rapidly:
-
-| Version           | Status    | Highlights                                                                       |
-| ----------------- | --------- | -------------------------------------------------------------------------------- |
-| **v1.0.0**        | ✅ Stable | Core engine (Grid, Video, Audio), Live Camera Tile, iOS-style swipe-to-select, Heavy Performance Optimizations (LRU Cache, Decode Queue, Prefetching) |
+| Parameter              | Type          | Default             | Description                                                                                                                                                       |
+| ---------------------- | ------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `requestType`          | `RequestType` | `RequestType.image` | The specific gallery to open (`image`, `video`, or `audio`).                                                                                                      |
+| `maxSelection`         | `int`         | `10`                | The maximum number of assets the user can select. Used in Images and Audio. Video is currently single-select.                                                     |
+| `primaryColor`         | `Color`       | `Color(0xFF007AFF)` | The global accent color for checkmarks, badges, seek-bars, and confirm buttons.                                                                                   |
+| `brightness`           | `Brightness?` | `null`              | Force a specific theme (`Brightness.dark` or `light`). If `null`, it automatically follows the system `Theme.of(context)`.                                        |
+| `confirmText`          | `String`      | `'Sélectionner'`    | Localized text for the final send/done button.                                                                                                                    |
+| `cancelText`           | `String`      | `'Annuler'`         | Localized text for the cancel button in the app bar.                                                                                                              |
+| `showCameraTile`       | `bool`        | `true`              | When `true`, renders a live `camera` feed at index `0`. Supports both photo and video depending on `requestType`. Tap to open a full-screen Dribbble-inspired UI. |
+| `enableSwipeToSelect`  | `bool`        | `true`              | When `true`, allows the user to long-press and drag their finger across the masonry grid to rapidly select items (iOS Photos style). Includes edge auto-scroll.   |
+| `useOriginalFile`      | `bool`        | `false`             | When `true`, fetches the absolute pristine original file rather than a system-optimized/compressed format from iOS or Android cache.                              |
+| `thumbnailCacheSize`   | `int`         | `200`               | Maximum number of thumbnails kept in the LRU memory cache. A value of 200 ensures buttery scrolling over 2–3 screens of content.                                  |
+| `maxConcurrentDecodes` | `int`         | `3`                 | Maximum simultaneous thumbnail decodes. Limiting this ensures scrolling remains 60fps+ by preventing thread starvation on large grids.                            |
+| `prefetchEnabled`      | `bool`        | `true`              | When `true`, the picker intelligently pre-loads thumbnails for the next 30 items that are about to appear on-screen during scrolling, eliminating pop-in.         |
 
 ---
 
@@ -387,6 +463,16 @@ We use [Semantic Versioning](https://semver.org/). This package is currently evo
 - **Optimized UI Layer**: Each grid tile is wrapped in `RepaintBoundary`. The pulsing animation controllers are completely stopped once an image loads to save GPU processing.
 - Pagination automatically adapts: loading 80 assets initially, then 120 per page, triggering aggressively at 1500px from the bottom.
 
+---
+
+## 🚀 Version History & Roadmap
+
+We use [Semantic Versioning](https://semver.org/). This package is currently evolving rapidly:
+
+| Version    | Status    | Highlights                                                                                                                                            |
+| ---------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **v1.0.0** | ✅ Stable | Core engine (Grid, Video, Audio), Live Camera Tile, iOS-style swipe-to-select, Heavy Performance Optimizations (LRU Cache, Decode Queue, Prefetching) |
+| **v1.1.0** | ✅ Stable | Injectable Bring Your Own Editor (BYOE) Architecture, Dart-side Inline Media Filtering / Search engine                                                |
 
 ---
 

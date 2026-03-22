@@ -98,8 +98,17 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         // 👆 Swipe-to-select: long press on any tile, then drag your finger
         // across the grid to rapidly select multiple images without lifting.
         // The grid auto-scrolls when your finger nears the top/bottom edge.
-        // Set to `false` if you prefer classic tap-only selection.
         enableSwipeToSelect: true,
+
+        // 🖌️ Bring Your Own Editor (BYOE): Add a custom image editor
+        // without adding bloatware to the internal package!
+        // onEditMedia: (context, asset, file) async {
+        //   return await Navigator.push(context, MaterialPageRoute(
+        //     builder: (_) => MyCustomEditor(file: file),
+        //   ));
+        // },
+        // Set to `false` if you prefer classic tap-only selection.
+        // enableSwipeToSelect: false,
 
         // 🎨 Brand accent used for selection badges, checkmarks, seek bars,
         // and the confirm button gradient.
@@ -108,11 +117,11 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         // Force a specific brightness, or omit to follow the system theme.
         brightness: Theme.of(context).brightness,
 
-        // 🚀 Architecture & Performance: 
+        // 🚀 Architecture & Performance:
         // Tuned for 10,000+ photo libraries on ProMotion displays.
-        thumbnailCacheSize: 200,     // LRU cache limit
-        maxConcurrentDecodes: 3,     // Prevents frame drops during scroll
-        prefetchEnabled: true,       // Preloads off-screen items to prevent pop-in
+        thumbnailCacheSize: 200, // LRU cache limit
+        maxConcurrentDecodes: 3, // Prevents frame drops during scroll
+        prefetchEnabled: true, // Preloads off-screen items to prevent pop-in
 
         // 🖼️ Original File vs System Cache:
         // Set to true to fetch the pristine bytes ignoring OS-level HEIC->JPG compression.

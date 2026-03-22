@@ -27,7 +27,7 @@ class VideoPreviewSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black87,
+      barrierColor: Colors.black.withValues(alpha: 0.85), // Deep cinematic background
       builder: (_) => VideoPreviewSheet(
         asset: asset,
         theme: theme,
@@ -41,14 +41,21 @@ class VideoPreviewSheet extends StatefulWidget {
   State<VideoPreviewSheet> createState() => _VideoPreviewSheetState();
 }
 
-class _VideoPreviewSheetState extends State<VideoPreviewSheet> {
+class _VideoPreviewSheetState extends State<VideoPreviewSheet>
+    with SingleTickerProviderStateMixin {
   VideoPlayerController? _controller;
   bool _isInitializing = true;
   bool _hasError = false;
 
+  late AnimationController _fadeController;
+
   @override
   void initState() {
     super.initState();
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
     _initPlayer();
   }
 
@@ -82,6 +89,8 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet> {
         _controller = controller;
         _isInitializing = false;
       });
+      _fadeController.forward();
+      // Auto-play immediately
       controller.play();
     } catch (_) {
       controller.dispose();
@@ -96,6 +105,7 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet> {
 
   @override
   void dispose() {
+    _fadeController.dispose();
     _controller?.dispose();
     super.dispose();
   }
@@ -127,65 +137,105 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet> {
         ? widget.asset.width / widget.asset.height
         : 16.0 / 9.0;
 
-    return Container(
-      height: screenHeight * 0.88,
-      decoration: BoxDecoration(
-        color: widget.theme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        children: [
-          // Handle bar
-          Container(
-            margin: const EdgeInsets.only(top: 12, bottom: 4),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: widget.theme.separator,
-              borderRadius: BorderRadius.circular(2),
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+        child: Container(
+          height: screenHeight * 0.92,
+          decoration: BoxDecoration(
+            color: widget.theme.surface.withValues(alpha: 0.85),
+            border: Border(
+              top: BorderSide(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 0.5,
+              ),
             ),
           ),
-          // Title row
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    widget.asset.title ?? 'Vidéo',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: widget.theme.primaryText,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              // Pill handle
+              Container(
+                width: 48,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: widget.theme.primaryText.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2.5),
                 ),
-                GestureDetector(
-                  onTap: () => Navigator.of(context).pop(false),
-                  child: Container(
-                    width: 30,
-                    height: 30,
-                    decoration: BoxDecoration(
-                      color: widget.theme.elevated,
-                      shape: BoxShape.circle,
+              ),
+              const SizedBox(height: 8),
+
+              // Glassmorphic Header
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Aperçu Vidéo',
+                            style: TextStyle(
+                              color: widget.theme.secondaryText,
+                              fontSize: 13,
+                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.w600,
+                              fontFeatures: const [FontFeature.tabularFigures()],
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.asset.title ?? 'Sans titre',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: widget.theme.primaryText,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Icon(Icons.close_rounded,
-                        color: widget.theme.secondaryText, size: 18),
-                  ),
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).pop(false),
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: widget.theme.primaryText.withValues(alpha: 0.05),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.close_rounded,
+                            color: widget.theme.primaryText, size: 20),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+
+              // Cinematic Video Area
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _buildVideoArea(ar),
+                ),
+              ),
+
+              // Premium Controls
+              FadeTransition(
+                opacity: _fadeController,
+                child: _buildControls(),
+              ),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 24),
+            ],
           ),
-          Container(height: 0.5, color: widget.theme.separator),
-          // Video area
-          Expanded(child: _buildVideoArea(ar)),
-          // Controls
-          _buildControls(),
-          SizedBox(height: MediaQuery.of(context).padding.bottom + 12),
-        ],
+        ),
       ),
     );
   }
@@ -193,28 +243,36 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet> {
   Widget _buildVideoArea(double ar) {
     if (_isInitializing) {
       return Container(
-        color: Colors.black,
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(24),
+        ),
         child: Center(
           child: CircularProgressIndicator(
-              color: widget.primaryColor, strokeWidth: 2),
+              color: widget.primaryColor, strokeWidth: 3),
         ),
       );
     }
 
     if (_hasError || _controller == null) {
       return Container(
-        color: Colors.black,
+        decoration: BoxDecoration(
+          color: widget.theme.elevated,
+          borderRadius: BorderRadius.circular(24),
+        ),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.broken_image_outlined,
-                  color: widget.theme.secondaryText, size: 52),
-              const SizedBox(height: 12),
+              Icon(Icons.video_file_outlined,
+                  color: widget.theme.secondaryText, size: 48),
+              const SizedBox(height: 16),
               Text(
-                'Erreur de lecture',
-                style:
-                    TextStyle(color: widget.theme.secondaryText, fontSize: 14),
+                'Impossible de lire cette vidéo.',
+                style: TextStyle(
+                    color: widget.theme.secondaryText,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500),
               ),
             ],
           ),
@@ -228,38 +286,60 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet> {
     return GestureDetector(
       onTap: _togglePlay,
       child: Container(
-        color: Colors.black,
-        child: Center(
-          child: AspectRatio(
-            aspectRatio: ar.clamp(0.4, 2.2),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                VideoPlayer(ctrl),
-                // Tap overlay: play icon
-                AnimatedOpacity(
-                  opacity: isPlaying ? 0.0 : 1.0,
-                  duration: const Duration(milliseconds: 200),
-                  child: ClipRRect(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-                      child: Container(
-                        width: 68,
-                        height: 68,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.55),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.play_arrow_rounded,
-                          color: Colors.white,
-                          size: 40,
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            )
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Center(
+            child: AspectRatio(
+              aspectRatio: ar.clamp(0.4, 2.5),
+              child: Stack(
+                alignment: Alignment.center,
+                fit: StackFit.expand,
+                children: [
+                  VideoPlayer(ctrl),
+                  // Tap overlay: massive frosted play icon
+                  Center(
+                    child: AnimatedOpacity(
+                      opacity: isPlaying ? 0.0 : 1.0,
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOutCubic,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(40),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.play_arrow_rounded,
+                              color: Colors.white,
+                              size: 48,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -269,10 +349,9 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet> {
 
   Widget _buildControls() {
     final ctrl = _controller;
-
     if (ctrl == null) {
       return Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: _buildSelectButton(),
       );
     }
@@ -285,43 +364,44 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet> {
         : 0.0;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Play/Pause + Seek row
+          // Play/Pause + Sleek Scrubber row
           Row(
             children: [
               GestureDetector(
                 onTap: _togglePlay,
                 child: Container(
-                  width: 40,
-                  height: 40,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
-                    color: widget.theme.elevated,
+                    color: widget.primaryColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     value.isPlaying
                         ? Icons.pause_rounded
                         : Icons.play_arrow_rounded,
-                    color: widget.theme.primaryText,
-                    size: 22,
+                    color: widget.primaryColor,
+                    size: 24,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SliderTheme(
                       data: SliderThemeData(
-                        trackHeight: 3,
-                        thumbShape:
-                            const RoundSliderThumbShape(enabledThumbRadius: 6),
+                        trackHeight: 4,
+                        thumbShape: const RoundSliderThumbShape(
+                            enabledThumbRadius: 7, elevation: 4),
                         activeTrackColor: widget.primaryColor,
-                        inactiveTrackColor: widget.theme.elevated,
+                        inactiveTrackColor:
+                            widget.theme.primaryText.withValues(alpha: 0.08),
                         thumbColor: widget.primaryColor,
                         overlayShape: SliderComponentShape.noOverlay,
                       ),
@@ -333,19 +413,30 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet> {
                         },
                       ),
                     ),
+                    const SizedBox(height: 6),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(_fmt(pos),
-                              style: TextStyle(
-                                  color: widget.theme.secondaryText,
-                                  fontSize: 11)),
-                          Text(_fmt(total),
-                              style: TextStyle(
-                                  color: widget.theme.secondaryText,
-                                  fontSize: 11)),
+                          Text(
+                            _fmt(pos),
+                            style: TextStyle(
+                              color: widget.theme.secondaryText,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              fontFeatures: const [FontFeature.tabularFigures()],
+                            ),
+                          ),
+                          Text(
+                            _fmt(total),
+                            style: TextStyle(
+                              color: widget.theme.secondaryText,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              fontFeatures: const [FontFeature.tabularFigures()],
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -354,7 +445,7 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 28),
           _buildSelectButton(),
         ],
       ),
@@ -369,19 +460,35 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet> {
       },
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        height: 56,
         decoration: BoxDecoration(
-          color: widget.primaryColor,
           borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              widget.primaryColor,
+              HSLColor.fromColor(widget.primaryColor)
+                  .withLightness(0.4)
+                  .toColor(),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: widget.primaryColor.withValues(alpha: 0.4),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         alignment: Alignment.center,
         child: const Text(
           'Sélectionner cette vidéo',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.2,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.3,
           ),
         ),
       ),

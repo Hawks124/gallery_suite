@@ -89,6 +89,24 @@ class MediaService {
     return album.getAssetListPaged(page: page, size: pageSize);
   }
 
+  /// Searches for assets within the given [album] that match [query].
+  ///
+  /// This performs an extremely fast Dart-side memory filter, fetching
+  /// the full asset list first and matching against `asset.title`.
+  /// This works robustly across Android, iOS, macOS, and Web.
+  Future<List<AssetEntity>> searchAssets(AssetPathEntity album, String query) async {
+    final count = await album.assetCountAsync;
+    if (count == 0 || query.trim().isEmpty) return [];
+    
+    final allAssets = await album.getAssetListRange(start: 0, end: count);
+    final lowerQuery = query.toLowerCase();
+    
+    return allAssets.where((asset) {
+      final title = asset.title?.toLowerCase() ?? '';
+      return title.contains(lowerQuery);
+    }).toList();
+  }
+
   // ── Thumbnails (backed by ThumbnailDecodeQueue) ────────────────────────────
 
   /// Returns a high-quality 400×400 thumbnail for the masonry grid.

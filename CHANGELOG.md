@@ -4,11 +4,21 @@ All notable changes to this package will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
----
-
 ## [1.0.0] - 2026-03-20
 
 ### 🎉 Initial Release
+
+#### 🔍 Inline Asset Search
+
+- **Cross-Platform**: Beautiful, iOS-style frosted `CupertinoSearchTextField` embedded natively at the top of the grid for Images, Videos, and Audio pickers.
+- **Dart-Side Filtering**: Lightning-fast, debounced (300ms) memory filtering of thousands of assets across iOS, Android, macOS, Windows, and Web without relying on unpredictable or unstable native DB query predicates.
+- **Fluid UX**: Smooth 240ms `AnimatedSize` transitions, clean "No Results" placeholder, and independent Send Button.
+
+#### 🖌️ Bring Your Own Editor (BYOE) Integration
+
+- **Zero Bloatware Image Editing**: Natively edit/crop selected images inside the picker via the new `onEditMedia` callback in `PickerConfig` without adding heavy editor dependencies to the package.
+- **Live UI Updates**: Automatically displays a pencil badge on editable assets and seamlessly overlays `Image.file` to show the edited photo directly in the preview strip.
+- **Optimized Data Propagation**: The picker natively returns populated `MediaItem`s carrying the `editedFile` securely back to the caller.
 
 #### Image Picker
 

@@ -18,7 +18,7 @@ This document outlines the planned roadmap and potential future features for the
 ## 🌟 Mid-Term (Next Major Release)
 
 - [ ] **Image Cropper & Editor Integration**: Native hooks to crop, rotate, and add basic filters to images before confirming the selection.
-- [ ] **Performance Optimizations**: Advanced caching strategies for massively large photo libraries (10,000+ assets) to achieve 120fps scrolling on ProMotion displays.
+- [x] **Performance Optimizations**: Advanced caching strategies for massively large photo libraries (10,000+ assets) to achieve 120fps scrolling on ProMotion displays.
 - [ ] **Customizable Providers**: Allow fetching assets from remote sources (e.g., Google Photos API, Network URLs) alongside local device assets.
 
 ## 🏗️ Long-Term Vision
