@@ -347,29 +347,11 @@ final assets = await CustomMediaPicker.show(
 
 Whether you use Firebase or not, you **must enable the Google Photos Library API** in your GCP Console for the popup authentication to work.
 
-**Step 1 : Create the GCP Project**
+We have prepared a dedicated **[Comprehensive GCP Setup Guide](https://github.com/Hawks124/gallery_suite/blob/main/gcp_setup_guide.md)**. This guide outlines the exact, updated steps to:
 
-1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
-2. Create a new project (e.g., `Gallery Suite App`).
-
-**Step 2 : Enable the API**
-
-1. Search for **Google Photos Library API** in the top search bar.
-2. Click **Enable**.
-
-**Step 3 : Configure the OAuth Consent Screen**
-
-1. Go to **APIs & Services** > **OAuth consent screen**.
-2. Select **External** and fill in your App Name and Developer Email.
-3. Click **Add or Remove Scopes** and add `https://www.googleapis.com/auth/photoslibrary.readonly`.
-4. Add your personal email to **Test users** (if your app status is in Testing).
-
-**Step 4 : Create Client IDs (For Android/iOS)**
-
-1. Go to **APIs & Services** > **Credentials**.
-2. Click **+ Create Credentials** > **OAuth client ID**.
-3. **If Android**: Enter your package name (`com.yourcompany.app`) and your PC's SHA-1 certificate fingerprint.
-4. If you use Firebase, downloading the re-generated `google-services.json` is usually enough. If not, copy the Client ID generated here into `GooglePhotosConfig.clientId`!
+1. Configure the new **Google Auth Platform** (Branding, Audience, Data Access).
+2. Generate your OAuth Client IDs.
+3. Pass Google's human verification process (with ready-to-use scope justification templates and Demo Video requirements) for the sensitive `photoslibrary.readonly` scope.
 
 ### 🖌️ Bring Your Own Editor (BYOE) Architecture
 
