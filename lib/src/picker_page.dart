@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../gallery_suite.dart';
 import 'enum/enum.dart';
 import 'pages/audio_picker_page.dart';
 import 'services/thumbnail_decode_queue.dart';
+import 'widgets/google_photos_placeholder.dart';
 import 'widgets/suite_widgets.dart';
 
 /// The main entry point for the custom media picker.
@@ -107,7 +109,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   List<AssetPathEntity> _albums = [];
   AssetPathEntity? _currentAlbum;
   List<AssetEntity> _assets = [];
-  final List<AssetEntity> _selected = [];
+  final List<PickerAsset> _selected = [];
 
   // BYOE Edited Files State
   final Map<String, File> _editedFiles = {};
@@ -127,6 +129,14 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   final TextEditingController _searchCtrl = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
 
+  // ── Google Photos Cloud State ──────────────────────────────────────────────
+  final GooglePhotosService _googleService = GooglePhotosService.instance;
+  bool _isCloudMode = false;
+  List<RemotePickerAsset> _cloudAssets = [];
+  String? _cloudPageToken;
+  bool _isCloudLoading = false;
+  bool _hasMoreCloud = true;
+
   /// Initial page loads 80 items; subsequent pages fetch 120 for fewer
   /// round-trips on large libraries.
   int get _pageSize => _page == 0 ? 80 : 120;
@@ -140,6 +150,12 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   @override
   void initState() {
     super.initState();
+
+    // Initialize Google Photos Service with optional strict explicit Client IDs
+    _googleService.init(
+      clientId: widget.config.googlePhotosConfig.clientId,
+      serverClientId: widget.config.googlePhotosConfig.serverClientId,
+    );
 
     // Apply performance config to the shared decode queue.
     _service.decodeQueue = ThumbnailDecodeQueue(
@@ -313,7 +329,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     await _loadAssets(reset: true);
   }
 
-  void _toggleSelection(AssetEntity asset) {
+  void _toggleSelection(PickerAsset asset) {
     HapticFeedback.selectionClick();
     final idx = _selected.indexWhere((e) => e.id == asset.id);
     if (idx >= 0) {
@@ -343,12 +359,12 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
       if (_isVideoMode || widget.config.maxSelection == 1) {
         // Single select: return immediately
-        if (mounted) Navigator.of(context).pop([savedAsset]);
+        if (mounted) Navigator.of(context).pop([LocalPickerAsset(savedAsset)]);
       } else {
         // Multi select: add to selection and reload grid
         setState(() {
           if (_selected.length < widget.config.maxSelection) {
-            _selected.add(savedAsset);
+            _selected.add(LocalPickerAsset(savedAsset));
           }
         });
         // Reload the current album to show the new picture at the top
@@ -371,12 +387,31 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       widget.config.primaryColor,
     );
     if (confirmed && mounted) {
-      Navigator.of(context).pop([asset]);
+      Navigator.of(context).pop([LocalPickerAsset(asset)]);
     }
   }
 
-  int _selectionIndex(AssetEntity asset) =>
-      _selected.indexWhere((e) => e.id == asset.id);
+  int _selectionIndex(String id) =>
+      _selected.indexWhere((e) => e.id == id);
+
+  Future<void> _handleExit() async {
+    final hasChanges = _selected.isNotEmpty || _editedFiles.isNotEmpty;
+    if (!hasChanges || widget.config.exitConfirmation == null) {
+      if (!mounted) return;
+      Navigator.of(context).pop(null);
+      return;
+    }
+
+    final shouldExit = await widget.config.exitConfirmation!.show(
+      context,
+      widget.config.primaryColor,
+    );
+
+    if (!mounted) return;
+    if (shouldExit) {
+      Navigator.of(context).pop(null);
+    }
+  }
 
   void _onConfirm() {
     if (_selected.isEmpty) {
@@ -384,15 +419,84 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       return;
     }
 
-    final items = _selected.map((asset) {
-      return MediaItem(
-        asset: asset,
-        useOriginalFile: widget.config.useOriginalFile,
-        editedFile: _editedFiles[asset.id],
-      );
-    }).toList();
-
+    HapticFeedback.lightImpact();
+    final items = <MediaItem>[];
+    for (final asset in _selected) {
+      if (asset is LocalPickerAsset) {
+        items.add(MediaItem(
+          asset: asset.entity,
+          editedFile: _editedFiles[asset.id],
+        ));
+      } else if (asset is RemotePickerAsset) {
+        items.add(MediaItem.remote(
+          remoteAsset: asset,
+          editedFile: _editedFiles[asset.id],
+        ));
+      }
+    }
     Navigator.of(context).pop(items);
+  }
+
+  // ── Google Photos Cloud Methods ────────────────────────────────────────────
+
+  void _enterCloudMode() {
+    setState(() {
+      _isCloudMode = true;
+      _cloudAssets = [];
+      _cloudPageToken = null;
+      _hasMoreCloud = true;
+    });
+
+    if (_googleService.isAuthenticated) {
+      _loadCloudPhotos(reset: true);
+    }
+  }
+
+  void _exitCloudMode() {
+    setState(() {
+      _isCloudMode = false;
+      _cloudAssets = [];
+    });
+  }
+
+  Future<void> _connectGoogle() async {
+    setState(() => _isCloudLoading = true);
+
+    final success = await _googleService.signIn();
+
+    if (success && mounted) {
+      await _loadCloudPhotos(reset: true);
+    } else if (mounted) {
+      setState(() => _isCloudLoading = false);
+    }
+  }
+
+  Future<void> _loadCloudPhotos({bool reset = false}) async {
+    if (_isCloudLoading && !reset) return;
+
+    setState(() => _isCloudLoading = true);
+
+    try {
+      final result = await _googleService.fetchPhotos(
+        pageToken: reset ? null : _cloudPageToken,
+      );
+
+      if (mounted) {
+        setState(() {
+          if (reset) {
+            _cloudAssets = result.items;
+          } else {
+            _cloudAssets.addAll(result.items);
+          }
+          _cloudPageToken = result.nextPageToken;
+          _hasMoreCloud = result.nextPageToken != null;
+          _isCloudLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading cloud photos: $e');
+      if (mounted) setState(() => _isCloudLoading = false);
+    }
   }
 
   void _showAlbumSheet() {
@@ -414,15 +518,24 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
         snapSizes: const [0.48, 0.88],
         builder: (_, scrollController) => AlbumSelectorSheet(
           albums: _albums,
-          currentAlbum: _currentAlbum,
+          currentAlbum: _isCloudMode ? null : _currentAlbum,
           primaryColor: widget.config.primaryColor,
           theme: _theme,
+          textDelegate: widget.config.textDelegate,
           scrollController: scrollController,
           service: _service,
           onSelect: (album) {
             Navigator.pop(context);
+            if (_isCloudMode) _exitCloudMode();
             _switchAlbum(album);
           },
+          onGooglePhotosTap:
+              (!_isVideoMode && widget.config.googlePhotosConfig.enabled)
+                  ? () {
+                      Navigator.pop(context);
+                      _enterCloudMode();
+                    }
+                  : null,
         ),
       ),
     ).whenComplete(() {
@@ -432,12 +545,31 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
   @override
   Widget build(BuildContext context) {
+    final hasChanges = _selected.isNotEmpty || _editedFiles.isNotEmpty;
+    final canPop = !hasChanges || widget.config.exitConfirmation == null;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: _theme.overlayStyle,
-      child: Scaffold(
-        backgroundColor: _theme.background,
-        appBar: _buildAppBar(),
-        body: _buildBody(),
+      child: PopScope(
+        canPop: canPop,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (didPop) return;
+
+          final shouldExit = await widget.config.exitConfirmation!.show(
+            context,
+            widget.config.primaryColor,
+          );
+
+          if (!context.mounted) return;
+          if (shouldExit) {
+            Navigator.of(context).pop(null);
+          }
+        },
+        child: Scaffold(
+          backgroundColor: _theme.background,
+          appBar: _buildAppBar(),
+          body: _buildBody(),
+        ),
       ),
     );
   }
@@ -457,14 +589,14 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                 Positioned(
                   left: 4,
                   child: TextButton(
-                    onPressed: () => Navigator.of(context).pop(null),
+                    onPressed: _handleExit,
                     style: TextButton.styleFrom(
                       foregroundColor: _theme.secondaryText,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 8),
                     ),
                     child: Text(
-                      widget.config.cancelText,
+                      widget.config.textDelegate.cancel,
                       style: TextStyle(
                         color: _theme.secondaryText,
                         fontSize: 15,
@@ -486,7 +618,9 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                           child: Text(
                             _isVideoMode
                                 ? 'Vidéos'
-                                : (_currentAlbum?.name ?? 'Photos'),
+                                : _isCloudMode
+                                    ? widget.config.textDelegate.googlePhotos
+                                    : (_currentAlbum?.name ?? 'Photos'),
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: _theme.primaryText,
@@ -546,8 +680,10 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     return Column(
       children: [
         Container(height: 0.5, color: _theme.separator),
-        _buildInlineSearchBar(),
-        Expanded(child: _buildGrid()),
+        if (!_isCloudMode) _buildInlineSearchBar(),
+        Expanded(
+          child: _isCloudMode ? _buildCloudBody() : _buildGrid(),
+        ),
         if (!_isVideoMode)
           AnimatedSize(
             duration: const Duration(milliseconds: 240),
@@ -557,6 +693,127 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                 : const SizedBox.shrink(),
           ),
       ],
+    );
+  }
+
+  Widget _buildCloudBody() {
+    // Show the gorgeous connect placeholder when not authenticated
+    if (!_googleService.isAuthenticated) {
+      return GooglePhotosConnectPlaceholder(
+        theme: _theme,
+        primaryColor: widget.config.primaryColor,
+        textDelegate: widget.config.textDelegate,
+        onConnect: _connectGoogle,
+      );
+    }
+
+    // Show loading spinner on first fetch
+    if (_cloudAssets.isEmpty && _isCloudLoading) {
+      return const Center(child: CircularProgressIndicator.adaptive());
+    }
+
+    // Show empty state
+    if (_cloudAssets.isEmpty && !_isCloudLoading) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.cloud_off_rounded,
+                size: 48, color: _theme.secondaryText),
+            const SizedBox(height: 12),
+            Text(
+              widget.config.textDelegate.noMediaFound,
+              style: TextStyle(color: _theme.secondaryText, fontSize: 15),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Show cloud photos grid
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        if (notification is ScrollEndNotification &&
+            notification.metrics.pixels >=
+                notification.metrics.maxScrollExtent - 300 &&
+            _hasMoreCloud &&
+            !_isCloudLoading) {
+          _loadCloudPhotos();
+        }
+        return false;
+      },
+      child: MasonryGridView.count(
+        crossAxisCount: 3,
+        mainAxisSpacing: 2,
+        crossAxisSpacing: 2,
+        padding: EdgeInsets.zero,
+        itemCount: _cloudAssets.length + (_isCloudLoading ? 1 : 0),
+        itemBuilder: (context, index) {
+          // Loading indicator at the bottom
+          if (index >= _cloudAssets.length) {
+            return const Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(child: CircularProgressIndicator.adaptive()),
+            );
+          }
+
+          final asset = _cloudAssets[index];
+          final selIdx = _selected.indexWhere((e) => e.id == asset.id);
+          final isSelected = selIdx >= 0;
+
+          // Calculate aspect ratio for masonry
+          final aspectRatio = (asset.width > 0 && asset.height > 0)
+              ? asset.width / asset.height
+              : 1.0;
+
+          return GestureDetector(
+            onTap: () {
+              _toggleSelection(asset);
+            },
+            child: AspectRatio(
+              aspectRatio: aspectRatio.clamp(0.5, 2.0),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  CachedNetworkImage(
+                    imageUrl: asset.thumbUrl,
+                    httpHeaders: asset.headers,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => Container(
+                      color: _theme.elevated,
+                    ),
+                    errorWidget: (_, __, ___) => Container(
+                      color: _theme.elevated,
+                      child: Icon(Icons.broken_image_rounded,
+                          color: _theme.secondaryText, size: 28),
+                    ),
+                  ),
+                  if (isSelected)
+                    Container(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      alignment: Alignment.center,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: widget.config.primaryColor,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '${selIdx + 1}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -577,7 +834,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
           textInputAction: TextInputAction.search,
           onChanged: _onSearchChanged,
           decoration: InputDecoration(
-            hintText: 'Rechercher par nom...',
+            hintText: widget.config.textDelegate.searchPlaceholder,
             hintStyle:
                 TextStyle(color: _theme.secondaryText.withValues(alpha: 0.5)),
             prefixIcon:
@@ -626,7 +883,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                 size: 56, color: _theme.secondaryText),
             const SizedBox(height: 16),
             Text(
-              'Aucun résultat pour "$_searchQuery"',
+              '${widget.config.textDelegate.searchNoResults} "$_searchQuery"',
               style: TextStyle(
                 color: _theme.secondaryText,
                 fontSize: 16,
@@ -655,7 +912,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
             ),
             const SizedBox(height: 16),
             Text(
-              _isVideoMode ? 'Aucune vidéo trouvée' : 'Aucune photo trouvée',
+              widget.config.textDelegate.noMediaFound,
               style: TextStyle(
                 color: _theme.secondaryText,
                 fontSize: 16,
@@ -681,10 +938,10 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
         enabled: enableSwipe,
         onAssetHover: (asset) {
           // Toggle selection during swipe (only add or remove once per drag pass)
-          final idx = _selectionIndex(asset);
+          final idx = _selectionIndex(asset.id);
           if (idx == -1 && _selected.length < widget.config.maxSelection) {
             HapticFeedback.selectionClick();
-            setState(() => _selected.add(asset));
+            setState(() => _selected.add(LocalPickerAsset(asset)));
           }
         },
         child: MasonryGridView.builder(
@@ -721,7 +978,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
               );
             }
             final asset = displayAssets[assetIndex];
-            final selIdx = _selectionIndex(asset);
+            final selIdx = _selectionIndex(asset.id);
             final isSelected = selIdx >= 0;
 
             final double ar = (asset.width > 0 && asset.height > 0)
@@ -744,7 +1001,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                       _isVideoMode || asset.type == AssetType.video,
                   onTap: () => _isVideoMode
                       ? _onVideoTap(asset)
-                      : _toggleSelection(asset),
+                      : _toggleSelection(LocalPickerAsset(asset)),
                 ),
               ),
             );
@@ -764,10 +1021,43 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
               top: BorderSide(color: _theme.separator, width: 0.5),
             ),
           ),
-          child: ListView.builder(
+          child: ReorderableListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             itemCount: _selected.length,
+            onReorder: (oldIndex, newIndex) {
+              setState(() {
+                if (oldIndex < newIndex) {
+                  newIndex -= 1;
+                }
+                final asset = _selected.removeAt(oldIndex);
+                _selected.insert(newIndex, asset);
+              });
+              HapticFeedback.selectionClick();
+            },
+            proxyDecorator: (child, index, animation) {
+              return AnimatedBuilder(
+                animation: animation,
+                builder: (context, child) {
+                  final animValue = Curves.easeInOut.transform(animation.value);
+                  final scale =
+                      Tween<double>(begin: 1.0, end: 1.05).transform(animValue);
+                  final elevation =
+                      Tween<double>(begin: 0.0, end: 8.0).transform(animValue);
+                  return Transform.scale(
+                    scale: scale,
+                    child: Material(
+                      color: Colors.transparent,
+                      elevation: elevation,
+                      shadowColor: Colors.black26,
+                      borderRadius: BorderRadius.circular(12),
+                      child: child,
+                    ),
+                  );
+                },
+                child: child,
+              );
+            },
             itemBuilder: (_, i) {
               final asset = _selected[i];
               return SelectedPreviewItem(
@@ -777,19 +1067,21 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                 primaryColor: widget.config.primaryColor,
                 onRemove: () => _toggleSelection(asset),
                 editedFile: _editedFiles[asset.id],
-                onEdit: (widget.config.onEditMedia != null && asset.type == AssetType.image)
+                onEdit: (widget.config.onEditMedia != null &&
+                        asset is LocalPickerAsset &&
+                        asset.type == AssetType.image)
                     ? () async {
                         HapticFeedback.lightImpact();
                         try {
-                          final originalFile = widget.config.useOriginalFile 
-                              ? await asset.originFile 
+                          final originalFile = widget.config.useOriginalFile
+                              ? await asset.originFile
                               : await asset.file;
-                          
-                          if (originalFile == null || !mounted) return;
+
+                          if (originalFile == null || !mounted) return null;
 
                           final newFile = await widget.config.onEditMedia!(
                             context,
-                            asset,
+                            asset.entity,
                             originalFile,
                           );
 
@@ -798,8 +1090,10 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                               _editedFiles[asset.id] = newFile;
                             });
                           }
+                          return newFile;
                         } catch (e) {
                           debugPrint('Error invoking onEditMedia: $e');
+                          return null;
                         }
                       }
                     : null,

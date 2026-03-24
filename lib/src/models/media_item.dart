@@ -1,32 +1,34 @@
 import 'dart:io';
 import 'package:photo_manager/photo_manager.dart';
+import 'picker_asset.dart';
 
-/// A lightweight convenience wrapper around [AssetEntity].
+/// A lightweight convenience wrapper that represents a user-selected media item.
 ///
-/// [MediaItem] exposes the most commonly needed properties as typed getters
-/// so you don't need to import `photo_manager` in every widget that just
-/// needs to read file metadata.
-///
-/// You can always access the underlying [AssetEntity] via [asset] for
-/// advanced use-cases.
+/// [MediaItem] can originate from either the **local device** gallery or from
+/// a **remote cloud** source (e.g., Google Photos). Use [isRemote] to check
+/// the source, then access the data via [asset] (local) or [remoteAsset] (cloud).
 ///
 /// Example:
 /// ```dart
-/// final assets = await CustomMediaPicker.show(context: context);
-/// final items = assets?.map((e) => MediaItem(asset: e)).toList() ?? [];
+/// final items = await CustomMediaPicker.show(context: context);
 ///
-/// for (final item in items) {
-///   if (item.isVideo) {
-///     print('Video: ${item.videoDuration.inSeconds}s');
+/// for (final item in items ?? []) {
+///   if (item.isRemote) {
+///     print('Cloud URL: ${item.remoteAsset!.fullUrl}');
 ///   } else {
-///     print('Image: ${item.width}×${item.height}');
+///     final File? file = await item.toFile();
+///     // upload or preview `file`
 ///   }
-///   final File? file = await item.toFile();
 /// }
 /// ```
 class MediaItem {
-  /// The underlying [AssetEntity] from `photo_manager`.
-  final AssetEntity asset;
+  /// The underlying [AssetEntity] from `photo_manager` (local assets only).
+  /// `null` for remote assets.
+  final AssetEntity? asset;
+
+  /// The underlying [RemotePickerAsset] (cloud assets only).
+  /// `null` for local assets.
+  final RemotePickerAsset? remoteAsset;
 
   /// Whether to fetch the absolute uncompressed original file from the OS.
   final bool useOriginalFile;
@@ -35,36 +37,54 @@ class MediaItem {
   /// If provided, [file] will always return this instance instead of querying the OS.
   final File? editedFile;
 
-  /// Creates a [MediaItem] wrapping the given [asset].
+  /// Creates a [MediaItem] wrapping a **local** asset.
   const MediaItem({
-    required this.asset,
+    required AssetEntity this.asset,
     this.useOriginalFile = false,
     this.editedFile,
-  });
+  }) : remoteAsset = null;
 
-  /// The unique identifier of this asset on the device.
-  String get id => asset.id;
+  /// Creates a [MediaItem] wrapping a **remote/cloud** asset.
+  const MediaItem.remote({
+    required RemotePickerAsset this.remoteAsset,
+    this.editedFile,
+  })  : asset = null,
+        useOriginalFile = false;
+
+  /// `true` if this item originates from a remote cloud source.
+  bool get isRemote => remoteAsset != null;
+
+  /// `true` if this item originates from the local device gallery.
+  bool get isLocal => asset != null;
+
+  /// The unique identifier of this asset.
+  String get id => isRemote ? remoteAsset!.id : asset!.id;
 
   /// Returns `true` if this asset is a video.
-  bool get isVideo => asset.type == AssetType.video;
+  bool get isVideo => isRemote
+      ? remoteAsset!.type == AssetType.video
+      : asset!.type == AssetType.video;
 
   /// Returns `true` if this asset is an image.
-  bool get isImage => asset.type == AssetType.image;
+  bool get isImage => isRemote
+      ? remoteAsset!.type == AssetType.image
+      : asset!.type == AssetType.image;
 
   /// Returns `true` if this asset is an audio file.
-  bool get isAudio => asset.type == AssetType.audio;
+  bool get isAudio => !isRemote && asset!.type == AssetType.audio;
 
   /// The pixel width of the image or video.
-  int get width => asset.width;
+  int get width => isRemote ? remoteAsset!.width : asset!.width;
 
   /// The pixel height of the image or video.
-  int get height => asset.height;
+  int get height => isRemote ? remoteAsset!.height : asset!.height;
 
   /// The title / filename of the asset, or `null` if unavailable.
-  String? get title => asset.title;
+  String? get title => isRemote ? remoteAsset!.title : asset!.title;
 
   /// The duration of the video or audio. Returns [Duration.zero] for images.
-  Duration get videoDuration => asset.videoDuration;
+  Duration get videoDuration =>
+      isRemote ? remoteAsset!.duration : asset!.videoDuration;
 
   /// The width / height aspect ratio, clamped to a sane range.
   ///
@@ -76,12 +96,14 @@ class MediaItem {
 
   /// Returns the local [File] for this asset, or `null` if inaccessible.
   ///
-  /// Depending on [useOriginalFile], this fetches either the OS-optimized file
-  /// or the absolute uncompressed original file. If [editedFile] is set, returns it directly.
-  Future<File?> get file => editedFile != null 
-      ? Future.value(editedFile) 
-      : (useOriginalFile ? asset.originFile : asset.file);
-  
+  /// For **remote assets**, this always returns `null` — use
+  /// [remoteAsset.fullUrl] to download the file yourself.
+  Future<File?> get file {
+    if (editedFile != null) return Future.value(editedFile);
+    if (isRemote) return Future.value(null);
+    return useOriginalFile ? asset!.originFile : asset!.file;
+  }
+
   /// Helper method equivalent to the [file] getter.
   Future<File?> toFile() => file;
 }

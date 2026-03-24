@@ -79,7 +79,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
   //   • maxSelection           → cap the number of selectable items
   //   • primaryColor           → brand accent for badges, buttons, seek bars
   //   • brightness             → pin the picker to dark or light mode
-  //   • confirmText/cancelText → localize the UI labels
+  //   • textDelegate           → localize the UI labels (e.g. French, Spanish)
   Future<void> _pickImages() async {
     final assets = await CustomMediaPicker.show(
       context: context,
@@ -102,13 +102,39 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
 
         // 🖌️ Bring Your Own Editor (BYOE): Add a custom image editor
         // without adding bloatware to the internal package!
-        // onEditMedia: (context, asset, file) async {
-        //   return await Navigator.push(context, MaterialPageRoute(
-        //     builder: (_) => MyCustomEditor(file: file),
+        // Tapping the Edit pencil in the Fullscreen Preview triggers this callback.
+        // onEditMedia: (ctx, asset, file) async {
+        //   if (asset.type != AssetType.image) return null;
+        //   final completer = Completer<File?>();
+        //   await Navigator.push(ctx, MaterialPageRoute(
+        //     builder: (editorCtx) => ProImageEditor.file(
+        //       file,
+        //       callbacks: ProImageEditorCallbacks(
+        //         onImageEditingComplete: (bytes) async {
+        //           final newFile = File('${Directory.systemTemp.path}/edited.jpg');
+        //           await newFile.writeAsBytes(bytes);
+        //           if (!completer.isCompleted) completer.complete(newFile);
+        //           if (editorCtx.mounted) Navigator.pop(editorCtx);
+        //         },
+        //         onCloseEditor: (_) {
+        //           if (!completer.isCompleted) completer.complete(null);
+        //           if (editorCtx.mounted) Navigator.pop(editorCtx);
+        //         },
+        //       ),
+        //     ),
         //   ));
+        //   return completer.isCompleted ? completer.future : null;
         // },
         // Set to `false` if you prefer classic tap-only selection.
         // enableSwipeToSelect: false,
+
+        // ☁️ Premium Cloud Integration: Google Photos
+        // Enable the built-in Google Photos tab. By default it works out-of-the-box
+        // if your app uses Firebase. You can also explicitly pass Client IDs.
+        googlePhotosConfig: const GooglePhotosConfig(
+          enabled: true,
+          // clientId: 'YOUR_CLIENT_ID.apps.googleusercontent.com',
+        ),
 
         // 🎨 Brand accent used for selection badges, checkmarks, seek bars,
         // and the confirm button gradient.
@@ -116,6 +142,13 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
 
         // Force a specific brightness, or omit to follow the system theme.
         brightness: Theme.of(context).brightness,
+
+        // 🌍 Internationalization: Zero-dependency translation! 
+        // Use EnglishPickerTextDelegate, FrenchPickerTextDelegate, or create your own.
+        // You can even override specific words:
+        textDelegate: const EnglishPickerTextDelegate(
+          confirm: 'Choose Assets', 
+        ),
 
         // 🚀 Architecture & Performance:
         // Tuned for 10,000+ photo libraries on ProMotion displays.
@@ -127,6 +160,15 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         // Set to true to fetch the pristine bytes ignoring OS-level HEIC->JPG compression.
         // Defaults to false for speed and OS-level compatibility.
         useOriginalFile: false,
+
+        // 🔒 Exit Confirmation: Prevent users from losing their selections
+        // if they accidentally press the back button or swipe to pop.
+        exitConfirmation: const StandardExitConfirmation(
+          title: 'Discard selections?',
+          content: 'You have selected media. If you go back now, your current selections will be lost.',
+          confirmText: 'Discard',
+          cancelText: 'Cancel',
+        ),
 
         // Localized button labels.
         confirmText: 'Select',

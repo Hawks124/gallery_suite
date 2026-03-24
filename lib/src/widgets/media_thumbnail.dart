@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import '../services/media_service.dart';
 import '../pages/fullscreen_preview_page.dart';
+import '../models/picker_asset.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class MediaThumbnailWidget extends StatefulWidget {
   final AssetEntity asset;
@@ -272,12 +274,12 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
 }
 
 class SelectedPreviewItem extends StatefulWidget {
-  final AssetEntity asset;
+  final PickerAsset asset;
   final int index;
   final Color primaryColor;
   final VoidCallback onRemove;
   final File? editedFile;
-  final VoidCallback? onEdit;
+  final Future<File?> Function()? onEdit;
 
   const SelectedPreviewItem({
     super.key,
@@ -318,8 +320,11 @@ class _SelectedPreviewItemState extends State<SelectedPreviewItem>
   }
 
   Future<void> _load() async {
-    final data = await _service.getPreviewThumbnail(widget.asset);
-    if (mounted) setState(() => _data = data);
+    final asset = widget.asset;
+    if (asset is LocalPickerAsset) {
+      final data = await _service.getPreviewThumbnail(asset.entity);
+      if (mounted) setState(() => _data = data);
+    }
   }
 
   @override
@@ -339,6 +344,8 @@ class _SelectedPreviewItemState extends State<SelectedPreviewItem>
                     builder: (_) => FullscreenPreviewPage(
                       asset: widget.asset,
                       thumbnail: _data,
+                      editedFile: widget.editedFile,
+                      onEdit: widget.onEdit,
                     ),
                   ),
                 );
@@ -353,19 +360,32 @@ class _SelectedPreviewItemState extends State<SelectedPreviewItem>
                         fit: BoxFit.cover,
                         gaplessPlayback: true,
                       )
-                    : (_data != null
-                        ? Image.memory(
-                            _data!,
+                    : (widget.asset is RemotePickerAsset)
+                        ? CachedNetworkImage(
+                            imageUrl:
+                                (widget.asset as RemotePickerAsset).thumbUrl,
+                            httpHeaders:
+                                (widget.asset as RemotePickerAsset).headers,
                             width: 66,
                             height: 66,
                             fit: BoxFit.cover,
-                            gaplessPlayback: true,
+                            placeholder: (_, __) => Container(
+                              color: const Color(0xFF2C2C2E),
+                            ),
                           )
-                        : Container(
-                            width: 66,
-                            height: 66,
-                            color: const Color(0xFF2C2C2E),
-                          )),
+                        : (_data != null
+                            ? Image.memory(
+                                _data!,
+                                width: 66,
+                                height: 66,
+                                fit: BoxFit.cover,
+                                gaplessPlayback: true,
+                              )
+                            : Container(
+                                width: 66,
+                                height: 66,
+                                color: const Color(0xFF2C2C2E),
+                              )),
               ),
             ),
             Positioned(
@@ -417,28 +437,25 @@ class _SelectedPreviewItemState extends State<SelectedPreviewItem>
                 ),
               ),
             ),
-            if (widget.onEdit != null)
-              Positioned(
-                bottom: 4,
-                right: 4,
-                child: GestureDetector(
-                  onTap: widget.onEdit,
-                  child: Container(
-                    width: 20,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.5),
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.edit_rounded,
-                      color: Colors.white,
-                      size: 11,
-                    ),
-                  ),
-                ),
-              ),
+            // if (widget.onEdit != null)
+            //   Positioned(
+            //     bottom: 4,
+            //     right: 4,
+            //     child: Container(
+            //       width: 16,
+            //       height: 16,
+            //       decoration: BoxDecoration(
+            //         color: widget.primaryColor,
+            //         shape: BoxShape.circle,
+            //       ),
+            //       alignment: Alignment.center,
+            //       child: const Icon(
+            //         Icons.edit_rounded,
+            //         color: Colors.white,
+            //         size: 9,
+            //       ),
+            //     ),
+            //   ),
           ],
         ),
       ),

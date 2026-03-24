@@ -251,6 +251,25 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
     });
   }
 
+  Future<void> _handleExit() async {
+    final hasChanges = _selected.isNotEmpty;
+    if (!hasChanges || widget.config.exitConfirmation == null) {
+      if (!mounted) return;
+      Navigator.of(context).pop(null);
+      return;
+    }
+
+    final shouldExit = await widget.config.exitConfirmation!.show(
+      context,
+      widget.config.primaryColor,
+    );
+
+    if (!mounted) return;
+    if (shouldExit) {
+      Navigator.of(context).pop(null);
+    }
+  }
+
   void _onConfirm() {
     if (_selected.isEmpty) return;
     _player.stop();
@@ -273,12 +292,31 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final hasChanges = _selected.isNotEmpty;
+    final canPop = !hasChanges || widget.config.exitConfirmation == null;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: _theme.overlayStyle,
-      child: Scaffold(
-        backgroundColor: _theme.background,
-        appBar: _buildAppBar(),
-        body: _buildBody(),
+      child: PopScope(
+        canPop: canPop,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (didPop) return;
+
+          final shouldExit = await widget.config.exitConfirmation!.show(
+            context,
+            widget.config.primaryColor,
+          );
+
+          if (!context.mounted) return;
+          if (shouldExit) {
+            Navigator.of(context).pop(null);
+          }
+        },
+        child: Scaffold(
+          backgroundColor: _theme.background,
+          appBar: _buildAppBar(),
+          body: _buildBody(),
+        ),
       ),
     );
   }
@@ -298,14 +336,14 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                 Positioned(
                   left: 4,
                   child: TextButton(
-                    onPressed: () => Navigator.of(context).pop(null),
+                    onPressed: _handleExit,
                     style: TextButton.styleFrom(
                       foregroundColor: _theme.secondaryText,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 8),
                     ),
                     child: Text(
-                      widget.config.cancelText,
+                      widget.config.textDelegate.cancel,
                       style: TextStyle(
                           color: _theme.secondaryText,
                           fontSize: 15,
@@ -314,7 +352,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                   ),
                 ),
                 Text(
-                  'Audio',
+                  widget.config.textDelegate.audio,
                   style: TextStyle(
                     color: _theme.primaryText,
                     fontSize: 16,
@@ -334,7 +372,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                     child: _selected.isNotEmpty
                         ? SendButton(
                             key: const ValueKey('send'),
-                            label: widget.config.confirmText,
+                            label: widget.config.textDelegate.confirm,
                             count: widget.config.maxSelection > 1
                                 ? _selected.length
                                 : null,
@@ -457,7 +495,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                 size: 56, color: _theme.secondaryText),
             const SizedBox(height: 16),
             Text(
-              'Aucun fichier audio trouvé',
+              widget.config.textDelegate.noMediaFound,
               style: TextStyle(
                   color: _theme.secondaryText,
                   fontSize: 16,

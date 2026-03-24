@@ -1,6 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
+import '../intl/english_picker_text_delegate.dart';
+import '../intl/picker_text_delegate.dart';
+import 'exit_confirmation.dart';
+import 'google_photo_config.dart';
 import 'picker_theme.dart';
 
 /// Configuration for [CustomMediaPicker].
@@ -48,11 +52,19 @@ class PickerConfig {
 
   /// Label for the send / confirm button that appears in the AppBar once
   /// at least one asset is selected. Defaults to `'Sélectionner'`.
+  @Deprecated(
+      'Use textDelegate.confirm instead. This field will be removed in v2.0.0.')
   final String confirmText;
 
   /// Label for the cancel button that dismisses the picker without a
   /// selection. Defaults to `'Annuler'`.
+  @Deprecated(
+      'Use textDelegate.cancel instead. This field will be removed in v2.0.0.')
   final String cancelText;
+
+  /// Handles all text localization within the picker.
+  /// Defaults to [EnglishPickerTextDelegate].
+  final PickerTextDelegate textDelegate;
 
   /// Whether to use the original, uncompressed file (guaranteed unchanged by the OS).
   ///
@@ -88,6 +100,14 @@ class PickerConfig {
   /// from [brightness].
   final PickerThemeData? themeData;
 
+  /// Optional configuration to prevent accidental exits.
+  ///
+  /// If the user has selected or edited items and attempts to exit (via back button
+  /// or the Cancel button), this configuration will intercept the exit and show
+  /// a confirmation dialog. Use [StandardExitConfirmation] for a beautiful built-in
+  /// UI, or [CustomExitConfirmation] to return your own dialog Future.
+  final ExitConfirmationConfig? exitConfirmation;
+
   /// Callback fired when the user taps an image in the selected strip.
   ///
   /// You can use this to launch your own external image editor (like `pro_image_editor`).
@@ -96,8 +116,10 @@ class PickerConfig {
   ///
   /// Requires [RequestType.image] or mixed mode.
   final Future<File?> Function(
-          BuildContext context, AssetEntity asset, File originalFile)?
-      onEditMedia;
+      BuildContext context, AssetEntity asset, File originalFile)? onEditMedia;
+
+  /// Configuration for the Google Photos cloud provider.
+  final GooglePhotosConfig googlePhotosConfig;
 
   /// Creates a [PickerConfig] with the given options.
   ///
@@ -118,5 +140,8 @@ class PickerConfig {
     this.prefetchEnabled = true,
     this.onEditMedia,
     this.themeData,
+    this.exitConfirmation,
+    this.textDelegate = const EnglishPickerTextDelegate(),
+    this.googlePhotosConfig = const GooglePhotosConfig(),
   });
 }
