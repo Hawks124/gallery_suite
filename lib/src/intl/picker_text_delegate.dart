@@ -13,7 +13,7 @@ abstract class PickerTextDelegate {
 
   final String searchPlaceholder;
   final String searchNoResults;
-  
+
   final String noMediaFound;
 
   // ── Google Photos Cloud ─────────────────────────────────────────────────

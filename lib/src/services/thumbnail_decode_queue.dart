@@ -33,7 +33,8 @@ class ThumbnailDecodeQueue {
 
   // ── LRU Cache ──────────────────────────────────────────────────────────────
   /// Ordered map: most-recently-used entries are at the **end**.
-  final LinkedHashMap<String, Uint8List> _cache = LinkedHashMap<String, Uint8List>();
+  final LinkedHashMap<String, Uint8List> _cache =
+      LinkedHashMap<String, Uint8List>();
 
   /// Running total of bytes stored in the cache.
   int _currentCacheBytes = 0;

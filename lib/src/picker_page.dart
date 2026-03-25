@@ -271,7 +271,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       if (mounted) {
         setState(() {
           // Add only unique new assets to the cloud list
-          final newCloud = picked.where((p) => !_cloudAssets.any((a) => a.id == p.id));
+          final newCloud =
+              picked.where((p) => !_cloudAssets.any((a) => a.id == p.id));
           _cloudAssets.addAll(newCloud);
 
           // Auto-select newly picked items

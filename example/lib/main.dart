@@ -144,11 +144,11 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         // Force a specific brightness, or omit to follow the system theme.
         brightness: Theme.of(context).brightness,
 
-        // 🌍 Internationalization: Zero-dependency translation! 
+        // 🌍 Internationalization: Zero-dependency translation!
         // Use EnglishPickerTextDelegate, FrenchPickerTextDelegate, or create your own.
         // You can even override specific words:
         textDelegate: const EnglishPickerTextDelegate(
-          confirm: 'Choose Assets', 
+          confirm: 'Choose Assets',
         ),
 
         // 🚀 Architecture & Performance:
@@ -166,7 +166,8 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         // if they accidentally press the back button or swipe to pop.
         exitConfirmation: const StandardExitConfirmation(
           title: 'Discard selections?',
-          content: 'You have selected media. If you go back now, your current selections will be lost.',
+          content:
+              'You have selected media. If you go back now, your current selections will be lost.',
           confirmText: 'Discard',
           cancelText: 'Cancel',
         ),

@@ -9,7 +9,7 @@ import 'package:photo_manager/photo_manager.dart';
 /// It listens for sustained long-press-and-drag gestures, performs hit-testing
 /// to figure out exactly which [AssetEntity] is under the finger, and invokes
 /// [onAssetHover] so the parent state can toggle its selection.
-/// 
+///
 /// It also handles automatic scrolling when dragging near the top or bottom
 /// edge of the viewport.
 class DraggableSelectionGrid extends StatefulWidget {
@@ -129,7 +129,8 @@ class _DraggableSelectionGridState extends State<DraggableSelectionGrid> {
       _startAutoScroll();
     } else if (localPosition.dy > size.height - edgeMargin) {
       // Near bottom edge - scroll down
-      final intensity = 1.0 - ((size.height - localPosition.dy) / edgeMargin).clamp(0.0, 1.0);
+      final intensity =
+          1.0 - ((size.height - localPosition.dy) / edgeMargin).clamp(0.0, 1.0);
       _scrollSpeed = maxScrollSpeed * intensity;
       _startAutoScroll();
     } else {
@@ -141,7 +142,8 @@ class _DraggableSelectionGridState extends State<DraggableSelectionGrid> {
   void _startAutoScroll() {
     if (_autoScrollTimer?.isActive ?? false) return;
 
-    _autoScrollTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
+    _autoScrollTimer =
+        Timer.periodic(const Duration(milliseconds: 16), (timer) {
       final ctrl = widget.scrollController;
       if (!ctrl.hasClients) {
         _stopAutoScroll();
