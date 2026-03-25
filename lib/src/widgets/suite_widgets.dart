@@ -9,3 +9,6 @@ export 'media_thumbnail.dart';
 export 'pulsing_skeleton_grid.dart';
 export 'send_button.dart';
 export 'video_preview_sheet.dart';
+export 'album_tile.dart';
+export 'google_photos_placeholder.dart';
+export 'google_photo_tile.dart';

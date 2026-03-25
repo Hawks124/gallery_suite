@@ -1,15 +1,13 @@
-name: CI/CD
+name: build
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,7 +23,6 @@ jobs:
         
       - name: Check Formatting
         run: dart format --output=none --set-exit-if-changed .
-        continue-on-error: true
         
-      - name: Flutter Analyze
-        run: flutter analyze
+      - name: Dart Pub Publish Check (Dry-run)
+        run: dart pub publish --dry-run

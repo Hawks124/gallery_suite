@@ -13,9 +13,16 @@ class FrenchPickerTextDelegate extends PickerTextDelegate {
     super.searchNoResults = 'Aucun résultat pour',
     super.noMediaFound = 'Aucun média trouvé.',
     super.googlePhotos = 'Google Photos',
-    super.googlePhotosConnectTitle = 'Accédez à vos souvenirs cloud',
-    super.googlePhotosConnectSubtitle = 'Connectez votre compte Google pour parcourir vos photos cloud. Accès en lecture seule — aucune modification ni suppression.',
-    super.googlePhotosConnectButton = 'Connecter Google',
-    super.googlePhotosDisconnect = 'Déconnecter',
+    super.googlePhotosConnectTitle = 'Consultez, Choisissez, Cloud.',
+    super.googlePhotosConnectTitleHighlight = 'Connectez-vous pour y accéder !',
+    super.googlePhotosConnectSubtitle =
+        'Connectez-vous avec votre compte Google pour parcourir et sélectionner librement vos photos stockées dans le cloud directement depuis cette application.',
+    super.googlePhotosConnectButton = 'Se connecter à Google',
+    super.googlePhotosDisconnect = 'Se déconnecter',
+    super.googlePhotosEmptyStateTitle =
+        'Votre bibliothèque est protégée ou vide',
+    super.googlePhotosEmptyStateSubtitle =
+        'En raison des nouvelles règles de Google (2025), vous devez sélectionner manuellement les photos à importer.',
+    super.googlePhotosImportButton = 'Importer de Google Photos',
   });
 }

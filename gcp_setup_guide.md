@@ -11,7 +11,7 @@ Here are the 5 steps to follow **on your web browser**.
 2.  If you already have a **Firebase** project, select it at the top. Otherwise, create a new project.
 
 ### Step 2: Enable the Google Photos API
-1.  In the top search bar, type **Google Photos Library API**.
+1.  In the top search bar, type **Google Photos Picker API** (Do *not* select the legacy "Library API" which was deprecated for general use in March 2025).
 2.  Click on the corresponding result.
 3.  Click the blue **Enable** button. *If you see "Disable", it means it's already active.*
 
@@ -35,8 +35,8 @@ Google has regrouped the old "OAuth Consent Screen" under this new interface.
 #### 🅲 Data Access (Scopes)
 1.  Click on **Data Access** in the left menu.
 2.  Click **ADD OR REMOVE SCOPES**.
-3.  Search for and check `.../auth/photoslibrary.readonly`.
-4.  If you can't find it, scroll down to "Manually add scopes" and paste: `https://www.googleapis.com/auth/photoslibrary.readonly`.
+3.  Search for and check `.../auth/photospicker.mediaitems.readonly`.
+4.  If you can't find it, scroll down to "Manually add scopes" and paste: `https://www.googleapis.com/auth/photospicker.mediaitems.readonly`.
 5.  Click **Add to table** then **Update** and finally **Save**.
 
 ---
@@ -58,42 +58,60 @@ Google has regrouped the old "OAuth Consent Screen" under this new interface.
 
 ---
 
-### Step 5: Flutter Integration (Zero-Config)
-If your project already uses **Firebase** (`google-services.json` file present):
-1.  Go to your **Firebase Console Project Settings**.
-2.  Make sure the SHA-1 fingerprint you just used is properly added to your Android application.
-3.  **Download the `google-services.json` file again** and replace the old one in `android/app/`.
-4.  The `gallery_suite` package will automatically detect the configuration!
+### Step 5: Generate an API Key (Required for Picker API)
+In addition to the OAuth Client ID, the new Google Photos Picker API requires a standard API Key.
+1. In the left menu of the Google Auth Platform, go to **Credentials**.
+2. Click **+ CREATE CREDENTIALS** > **API key**.
+3. A popup will appear with your new API Key. Copy it. You can optionally restrict it to your Android/iOS apps for better security.
 
 ---
 
-### 🚀 Step 6: Moving to Production and Verification
+### Step 6: Flutter Integration Initialization
+The modern Picker API uses a secure **PKCE OAuth2 flow** that requires explicit initialization at the start of your application. You will need three pieces of information from the previous steps:
+
+1.  **`clientId`**: The Client ID string you created in Step 4.
+2.  **`apiKey`**: The API Key you generated in Step 5.
+3.  **`redirectScheme`**: This is your `clientId` but **reversed**.
+    *   *Example Client ID*: `12345-abcde.apps.googleusercontent.com`
+    *   *Example Redirect Scheme*: `com.googleusercontent.apps.12345-abcde`
+
+In your `main.dart` or initialization service, add the following code:
+
+```dart
+import 'package:gallery_suite/gallery_suite.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize the Google Photos Service globally
+  GooglePhotosService.instance.init(
+    clientId: 'YOUR_OAUTH_CLIENT_ID.apps.googleusercontent.com',
+    redirectScheme: 'com.googleusercontent.apps.YOUR_OAUTH_CLIENT_ID', // Reversed Client ID
+    apiKey: 'YOUR_GOOGLE_CLOUD_API_KEY', 
+  );
+
+  runApp(const MyApp());
+}
+```
+
+---
+
+### 🚀 Step 7: Moving to Production and Verification
 Once your application is ready to be published on the stores, you need to change its status on GCP to remove the 100 test user limit.
 
 1.  **Change Status**: In the **Audience** tab, change the status from "Testing" to **In Production**.
 2.  **Complete Branding**: Click on **Branding** and fill in all the fields (App logo, App domain, Privacy Policy link, Terms of service link).
 3.  **Verify Brand**: Click the "Verify" button. Google will validate your logo and links. Once verified, you will need to click **Publish** for it to be visible to everyone.
 
-> [!IMPORTANT]
-> **Sensitive Scopes Justification (Verification Required)**
-> The `photoslibrary.readonly` scope is considered **Sensitive** by Google. Google often rejects justifications that are too short. Use this template (copy-paste):
->
-> **Example Template:**
-> *"This application integrates a custom media picker to allow users to share visual content. The 'photoslibrary.readonly' scope is essential for users to browse, preview, and select their Google Photos directly from the native interface of our application. Data is accessed only during an explicit user selection action and is neither stored nor sold."*
->
-> **🎬 Crucial Element: The Demo Video**
-> Google requires a video (YouTube or public Google Drive link) showing:
-> 1.  The launch of the authentication from your application.
-> 2.  The OAuth consent screen (showing your project name and the requested scopes).
-> 3.  The successful login and the proper display of the Google Photos grid in `gallery_suite`.
-> 4.  The final action: the user selects a Cloud image and uses it in the app.
->
-> **📝 Additional info**
-> Provide all the details to help the **human reviewer** at Google:
-> - **Context**: Briefly describe your application (e.g., private chat, social network).
-> - **Test Access**: If your application requires an account, provide test credentials (username/password) so the reviewer can reach the "Google Photos" button.
-> - **The Video**: Always mention that the attached demo video illustrates the entire user journey.
+> [!NOTE]
+> **The 2025 Google Photos Policy Shift**
+> In March 2025, Google fundamentally restricted the legacy `photoslibrary.readonly` scope. Apps attempting to read the user's entire library automatically are now met with `403 PERMISSION_DENIED` errors unless they pass an extremely rigorous and expensive CASA Tier-2 security audit.
+> 
+> `gallery_suite` fully mitigates this by adopting the modern **Picker API** flow (`photospicker.mediaitems.readonly`). Because the Picker API forces the user to manually select which photos they are sharing via a Google-hosted secure window, it complies with the latest privacy guidelines and completely bypasses the need for the Tier-2 audit. 
+> 
+> **Standard Verification is still needed for Production (Over 100 users):**
+> You must still record a short demo video showing your app's OAuth login flow and submit it to the Google Trust & Safety team. However, they will approve it quickly because you are using the compliant Picker API.
 
 ---
 
-**That's it! Restart the application and test the connection.** 🚀
+**That's it! Hot Restart the application and test the connection.** 🚀

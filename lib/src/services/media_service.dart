@@ -1,5 +1,9 @@
 import 'dart:async';
-import 'dart:typed_data';
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import 'thumbnail_decode_queue.dart';
@@ -94,13 +98,14 @@ class MediaService {
   /// This performs an extremely fast Dart-side memory filter, fetching
   /// the full asset list first and matching against `asset.title`.
   /// This works robustly across Android, iOS, macOS, and Web.
-  Future<List<AssetEntity>> searchAssets(AssetPathEntity album, String query) async {
+  Future<List<AssetEntity>> searchAssets(
+      AssetPathEntity album, String query) async {
     final count = await album.assetCountAsync;
     if (count == 0 || query.trim().isEmpty) return [];
-    
+
     final allAssets = await album.getAssetListRange(start: 0, end: count);
     final lowerQuery = query.toLowerCase();
-    
+
     return allAssets.where((asset) {
       final title = asset.title?.toLowerCase() ?? '';
       return title.contains(lowerQuery);
@@ -202,6 +207,38 @@ class MediaService {
         priority: 1, // low priority
         onComplete: (_) {}, // fire-and-forget
       );
+    }
+  }
+  // ── Remote Downloads ───────────────────────────────────────────────────────
+
+  /// Downloads a remote asset from [url] to a local temporary file.
+  ///
+  /// Returns the [File] object pointing to the downloaded data, or `null`
+  /// if the download fails. Uses [id] to name the file and avoid redundant
+  /// downloads if already cached in the temp directory.
+  Future<File?> downloadRemoteAsset(
+    String url, {
+    Map<String, String>? headers,
+    required String id,
+  }) async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/remote_asset_$id');
+
+      // Simple cache check: if file exists and has content, return it.
+      if (await file.exists() && await file.length() > 0) {
+        return file;
+      }
+
+      final response = await http.get(Uri.parse(url), headers: headers);
+      if (response.statusCode == 200) {
+        await file.writeAsBytes(response.bodyBytes);
+        return file;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('[MediaService] Error downloading remote asset: $e');
+      return null;
     }
   }
 }

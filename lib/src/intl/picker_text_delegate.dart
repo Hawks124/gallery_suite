@@ -19,9 +19,15 @@ abstract class PickerTextDelegate {
   // ── Google Photos Cloud ─────────────────────────────────────────────────
   final String googlePhotos;
   final String googlePhotosConnectTitle;
+  final String googlePhotosConnectTitleHighlight;
   final String googlePhotosConnectSubtitle;
   final String googlePhotosConnectButton;
   final String googlePhotosDisconnect;
+
+  // ── Picker API Empty State ───────────────────────────────────────────────
+  final String googlePhotosEmptyStateTitle;
+  final String googlePhotosEmptyStateSubtitle;
+  final String googlePhotosImportButton;
 
   const PickerTextDelegate({
     required this.confirm,
@@ -35,8 +41,12 @@ abstract class PickerTextDelegate {
     required this.noMediaFound,
     required this.googlePhotos,
     required this.googlePhotosConnectTitle,
+    required this.googlePhotosConnectTitleHighlight,
     required this.googlePhotosConnectSubtitle,
     required this.googlePhotosConnectButton,
     required this.googlePhotosDisconnect,
+    required this.googlePhotosEmptyStateTitle,
+    required this.googlePhotosEmptyStateSubtitle,
+    required this.googlePhotosImportButton,
   });
 }

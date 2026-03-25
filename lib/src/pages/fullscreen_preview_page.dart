@@ -1,8 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import '../models/picker_asset.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+
+import '../../gallery_suite.dart';
 
 /// A full-screen, zoomable preview page for a single media asset.
 ///
@@ -149,7 +150,8 @@ class _FullscreenPreviewPageState extends State<FullscreenPreviewPage> {
                                 gaplessPlayback: true,
                               ),
                               CircularProgressIndicator(
-                                  value: progress.progress, color: Colors.white),
+                                  value: progress.progress,
+                                  color: Colors.white),
                             ],
                           );
                         }
@@ -168,9 +170,10 @@ class _FullscreenPreviewPageState extends State<FullscreenPreviewPage> {
                     ? InteractiveViewer(
                         minScale: 1.0,
                         maxScale: 4.0,
-                    child: Image.memory(widget.thumbnail!, fit: BoxFit.contain),
-                  )
-                : const CircularProgressIndicator(color: Colors.white),
+                        child: Image.memory(widget.thumbnail!,
+                            fit: BoxFit.contain),
+                      )
+                    : const CircularProgressIndicator(color: Colors.white),
       ),
     );
   }

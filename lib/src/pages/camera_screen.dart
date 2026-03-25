@@ -4,7 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../enum/enum.dart';
+import '../../gallery_suite.dart';
 
 /// A premium, full-screen camera screen built with the `camera` package.
 ///

@@ -1,12 +1,10 @@
-import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:photo_manager/photo_manager.dart';
 import 'package:video_player/video_player.dart';
-import '../models/picker_theme.dart';
+import '../../gallery_suite.dart';
 
 class VideoPreviewSheet extends StatefulWidget {
-  final AssetEntity asset;
+  final PickerAsset asset;
   final PickerTheme theme;
   final Color primaryColor;
 
@@ -19,7 +17,7 @@ class VideoPreviewSheet extends StatefulWidget {
 
   static Future<bool> show(
     BuildContext context,
-    AssetEntity asset,
+    PickerAsset asset,
     PickerTheme theme,
     Color primaryColor,
   ) async {
@@ -27,7 +25,8 @@ class VideoPreviewSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.85), // Deep cinematic background
+      barrierColor:
+          Colors.black.withValues(alpha: 0.85), // Deep cinematic background
       builder: (_) => VideoPreviewSheet(
         asset: asset,
         theme: theme,
@@ -60,23 +59,24 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
   }
 
   Future<void> _initPlayer() async {
-    File? file;
-    try {
-      file = await widget.asset.file;
-    } catch (_) {}
+    final asset = widget.asset;
+    VideoPlayerController? controller;
 
-    if (file == null || !file.existsSync()) {
-      if (mounted) {
-        setState(() {
-          _isInitializing = false;
-          _hasError = true;
-        });
+    try {
+      if (asset is LocalPickerAsset) {
+        final file = await asset.file;
+        if (file == null || !file.existsSync())
+          throw Exception('File not found');
+        controller = VideoPlayerController.file(file);
+      } else if (asset is RemotePickerAsset) {
+        controller = VideoPlayerController.networkUrl(
+          Uri.parse(asset.fullUrl),
+          httpHeaders: asset.headers ?? {},
+        );
       }
-      return;
-    }
 
-    final controller = VideoPlayerController.file(file);
-    try {
+      if (controller == null) throw Exception('Unsupported asset type');
+
       await controller.initialize();
       if (!mounted) {
         controller.dispose();
@@ -92,8 +92,9 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
       _fadeController.forward();
       // Auto-play immediately
       controller.play();
-    } catch (_) {
-      controller.dispose();
+    } catch (e) {
+      debugPrint('VideoPreviewSheet init error: $e');
+      controller?.dispose();
       if (mounted) {
         setState(() {
           _isInitializing = false;
@@ -183,7 +184,9 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
                               fontSize: 13,
                               letterSpacing: 0.5,
                               fontWeight: FontWeight.w600,
-                              fontFeatures: const [FontFeature.tabularFigures()],
+                              fontFeatures: const [
+                                FontFeature.tabularFigures()
+                              ],
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -207,7 +210,8 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          color: widget.theme.primaryText.withValues(alpha: 0.05),
+                          color:
+                              widget.theme.primaryText.withValues(alpha: 0.05),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(Icons.close_rounded,
@@ -425,7 +429,9 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
                               color: widget.theme.secondaryText,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              fontFeatures: const [FontFeature.tabularFigures()],
+                              fontFeatures: const [
+                                FontFeature.tabularFigures()
+                              ],
                             ),
                           ),
                           Text(
@@ -434,7 +440,9 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
                               color: widget.theme.secondaryText,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
-                              fontFeatures: const [FontFeature.tabularFigures()],
+                              fontFeatures: const [
+                                FontFeature.tabularFigures()
+                              ],
                             ),
                           ),
                         ],

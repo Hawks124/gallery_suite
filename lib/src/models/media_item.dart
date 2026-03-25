@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:photo_manager/photo_manager.dart';
+import '../services/media_service.dart';
 import 'picker_asset.dart';
 
 /// A lightweight convenience wrapper that represents a user-selected media item.
@@ -96,12 +97,26 @@ class MediaItem {
 
   /// Returns the local [File] for this asset, or `null` if inaccessible.
   ///
-  /// For **remote assets**, this always returns `null` — use
-  /// [remoteAsset.fullUrl] to download the file yourself.
+  /// For **remote assets**, this will automatically **download** the file
+  /// to a temporary local cache using the provided authentication headers.
   Future<File?> get file {
     if (editedFile != null) return Future.value(editedFile);
-    if (isRemote) return Future.value(null);
+    if (isRemote) return toLocalFile();
     return useOriginalFile ? asset!.originFile : asset!.file;
+  }
+
+  /// Downoads a remote asset if necessary and returns the cached [File].
+  ///
+  /// For local assets, this is equivalent to [file].
+  Future<File?> toLocalFile() async {
+    if (isLocal) return file;
+    if (remoteAsset == null) return null;
+
+    return MediaService.instance.downloadRemoteAsset(
+      remoteAsset!.fullUrl,
+      headers: remoteAsset!.headers,
+      id: remoteAsset!.id,
+    );
   }
 
   /// Helper method equivalent to the [file] getter.

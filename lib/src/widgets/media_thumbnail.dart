@@ -9,7 +9,7 @@ import '../models/picker_asset.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class MediaThumbnailWidget extends StatefulWidget {
-  final AssetEntity asset;
+  final PickerAsset asset;
   final bool isSelected;
   final int? selectionNumber;
   final Color primaryColor;
@@ -58,7 +58,6 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
   void didUpdateWidget(MediaThumbnailWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.asset.id != widget.asset.id) {
-      // New asset — restart shimmer and load new thumbnail.
       _pulseCtrl.repeat(reverse: true);
       setState(() {
         _thumbnail = null;
@@ -75,14 +74,22 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
   }
 
   Future<void> _loadThumbnail() async {
-    final data = await _service.getThumbnail(widget.asset);
-    if (mounted) {
-      // Stop the shimmer animation to save GPU resources.
-      _pulseCtrl.stop();
-      setState(() {
-        _thumbnail = data;
-        _loading = false;
-      });
+    final asset = widget.asset;
+    if (asset is LocalPickerAsset) {
+      final data = await _service.getThumbnail(asset.entity);
+      if (mounted) {
+        _pulseCtrl.stop();
+        setState(() {
+          _thumbnail = data;
+          _loading = false;
+        });
+      }
+    } else {
+      // Remote assets don't need manual thumbnail loading from MediaService.
+      if (mounted) {
+        _pulseCtrl.stop();
+        setState(() => _loading = false);
+      }
     }
   }
 
@@ -114,20 +121,26 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
   }
 
   Widget _buildImage() {
-    if (_loading || _thumbnail == null) {
-      return AnimatedBuilder(
-        animation: _pulseAnim,
-        builder: (_, __) {
-          final base =
-              widget.isDark ? const Color(0xFF1C1C1E) : const Color(0xFFE5E5EA);
-          final highlight =
-              widget.isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7);
-          return ColoredBox(
-            color: Color.lerp(base, highlight, _pulseAnim.value)!,
-          );
-        },
+    final asset = widget.asset;
+
+    if (asset is RemotePickerAsset) {
+      return CachedNetworkImage(
+        imageUrl: asset.thumbUrl,
+        httpHeaders: asset.headers,
+        fit: BoxFit.cover,
+        placeholder: (_, __) => _buildShimmer(),
+        errorWidget: (_, __, ___) => Container(
+          color: _themeHighlight(),
+          child: Icon(Icons.broken_image_rounded,
+              color: widget.isDark ? Colors.white24 : Colors.black26, size: 24),
+        ),
       );
     }
+
+    if (_loading || _thumbnail == null) {
+      return _buildShimmer();
+    }
+
     return Image.memory(
       _thumbnail!,
       fit: BoxFit.cover,
@@ -135,8 +148,24 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
     );
   }
 
+  Color _themeBase() =>
+      widget.isDark ? const Color(0xFF1C1C1E) : const Color(0xFFE5E5EA);
+  Color _themeHighlight() =>
+      widget.isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7);
+
+  Widget _buildShimmer() {
+    return AnimatedBuilder(
+      animation: _pulseAnim,
+      builder: (_, __) {
+        return ColoredBox(
+          color: Color.lerp(_themeBase(), _themeHighlight(), _pulseAnim.value)!,
+        );
+      },
+    );
+  }
+
   Widget _buildVideoBadge() {
-    final d = widget.asset.videoDuration;
+    final d = widget.asset.duration;
     final mm = d.inMinutes.remainder(60).toString().padLeft(2, '0');
     final ss = d.inSeconds.remainder(60).toString().padLeft(2, '0');
 

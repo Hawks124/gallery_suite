@@ -13,10 +13,15 @@ class EnglishPickerTextDelegate extends PickerTextDelegate {
     super.searchNoResults = 'No results for',
     super.noMediaFound = 'No assets found.',
     super.googlePhotos = 'Google Photos',
-    super.googlePhotosConnectTitle = 'Access your cloud memories',
+    super.googlePhotosConnectTitle = 'View, Pick, Cloud.',
+    super.googlePhotosConnectTitleHighlight = 'Connect For Seamless Access!',
     super.googlePhotosConnectSubtitle =
-        'Connect your Google account to browse your cloud photos. Read-only access — we never modify or delete anything.',
-    super.googlePhotosConnectButton = 'Connect Google',
-    super.googlePhotosDisconnect = 'Disconnect',
+        'Log in with your Google account to freely browse and select your photos stored in the cloud directly from this application.',
+    super.googlePhotosConnectButton = 'Connect to Google',
+    super.googlePhotosDisconnect = 'Sign out',
+    super.googlePhotosEmptyStateTitle = 'Your library is empty or restricted',
+    super.googlePhotosEmptyStateSubtitle =
+        'Due to new Google privacy rules (2025), you must manually select which photos you wish to import.',
+    super.googlePhotosImportButton = 'Import from Google Photos',
   });
 }

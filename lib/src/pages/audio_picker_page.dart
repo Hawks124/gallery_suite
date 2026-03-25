@@ -5,12 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:photo_manager/photo_manager.dart';
-import '../models/picker_config.dart';
-import '../models/picker_theme.dart';
-import '../services/media_service.dart';
-import '../models/media_item.dart' as my_models;
-import '../widgets/audio_tile.dart';
-import '../widgets/send_button.dart';
+
+import '../../gallery_suite.dart';
+import '../../gallery_suite.dart' as my_models;
 
 class AudioPickerPage extends StatefulWidget {
   final PickerConfig config;

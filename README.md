@@ -5,21 +5,21 @@
 <h1 align="center">gallery_suite</h1>
 
 <p align="center">
-  <a href="https://github.com/Hawks124/gallery_suite/actions/workflows/main.yml"><img src="https://github.com/Hawks124/gallery_suite/actions/workflows/main.yml/badge.svg" alt="Build Status"></a>
+  <a href="https://github.com/Hawks124/gallery_suite/actions/workflows/ci.yml"><img src="https://github.com/Hawks124/gallery_suite/actions/workflows/ci.yml/badge.svg" alt="CI/CD Status"></a>
+  <a href="https://github.com/Hawks124/gallery_suite/actions/workflows/build.yml"><img src="https://github.com/Hawks124/gallery_suite/actions/workflows/build.yml/badge.svg" alt="Build Status"></a>
   <a href="https://pub.dev/packages/gallery_suite"><img src="https://img.shields.io/pub/v/gallery_suite.svg" alt="pub.dev"></a>
   <a href="https://pub.dev"><img src="https://img.shields.io/pub/points/gallery_suite?color=blue&label=pub%20points" alt="pub points"></a>
   <a href="https://pub.dev"><img src="https://img.shields.io/pub/likes/gallery_suite?logo=flutter" alt="likes"></a>
   <a href="https://pub.dev"><img src="https://img.shields.io/pub/popularity/gallery_suite?logo=dart" alt="popularity"></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.10%2B-blue.svg" alt="Flutter"></a>
-  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS-lightgrey.svg" alt="Platform"></a>
+  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web%20%7C%20macOS-lightgrey.svg" alt="Platform"></a>
   <a href="https://pub.dev/packages/flutter_lints"><img src="https://img.shields.io/badge/style-flutter__lints-blue" alt="Style"></a>
   <a href="https://github.com/Hawks124/gallery_suite/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
 </p>
 
 **Gallery Suite** is the ultimate media picker for Flutter, featuring a native **Google Photos Cloud Provider** built directly into the UI. It replaces restrictive OS dialogs with a fully customizable, 120fps masonry grid that seamlessly mixes local device files with cloud assets. Ship premium features out-of-the-box like iOS-style swipe-to-select, Bring Your Own Editor (BYOE) architecture, inline video/audio playback, and glassmorphic micro-animations.
 
-<!-- THE WOW EFFECT GIF: Replace src with the path to your 10-second GIF recording! -->
 <p align="center">
   <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/example/assets/demo.gif" width="100%" alt="Gallery Suite UI Demo Animations" />
 </p>
@@ -172,11 +172,19 @@ if (assets != null) {
 
 ## 📦 Installation & Setup
 
-Because this package accesses the device's native media library, **you must configure native permissions before using it.** It will crash or show a "Permission Denied" screen if you skip this step.
+Because this package accesses the device's native media library, **you must configure native permissions before using it.** It will crash or show a "Permission Denied" screen if you skip this step. Also, you need to add the Google Photos Picker Redirect Handler and Gradle Configuration to your Android project if you want to use the Google Photos picker feature. Follow the steps below to configure the package.
 
 ### Android Setup
 
 _(Supports API 21+)_
+
+#### ⚠️ Project Requirements
+
+Ensure your `android/app/build.gradle` (or `build.gradle.kts`) meets these minimums:
+
+- **compileSdk**: 33+ (Required for Android 13 media permissions)
+- **minSdk**: 21+
+- **Kotlin Version**: 1.9.0+
 
 Inside `android/app/src/main/AndroidManifest.xml` `<manifest>` block:
 
@@ -201,7 +209,53 @@ Inside `android/app/src/main/AndroidManifest.xml` `<manifest>` block:
     tools:replace="android:maxSdkVersion" />
 ```
 
-Inside the `<application>` block of the same file:
+#### 🔐 Google Photos Picker Redirect Handler (Required for Google Photos Picker)
+
+You must add the following activity to your `AndroidManifest.xml` file (Note: This is required for the Google Photos picker to work):
+
+```xml
+<application ...>
+    <!-- Google Photos Picker Redirect Handler (Required) -->
+    <activity
+        android:name="com.linusu.flutter_web_auth_2.CallbackActivity"
+        android:exported="true">
+        <intent-filter android:label="flutter_web_auth_2_callback">
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="${oauth_scheme}" />
+        </intent-filter>
+    </activity>
+</application>
+```
+
+#### 🐘 Gradle Configuration (Required for Google Photos Picker)
+
+You must pass your Google Client ID scheme to the manifest via `manifestPlaceholders`.
+
+**If using `build.gradle.kts` (Kotlin):**
+
+```kotlin
+android {
+    defaultConfig {
+        manifestPlaceholders["oauth_scheme"] = "com.googleusercontent.apps.YOUR_CLIENT_ID"
+    }
+}
+```
+
+**If using `build.gradle` (Groovy):**
+
+```groovy
+android {
+    defaultConfig {
+        manifestPlaceholders = [oauth_scheme: "com.googleusercontent.apps.YOUR_CLIENT_ID"]
+    }
+}
+```
+
+#### 📁 FileProvider Configuration (Required for Android)
+
+Add the following provider inside the `<application>` block of your `AndroidManifest.xml`:
 
 ```xml
 <provider
@@ -224,6 +278,8 @@ Inside the `<application>` block of the same file:
 </paths>
 ```
 
+#### That's it for Android ✔
+
 ### iOS Setup
 
 _(Supports iOS 11+)_
@@ -241,12 +297,27 @@ Inside `ios/Runner/Info.plist`:
 <key>NSMicrophoneUsageDescription</key>
 <string>Used to record audio for videos.</string>
 
+<!-- Required for Google Photos Auth Redirect -->
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>com.googleusercontent.apps.YOUR_CLIENT_ID</string>
+        </array>
+    </dict>
+</array>
+
 <!-- Helpful for just_audio background compatibility -->
 <key>UIBackgroundModes</key>
 <array>
     <string>audio</string>
 </array>
 ```
+
+#### That's it for iOS ✔
 
 ---
 
@@ -312,46 +383,74 @@ final assets = await CustomMediaPicker.show(
 
 The picker returns a polymorphic `MediaItem` array that correctly abstracts local paths (`AssetEntity`) from cloud metadata (`RemotePickerAsset`).
 
-#### Firebase Auto-Configuration (Zero-Config)
+#### Authentication & 2026 Compliance (Picker API)
 
-If your application already uses a Firebase backend (and you have a `google-services.json` or `GoogleService-Info.plist` configured in your app), the integration works **out of the box with zero configuration**!
-Just ensure the **Google Photos Library API** is enabled in your Google Cloud Console.
+In **March 2025**, Google heavily restricted direct access to the Google Photos library. To comply with these new privacy standards without requiring a complex, expensive Tier-2 security audit, `gallery_suite` seamlessly integrates the modern **Google Photos Picker API**.
+
+#### Quick Start: Global Initialization
+
+Because the modern Picker API requires a secure OAuth2 PKCE(Proof Key for Code Exchange) flow (to bypass Firebase restrictions and ensure platform independence), you **must initialize the service once** at app startup with your GCP credentials:
+
+```dart
+import 'package:gallery_suite/gallery_suite.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize the Google Photos Service globally
+  GooglePhotosService.instance.init(
+    clientId: 'YOUR_OAUTH_CLIENT_ID.apps.googleusercontent.com',
+    redirectScheme: 'com.googleusercontent.apps.YOUR_OAUTH_CLIENT_ID', // Reversed Client ID
+    apiKey: 'YOUR_GOOGLE_CLOUD_API_KEY', // Required for Picker API routing
+  );
+
+  runApp(const MyApp());
+}
+```
+
+#### Opening the Picker
+
+Then, simply ensure the Google Photos feature is enabled when opening the picker. The "☁️ Google Photos" tab will automatically appear in the UI:
 
 ```dart
 final assets = await CustomMediaPicker.show(
   context: context,
   config: const PickerConfig(
-    // The "☁️ Google Photos" tab will automatically appear in the UI
+    googlePhotosConfig: GooglePhotosConfig(enabled: true),
   ),
 );
 ```
 
-#### Manual Configuration (Without Firebase)
+#### 🚀 Smart Cloud Downloads (Automatic Bridging)
 
-If you don't use Firebase, you simply pass your Google Cloud OAuth Client IDs directly into the `GooglePhotosConfig`:
+One of the most powerful features of `gallery_suite` is the **Automatic Bridge**. Most Flutter apps (and native plugins) expect a local `File` path to display or upload images. However, Google Photos items are essentially remote URLs.
+
+`gallery_suite` solves this by making the `MediaItem.file` getter intelligent. When your application calls `await item.file`:
+
+1. If the asset is **local**, it returns the file from the device gallery.
+2. If the asset is **remote**, the picker **automatically downloads** it to a temporary local cache using authenticated headers and returns a `File` object.
+
+**This means your existing code "just works" with cloud assets:**
 
 ```dart
-final assets = await CustomMediaPicker.show(
-  context: context,
-  config: PickerConfig(
-    googlePhotosConfig: GooglePhotosConfig(
-      enabled: true,
-      clientId: 'YOUR_IOS_OR_ANDROID_OAUTH_CLIENT_ID.apps.googleusercontent.com',
-      serverClientId: 'YOUR_WEB_CLIENT_ID_FOR_BACKEND_EXCHANGE.apps.googleusercontent.com', // Optional
-    ),
-  ),
-);
+for (final item in assets) {
+  // Automatically downloads if it's from Google Photos!
+  final File? file = await item.file;
+  if (file != null) {
+     // Upload to Firebase, Supabase, or display via Image.file()
+  }
+}
 ```
 
 ### 🛠️ Google Cloud Platform (GCP) Setup Guide
 
-Whether you use Firebase or not, you **must enable the Google Photos Library API** in your GCP Console for the popup authentication to work.
+Whether you use Firebase or not, you **must enable the Google Photos Picker API** in your GCP Console for the popup authentication to work.
 
 We have prepared a dedicated **[Comprehensive GCP Setup Guide](https://github.com/Hawks124/gallery_suite/blob/main/gcp_setup_guide.md)**. This guide outlines the exact, updated steps to:
 
 1. Configure the new **Google Auth Platform** (Branding, Audience, Data Access).
-2. Generate your OAuth Client IDs.
-3. Pass Google's human verification process (with ready-to-use scope justification templates and Demo Video requirements) for the sensitive `photoslibrary.readonly` scope.
+2. Generate your PKCE OAuth Client IDs.
+3. Understand the differences between the modern **Picker API** (free & immediate) and the legacy **Library API** (requires expensive CASA Tier-2 Verification).
 
 ### 🖌️ Bring Your Own Editor (BYOE) Architecture
 

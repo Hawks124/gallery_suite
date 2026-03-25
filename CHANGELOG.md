@@ -7,11 +7,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [1.0.0] - 2026-03-24
 
 ### 🎉 Initial Release
+
 Welcome to the first stable release of `gallery_suite`! This package provides a premium, fully customized in-app media picker experience.
+
+- **Pure Dart & Multi-Platform**: Platform-agnostic Dart library supporting iOS, Android, Web, and macOS based on underlying federated plugins. ✅
+- **Google Photos Built-in Provider**: Natively browse, select, and organize Google Photos assets directly within the grid. ✅
+- **Smart Cloud-to-Local Bridge**: Automatic background downloading of cloud assets to local temporary files for seamless host app integration. ✅
+- **March 2025 Policy Compliant**: Fully integrated the new `photospicker.mediaitems.readonly` scope and Picker API. ✅
 
 ### ✨ Core Pickers
 
 #### 🖼️ Image Picker
+
 - Instagram-style **3-column masonry grid** with natural aspect-ratio tiles
 - **Multi-selection** with ordered number badges and animated selection overlay
 - **Draggable Swipe-To-Select**: iOS-style drag/swipe selection capabilities directly over the Masonry grid. Long press and drag finger to select multiple images rapidly. Includes intelligent auto-scrolling.
@@ -24,6 +31,7 @@ Welcome to the first stable release of `gallery_suite`! This package provides a 
 - Infinite scroll pagination (80 items per page) with automatic load-more
 
 #### 🎬 Video Picker
+
 - Same masonry grid with **play button overlay** on every tile
 - Tap → **slide-up bottom sheet** video preview (88% screen height)
 - Inline `VideoPlayer` with **auto-play**, play/pause tap, and seek bar
@@ -31,6 +39,7 @@ Welcome to the first stable release of `gallery_suite`! This package provides a 
 - Handles loading state and file error gracefully
 
 #### 🎵 Audio Picker
+
 - Full **list view** of audio files with album art thumbnails
 - **Inline `just_audio` playback** — tap tile to play/pause
 - Animated **mini player** (BackdropFilter blur) with seek bar, play/pause and close
@@ -40,31 +49,37 @@ Welcome to the first stable release of `gallery_suite`! This package provides a 
 ### 💎 Premium Capabilities
 
 #### 🌍 Zero-Dependency Internationalization (Intl)
+
 - **Text Delegate Pattern**: Complete translation support without adding heavy `intl` package dependencies or ARB files.
 - **Built-in Languages**: Ships with `EnglishPickerTextDelegate` and `FrenchPickerTextDelegate` out-of-the-box.
 - **Micro-Overrides**: Easily override single words natively via `FrenchPickerTextDelegate(confirm: 'Envoyer')`.
 
 #### 🖌️ Bring Your Own Editor (BYOE) Integration
+
 - **Zero Bloatware Image Editing**: Natively edit/crop selected images inside the picker via the new `onEditMedia` callback in `PickerConfig` without adding heavy editor dependencies to the package.
 - **Live UI Updates**: Automatically displays a pencil badge on editable assets and seamlessly overlays `Image.file` to show the edited photo directly in the preview strip.
 - **Optimized Data Propagation**: The picker natively returns populated `MediaItem`s carrying the `editedFile` securely back to the caller.
 
 #### 🔍 Inline Asset Search
+
 - **Cross-Platform**: Beautiful, iOS-style frosted `CupertinoSearchTextField` embedded natively at the top of the grid for Images, Videos, and Audio pickers.
 - **Dart-Side Filtering**: Lightning-fast, debounced (300ms) memory filtering of thousands of assets across iOS, Android, macOS, Windows, and Web without relying on unpredictable or unstable native DB query predicates.
 - **Fluid UX**: Smooth 240ms `AnimatedSize` transitions, clean "No Results" placeholder, and independent Send Button.
 
 #### 🖱️ Drag & Drop Reordering
+
 - **Dribbble-Style UX**: Long-press any selected image in the bottom preview strip to smoothly detach, scale up (`1.05x`), cast a dynamic drop-shadow, and drag it horizontally to change the selection order!
 - **Auto-Syncing Badges**: Dragging and dropping the items instantly and natively synchronizes the numerical badges on the main masonry grid.
 
 #### ☁️ Google Photos Built-in Provider (Premium Cloud Integration)
+
 - **First-Class Cloud Support**: Natively browse, select, zoom, and reorganize Google Photos assets directly inside the picker, mixing them seamlessly with local device photos.
-- **Glassmorphic Auth UI**: Features a beautiful blurred placeholder connecting screen if the user isn't logged in yet, maintaining the premium feel.
 - **Polymorphic Architecture**: The package intelligently returns mixed arrays of `MediaItem`s containing either local `AssetEntity` files or `RemotePickerAsset` metadata, gracefully disabling local-only features (like BYOE editors) for cloud URLs.
-- **Flexible Configuration (`GooglePhotosConfig`)**: Easily toggle the cloud tab via config. Supports zero-config automatic Firebase detection, or manual Web Client ID injection for strict environments.
+- **2026 Policy Compliant (Picker API)**: Fully integrated the new `photospicker.mediaitems.readonly` scope and API to bypass Google's March 2025 restrictive rollout, avoiding the need for an expensive CASA Tier-2 security audit.
+- **Robust Security**: Utilizes a strict platform-independent PKCE OAuth2 flow for the Picker API, managed globally via a single initialization call to `GooglePhotosService.instance.init()`.
 
 #### 🔒 Exit Confirmation Prevention
+
 - **Accidental Loss Protection**: Built-in dialog prevents users from accidentally losing selected/edited media when swiping back or hitting the hardware back button.
 - **Fully Customizable UI**: Use `StandardExitConfirmation` for a gorgeous built-in blurred glass dialog, or `CustomExitConfirmation` to return your own widget tree.
 

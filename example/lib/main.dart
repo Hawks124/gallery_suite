@@ -128,9 +128,10 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         // Set to `false` if you prefer classic tap-only selection.
         // enableSwipeToSelect: false,
 
-        // ☁️ Premium Cloud Integration: Google Photos
+        // ☁️ Premium Cloud Integration: Google Photos (Picker API - 2026 Compliant)
         // Enable the built-in Google Photos tab. By default it works out-of-the-box
         // if your app uses Firebase. You can also explicitly pass Client IDs.
+        // NOTE: Ensure "Google Photos Picker API" is enabled in your GCP Console.
         googlePhotosConfig: const GooglePhotosConfig(
           enabled: true,
           // clientId: 'YOUR_CLIENT_ID.apps.googleusercontent.com',
