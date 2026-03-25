@@ -1,11 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
-import '../intl/english_picker_text_delegate.dart';
-import '../intl/picker_text_delegate.dart';
-import 'exit_confirmation.dart';
-import 'google_photo_config.dart';
-import 'picker_theme.dart';
+
+import '../../gallery_suite.dart';
 
 /// Configuration for [CustomMediaPicker].
 ///
@@ -133,8 +130,8 @@ class PickerConfig {
     this.useOriginalFile = false,
     this.primaryColor = const Color(0xFF007AFF),
     this.brightness,
-    this.confirmText = 'Sélectionner',
-    this.cancelText = 'Annuler',
+    this.confirmText = 'Select',
+    this.cancelText = 'Cancel',
     this.thumbnailCacheSize = 200,
     this.maxConcurrentDecodes = 3,
     this.prefetchEnabled = true,

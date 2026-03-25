@@ -65,8 +65,9 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
     try {
       if (asset is LocalPickerAsset) {
         final file = await asset.file;
-        if (file == null || !file.existsSync())
+        if (file == null || !file.existsSync()) {
           throw Exception('File not found');
+        }
         controller = VideoPlayerController.file(file);
       } else if (asset is RemotePickerAsset) {
         controller = VideoPlayerController.networkUrl(

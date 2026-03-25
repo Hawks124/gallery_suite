@@ -333,7 +333,7 @@ import 'package:photo_manager/photo_manager.dart';
 ### 📸 Pick Images
 
 ```dart
-// Full-featured: Camera tile + Swipe-to-select + Multi-select
+// Full-featured: Camera tile + Swipe-to-select + Multi-select + Google Photos
 final assets = await CustomMediaPicker.show(
   context: context,
   config: PickerConfig(
@@ -342,7 +342,14 @@ final assets = await CustomMediaPicker.show(
     showCameraTile: true,        // Live camera feed at index 0
     enableSwipeToSelect: true,   // iOS-style drag to select
     primaryColor: Colors.deepPurple,
-    confirmText: 'Done',
+    googlePhotosConfig: const GooglePhotosConfig(enabled: true), // Enable Cloud by default!
+    textDelegate: const EnglishPickerTextDelegate(), // Customize labels
+    onEditMedia: (context, asset, file) async {
+       // Launch your favorite editor (e.g., pro_image_editor)
+       // return await MyEditor.open(file);
+       // See example in the example folder
+       return null;
+    },
   ),
 );
 ```
@@ -741,6 +748,8 @@ The entire look and feel is controlled via `PickerConfig`. Here is exactly what 
 | `primaryColor`         | `Color`                   | `Color(0xFF007AFF)`         | The global accent color for checkmarks, badges, seek-bars, and confirm buttons.                                                                                   |
 | `brightness`           | `Brightness?`             | `null`                      | Force a specific theme (`Brightness.dark` or `light`). If `null`, it automatically follows the system `Theme.of(context)`.                                        |
 | `textDelegate`         | `PickerTextDelegate`      | `EnglishPickerTextDelegate` | Handles 100% of the localized strings (buttons, search, empty states) with zero external dependencies.                                                            |
+| `onEditMedia`          | `Function?`               | `null`                      | Optional callback to launch a custom external image editor (e.g. `pro_image_editor`) directly from the Fullscreen Preview.                                        |
+| `googlePhotosConfig`   | `GooglePhotosConfig`      | `default`                   | Configuration for the built-in Google Photos cloud provider (enabled/disabled and other cloud-specific options).                                                  |
 | `exitConfirmation`     | `ExitConfirmationConfig?` | `null`                      | An optional configuration that prevents accidental closing of the picker when users have selected media.                                                          |
 | `showCameraTile`       | `bool`                    | `true`                      | When `true`, renders a live `camera` feed at index `0`. Supports both photo and video depending on `requestType`. Tap to open a full-screen Dribbble-inspired UI. |
 | `enableSwipeToSelect`  | `bool`                    | `true`                      | When `true`, allows the user to long-press and drag their finger across the masonry grid to rapidly select items (iOS Photos style). Includes edge auto-scroll.   |
