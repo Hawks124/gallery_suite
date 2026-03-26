@@ -43,8 +43,8 @@ class InlineSearchBar extends StatelessWidget {
             hintText: hintText,
             hintStyle:
                 TextStyle(color: theme.secondaryText.withValues(alpha: 0.5)),
-            prefixIcon: Icon(searchQuery.isNotEmpty ? null : Icons.search,
-                color: theme.secondaryText, size: 20),
+            prefixIcon:
+                Icon(Icons.search, color: theme.secondaryText, size: 20),
             suffixIcon: searchQuery.isNotEmpty
                 ? IconButton(
                     icon: Icon(Icons.cancel,

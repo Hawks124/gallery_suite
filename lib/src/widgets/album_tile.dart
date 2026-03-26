@@ -1,15 +1,14 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:photo_manager/photo_manager.dart';
 import '../models/picker_theme.dart';
-import '../services/media_service.dart';
+import '../sources/suite_sources.dart';
 
 class AlbumTile extends StatefulWidget {
-  final AssetPathEntity album;
+  final AlbumDescriptor album;
   final bool isCurrent;
   final Color primaryColor;
   final PickerTheme theme;
-  final MediaService service;
+  final MediaSource source;
   final VoidCallback onTap;
 
   const AlbumTile({
@@ -18,7 +17,7 @@ class AlbumTile extends StatefulWidget {
     required this.isCurrent,
     required this.primaryColor,
     required this.theme,
-    required this.service,
+    required this.source,
     required this.onTap,
   });
 
@@ -28,23 +27,20 @@ class AlbumTile extends StatefulWidget {
 
 class _AlbumTileState extends State<AlbumTile> {
   Uint8List? _cover;
-  int? _count;
+  late int _count;
 
   @override
   void initState() {
     super.initState();
+    _count = widget.album.assetCount;
     _load();
   }
 
   Future<void> _load() async {
-    final results = await Future.wait([
-      widget.service.getAlbumCoverThumbnail(widget.album),
-      widget.album.assetCountAsync,
-    ]);
+    final cover = await widget.source.getAlbumCoverThumbnail(widget.album);
     if (mounted) {
       setState(() {
-        _cover = results[0] as Uint8List?;
-        _count = results[1] as int;
+        _cover = cover;
       });
     }
   }
@@ -87,7 +83,7 @@ class _AlbumTileState extends State<AlbumTile> {
                       letterSpacing: -0.1,
                     ),
                   ),
-                  if (_count != null) ...[
+                  if (_count >= 0) ...[
                     const SizedBox(height: 2),
                     Text('$_count',
                         style: TextStyle(

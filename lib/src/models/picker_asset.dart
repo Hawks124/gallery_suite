@@ -1,6 +1,7 @@
 // Data structures for unified local and remote media assets.
 
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:photo_manager/photo_manager.dart';
 
 // A unified representation of any media asset that the picker can display,
@@ -147,5 +148,61 @@ class RemotePickerAsset implements PickerAsset {
       return '$baseUrl=dv';
     }
     return '$baseUrl=d';
+  }
+}
+
+// A media asset originating from the platform **file selector** (Web/Desktop).
+//
+// Unlike [LocalPickerAsset] (which wraps `photo_manager`'s AssetEntity),
+// this holds a raw file path and in-memory bytes for thumbnails.
+class FilePickerAsset implements PickerAsset {
+  @override
+  final String id;
+
+  @override
+  final String? title;
+
+  @override
+  final AssetType type;
+
+  @override
+  final int width;
+
+  @override
+  final int height;
+
+  @override
+  final Duration duration;
+
+  // The absolute path to the selected file.
+  final String filePath;
+
+  // Pre-loaded raw bytes of the file (used for thumbnail generation).
+  final Uint8List? bytes;
+
+  // Creates a [FilePickerAsset] from a file path.
+  FilePickerAsset({
+    required this.filePath,
+    this.bytes,
+    this.width = 0,
+    this.height = 0,
+    this.duration = Duration.zero,
+  })  : id = filePath.hashCode.toRadixString(36),
+        title = filePath.split(Platform.pathSeparator).last,
+        type = _inferType(filePath);
+
+  // Convenience: return the local [File].
+  File get file => File(filePath);
+
+  // Infers [AssetType] from the file extension.
+  static AssetType _inferType(String path) {
+    final ext = path.split('.').last.toLowerCase();
+    if ({'mp4', 'mov', 'avi', 'mkv', 'webm', '3gp'}.contains(ext)) {
+      return AssetType.video;
+    }
+    if ({'mp3', 'wav', 'aac', 'flac', 'ogg', 'm4a'}.contains(ext)) {
+      return AssetType.audio;
+    }
+    return AssetType.image;
   }
 }

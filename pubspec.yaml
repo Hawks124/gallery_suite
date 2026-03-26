@@ -36,6 +36,8 @@ dependencies:
   flutter_web_auth_2: ^5.0.1
   crypto: ^3.0.7
   path_provider: ^2.1.5
+  file_selector: ^1.1.0
+  desktop_drop: ^0.7.0
 
 dev_dependencies:
   flutter_test:

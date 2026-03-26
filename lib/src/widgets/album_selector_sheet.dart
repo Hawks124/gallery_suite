@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:photo_manager/photo_manager.dart';
 import '../../gallery_suite.dart';
 
 class AlbumSelectorSheet extends StatelessWidget {
-  final List<AssetPathEntity> albums;
-  final AssetPathEntity? currentAlbum;
+  final List<AlbumDescriptor> albums;
+  final AlbumDescriptor? currentAlbum;
   final Color primaryColor;
   final PickerTheme theme;
   final PickerTextDelegate textDelegate;
   final ScrollController scrollController;
-  final MediaService service;
-  final void Function(AssetPathEntity) onSelect;
+  final MediaSource source;
+  final void Function(AlbumDescriptor) onSelect;
   final VoidCallback? onGooglePhotosTap;
   final bool isGooglePhotosConnected;
   final VoidCallback? onGooglePhotosSignOut;
@@ -23,7 +22,7 @@ class AlbumSelectorSheet extends StatelessWidget {
     required this.theme,
     required this.textDelegate,
     required this.scrollController,
-    required this.service,
+    required this.source,
     required this.onSelect,
     this.onGooglePhotosTap,
     this.isGooglePhotosConnected = false,
@@ -123,7 +122,7 @@ class AlbumSelectorSheet extends StatelessWidget {
                   isCurrent: isCurrent,
                   primaryColor: primaryColor,
                   theme: theme,
-                  service: service,
+                  source: source,
                   onTap: () => onSelect(album),
                 );
               },

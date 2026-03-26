@@ -10,10 +10,11 @@
   <a href="https://pub.dev/packages/gallery_suite"><img src="https://img.shields.io/pub/v/gallery_suite.svg" alt="pub.dev"></a>
   <a href="https://pub.dev"><img src="https://img.shields.io/pub/points/gallery_suite?color=blue&label=pub%20points" alt="pub points"></a>
   <a href="https://pub.dev"><img src="https://img.shields.io/pub/likes/gallery_suite?logo=flutter" alt="likes"></a>
-  <a href="https://pub.dev"><img src="https://img.shields.io/pub/popularity/gallery_suite?logo=dart" alt="popularity"></a>
+  <a href="https://github.com/Hawks124/gallery_suite/stargazers"><img src="https://img.shields.io/github/stars/Hawks124/gallery_suite?style=social" alt="stars"></a>
+  <a href="https://pub.dev/publishers/RiRi"><img src="https://img.shields.io/pub/publisher/gallery_suite.svg" alt="publisher"></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.10%2B-blue.svg" alt="Flutter"></a>
-  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web%20%7C%20macOS-lightgrey.svg" alt="Platform"></a>
+  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web%20%7C%20macOS%20%7C%20Windows%20%7C%20Linux-lightgrey.svg" alt="Platform"></a>
   <a href="https://pub.dev/packages/flutter_lints"><img src="https://img.shields.io/badge/style-flutter__lints-blue" alt="Style"></a>
   <a href="https://github.com/Hawks124/gallery_suite/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
 </p>
@@ -52,6 +53,7 @@ Unlike other pickers that force you to download massive editor dependencies or b
 
 | Feature            | `image_picker`    | `wechat_assets_picker` | `gallery_suite`                     |
 | ------------------ | ----------------- | ---------------------- | ----------------------------------- |
+| Platforms Supported| All               | iOS, Android, macOS    | ✅ All (Mobile, Web, Desktop)        |
 | Assets supported   | Image, Video      | Image, Video, Audio    | Image, Video, Audio                 |
 | Picker UI          | Native OS dialog  | WeChat-style grid      | Custom Masonry grid                 |
 | Audio/Video        | System default    | Custom                 | Inline playback (Mini-player)       |
@@ -104,6 +106,7 @@ Unlike other pickers that force you to download massive editor dependencies or b
 
 **All Pickers**
 
+- 💻 **Web & Desktop Optimization** — Fully supported across Web, Windows, macOS, and Linux via a polymorphic `MediaSource` engine. Features native Drag-and-Drop OS file uploads, intelligent `LayoutBuilder` responsive grid expansion, and `Ctrl+A`/`Cmd+A` keyboard shortcuts.
 - 🔍 **Inline Asset Search** — Instantly filter your entire media library by filename/title with a beautiful iOS-style frosted search bar. Uses lightning-fast Dart-side memory filtering.
 - 🖌️ **Bring Your Own Editor (BYOE) Architecture** — Why bloat your app with forced editors? Pass your favorite editor (like `pro_image_editor`) to the `onEditMedia` callback. The picker natively intercepts the edit, displays an elegant Pencil action in the Fullscreen Preview, and flawlessly updates the preview strip to the new edited image.
 - 🌍 **Zero-Dependency Internationalization (Intl)** — Translate 100% of the UI (buttons, search bar, empty states) without installing heavy `intl` packages. Uses a clean `PickerTextDelegate` pattern.
@@ -627,16 +630,26 @@ config: PickerConfig(
 ```
 
 **Supporting your own app's translation engine (GetX, EasyLocalization, etc.):**
-Create a custom class implementing `PickerTextDelegate`, or just construct it inline:
+Extend `PickerTextDelegate` with a custom class that pulls from your translation layer:
 
 ```dart
+// Create a custom delegate class
+class MyAppTextDelegate extends EnglishPickerTextDelegate {
+  const MyAppTextDelegate();
+
+  @override
+  String get confirm => MyApp.t('confirm_btn');
+
+  @override
+  String get cancel => MyApp.t('cancel_btn');
+
+  @override
+  String get albums => MyApp.t('albums_label');
+}
+
+// Then pass it to PickerConfig
 config: PickerConfig(
-  textDelegate: PickerTextDelegate(
-    confirm: context.tr('confirm_btn'),
-    cancel: context.tr('cancel_btn'),
-    recent: context.tr('recent_albums'),
-    // ...
-  ),
+  textDelegate: const MyAppTextDelegate(),
 )
 ```
 
@@ -839,10 +852,25 @@ Apache 2.0 — see [LICENSE](LICENSE).
 
 `gallery_suite` stands on the shoulders of giants. This package would not exist without the incredible work of the following open-source contributors:
 
-- **[photo_manager](https://pub.dev/packages/photo_manager)** — The high-performance engine powering our native media library access.
+**Core Media Engine**
+- **[photo_manager](https://pub.dev/packages/photo_manager)** — The high-performance engine powering our native media library access on Android, iOS, and macOS.
 - **[flutter_staggered_grid_view](https://pub.dev/packages/flutter_staggered_grid_view)** — Responsible for the beautiful and fluid Masonry layout of our grids.
+
+**Playback & Camera**
 - **[video_player](https://pub.dev/packages/video_player)** — Enabling our seamless, zero-latency inline video previews.
 - **[just_audio](https://pub.dev/packages/just_audio)** — The backbone of our integrated audio playback experience.
 - **[camera](https://pub.dev/packages/camera)** — Allowing us to build a premium, fully-integrated live camera capture experience into the grid.
+
+**Google Photos Cloud Integration**
+- **[google_sign_in](https://pub.dev/packages/google_sign_in)** — Provides lightweight Google authentication for non-PKCE flows and user profile resolution.
+- **[flutter_web_auth_2](https://pub.dev/packages/flutter_web_auth_2)** — Powers the secure PKCE OAuth2 flow via Chrome Custom Tabs on Android, enabling our compliant Google Photos integration.
+- **[googleapis_auth](https://pub.dev/packages/googleapis_auth)** — Manages authenticated HTTP clients for the Google Picker API token lifecycle.
+- **[extension_google_sign_in_as_googleapis_auth](https://pub.dev/packages/extension_google_sign_in_as_googleapis_auth)** — Bridges `google_sign_in` with `googleapis_auth` for seamless authorized API calls.
+- **[cached_network_image](https://pub.dev/packages/cached_network_image)** — Caches and renders remote Google Photos thumbnails in the cloud grid efficiently.
+- **[http](https://pub.dev/packages/http)** — Handles OAuth2 PKCE token exchange and authenticated REST API calls.
+- **[crypto](https://pub.dev/packages/crypto)** — Provides SHA-256 hashing for generating PKCE code challenges, ensuring a secure OAuth2 flow.
+
+**Persistence**
+- **[path_provider](https://pub.dev/packages/path_provider)** — Resolves the platform-appropriate local storage directories for our zero-dependency JSON persistence layer.
 
 Thank you to the Flutter community for building the "bricks" that allowed us to create this "house". 🏠✨

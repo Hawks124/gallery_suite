@@ -46,5 +46,8 @@ export 'src/pages/suite_pages.dart';
 // ── Providers ────────────────────────────────────────────────────────
 export 'src/providers/google_photos_provider.dart';
 
+// ── Sources (MediaSource Abstraction) ────────────────────────────────
+export 'src/sources/suite_sources.dart';
+
 // ── Shared ────────────────────────────────────────────────────────
 // export 'src/shared/snack_bar_utils.dart';
