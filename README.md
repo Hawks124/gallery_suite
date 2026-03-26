@@ -93,13 +93,21 @@ Unlike other pickers that force you to download massive editor dependencies or b
 - Tap a track to play or pause it inline.
 - Mini player. Selection is separated from playback.
 
+**Cloud Integration**
+
+- ☁️ **Google Photos Built-in Provider** — Natively browse, select, and organize Google Photos directly within the Masonry grid. Mixes seamlessly with local device assets.
+- 💾 **Persistent Sessions** — Your Google Photos login and imported assets survive app restarts and hot reloads thanks to a zero-dependency local persistence layer.
+- 🔄 **Intelligent Auto-Refresh** — Background token exchange handles OAuth2 expiry silently, ensuring a frictionless user experience.
+- 🔐 **Secure Sign-Out** — Disconnect your account anytime via the Album sheet with a beautiful confirmation dialog and loading overlay.
+- 🌉 **Automatic Cloud Bridge** — The `MediaItem.file` getter automatically detects and downloads cloud assets to a local cache for instant processing.
+- ☁️ **Native iCloud Support** — Transparently browse iCloud photos with glassmorphic status badges for assets being fetched from the cloud.
+
 **All Pickers**
 
 - 🔍 **Inline Asset Search** — Instantly filter your entire media library by filename/title with a beautiful iOS-style frosted search bar. Uses lightning-fast Dart-side memory filtering.
 - 🖌️ **Bring Your Own Editor (BYOE) Architecture** — Why bloat your app with forced editors? Pass your favorite editor (like `pro_image_editor`) to the `onEditMedia` callback. The picker natively intercepts the edit, displays an elegant Pencil action in the Fullscreen Preview, and flawlessly updates the preview strip to the new edited image.
 - 🌍 **Zero-Dependency Internationalization (Intl)** — Translate 100% of the UI (buttons, search bar, empty states) without installing heavy `intl` packages. Uses a clean `PickerTextDelegate` pattern.
 - 🔒 **Exit Confirmation Prevention** — Built-in `PopScope` protection. If a user tries to swipe back or press the Android back button after spending time selecting/editing photos, a beautiful Glassmorphic dialog prevents accidental data loss.
-- ☁️ **Native iCloud Support** — Transparently browse and select photos from your iCloud library on iOS. Includes sleek, glassmorphic "Cloud" badges for assets that are being fetched from the cloud.
 - Fully customizable theming via `PickerConfig.brightness` and `primaryColor`.
 - Haptic feedback and native-feeling micro-animations and _Glassmorphism_.
 - Smooth skeleton loaders and optimized pagination (80 items per page).
