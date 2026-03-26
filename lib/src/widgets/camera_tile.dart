@@ -5,26 +5,26 @@ import 'package:flutter/services.dart';
 import '../enum/enum.dart';
 import '../pages/camera_screen.dart';
 
-/// A premium, live-preview camera tile displayed at position 0 of the
-/// media grid when [PickerConfig.showCameraTile] is `true`.
-///
-/// On supported platforms (Android, iOS, Web), the tile shows a real-time
-/// camera preview with a frosted-glass overlay and an animated camera icon.
-/// On platforms without camera support, the tile shows a static camera icon
-/// with a subtle gradient background.
-///
-/// Tapping the tile opens the built-in [CameraScreen].
+// A premium, live-preview camera tile displayed at position 0 of the
+// media grid when [PickerConfig.showCameraTile] is `true`.
+//
+// On supported platforms (Android, iOS, Web), the tile shows a real-time
+// camera preview with a frosted-glass overlay and an animated camera icon.
+// On platforms without camera support, the tile shows a static camera icon
+// with a subtle gradient background.
+//
+// Tapping the tile opens the built-in [CameraScreen].
 class CameraTileWidget extends StatefulWidget {
-  /// The primary accent color used for the icon and overlay tint.
+  // The primary accent color used for the icon and overlay tint.
   final Color primaryColor;
 
-  /// Whether the picker is in dark mode.
+  // Whether the picker is in dark mode.
   final bool isDark;
 
-  /// Whether to capture a photo or a video.
+  // Whether to capture a photo or a video.
   final CameraCaptureMode captureMode;
 
-  /// Called with the captured [File] after the user takes a photo or video.
+  // Called with the captured [File] after the user takes a photo or video.
   final ValueChanged<File> onCaptured;
 
   const CameraTileWidget({
@@ -89,7 +89,7 @@ class _CameraTileWidgetState extends State<CameraTileWidget>
         });
       }
     } catch (e) {
-      // Camera not available on this platform — show static tile
+      // Camera not available on this platform - show static tile
       debugPrint('Camera tile preview unavailable: $e');
     }
   }
@@ -97,7 +97,7 @@ class _CameraTileWidgetState extends State<CameraTileWidget>
   Future<void> _openCamera() async {
     HapticFeedback.lightImpact();
 
-    // 💡 CRITICAL FIX: Dispose of the tile's preview controller BEFORE opening the
+    //  CRITICAL FIX: Dispose of the tile's preview controller BEFORE opening the
     // full-screen camera to prevent hardware collision and CameraX crashes on Android.
     final oldController = _previewController;
     if (mounted) {
@@ -142,7 +142,7 @@ class _CameraTileWidgetState extends State<CameraTileWidget>
       widget.onCaptured(result);
     }
 
-    // 💡 Resume the preview after returning from the full-screen camera
+    //  Resume the preview after returning from the full-screen camera
     if (mounted) {
       _initPreview();
     }
@@ -236,7 +236,7 @@ class _CameraTileWidgetState extends State<CameraTileWidget>
               right: 0,
               child: Text(
                 widget.captureMode == CameraCaptureMode.video
-                    ? 'Vidéo'
+                    ? 'Vid o'
                     : 'Photo',
                 textAlign: TextAlign.center,
                 style: TextStyle(

@@ -2,9 +2,9 @@
 ///
 /// This is the public API barrel file. Import *only* this file:
 ///
-/// ```dart
+///
 /// import 'package:gallery_suite/gallery_suite.dart';
-/// ```
+///
 library;
 
 // ── Core entry point ────────────────────────────────────────────────────────
@@ -42,3 +42,9 @@ export 'src/widgets/suite_widgets.dart';
 
 // ── Pages ────────────────────────────────────────────────────────
 export 'src/pages/suite_pages.dart';
+
+// ── Providers ────────────────────────────────────────────────────────
+export 'src/providers/google_photos_provider.dart';
+
+// ── Shared ────────────────────────────────────────────────────────
+// export 'src/shared/snack_bar_utils.dart';

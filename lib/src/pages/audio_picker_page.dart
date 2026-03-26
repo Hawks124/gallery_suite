@@ -235,10 +235,10 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                  'Vous ne pouvez sélectionner que ${widget.config.maxSelection} élément(s).'),
+                  'Vous ne pouvez s lectionner que ${widget.config.maxSelection}  l ment(s).'),
               backgroundColor: _theme.elevated,
               behavior: SnackBarBehavior.floating,
-              duration: const Duration(seconds: 2),
+              duration: const Duration(seconds: 3),
             ),
           );
           return;
@@ -469,7 +469,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                 size: 56, color: _theme.secondaryText),
             const SizedBox(height: 16),
             Text(
-              'Aucun résultat pour "$_searchQuery"',
+              'Aucun r sultat pour "$_searchQuery"',
               style: TextStyle(
                   color: _theme.secondaryText,
                   fontSize: 16,
@@ -679,7 +679,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Accès refusé',
+              'Acc s refus ',
               style: TextStyle(
                 color: _theme.primaryText,
                 fontSize: 20,
@@ -689,7 +689,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
             ),
             const SizedBox(height: 10),
             Text(
-              'Autorisez l\'accès dans les réglages pour continuer.',
+              'Autorisez l\'acc s dans les r glages pour continuer.',
               style: TextStyle(
                   color: _theme.secondaryText, fontSize: 14, height: 1.5),
               textAlign: TextAlign.center,
@@ -705,7 +705,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Text(
-                  'Ouvrir les réglages',
+                  'Ouvrir les r glages',
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 15,

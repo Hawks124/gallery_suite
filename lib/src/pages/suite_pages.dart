@@ -1,5 +1,5 @@
-/// This file exports all pages used by the picker.
-///
+// This file exports all pages used by the picker.
+
 library;
 
 export 'audio_picker_page.dart';

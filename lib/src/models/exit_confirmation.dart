@@ -1,15 +1,17 @@
+// Models for handling accidental exit prevention.
+
 import 'package:flutter/material.dart';
 
-/// Configuration for intercepting the back button/swipe to prevent accidental exits.
+// Configuration for intercepting the back button/swipe to prevent accidental exits.
 abstract class ExitConfirmationConfig {
   const ExitConfirmationConfig();
 
-  /// Displays the exit confirmation UI and returns `true` if the user confirms
-  /// they want to exit, or `false` to remain in the picker.
+  // Displays the exit confirmation UI and returns `true` if the user confirms
+  // they want to exit, or `false` to remain in the picker.
   Future<bool> show(BuildContext context, Color primaryColor);
 }
 
-/// A ready-to-use, premium styled exit confirmation dialog.
+// A ready-to-use, premium styled exit confirmation dialog.
 class StandardExitConfirmation extends ExitConfirmationConfig {
   final String title;
   final String content;
@@ -155,8 +157,8 @@ class StandardExitConfirmation extends ExitConfirmationConfig {
   }
 }
 
-/// For developers who want 100% control over the exit UI.
-/// Must return a `Future<bool>` where `true` means exit immediately.
+// For developers who want 100% control over the exit UI.
+// Must return a `Future<bool>` where `true` means exit immediately.
 class CustomExitConfirmation extends ExitConfirmationConfig {
   final Future<bool> Function(BuildContext context) showDialog;
   const CustomExitConfirmation({required this.showDialog});

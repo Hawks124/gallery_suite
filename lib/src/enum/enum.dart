@@ -1,8 +1,10 @@
-/// The capture mode for the built-in camera screen.
+// Enumerated types used throughout the Gallery Suite.
+
+// The capture mode for the built-in camera screen.
 enum CameraCaptureMode {
-  /// Capture a still photo.
+  // Capture a still photo.
   photo,
 
-  /// Record a video.
+  // Record a video.
   video,
 }

@@ -1,34 +1,35 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:photo_manager/photo_manager.dart';
 
-/// A wrapper that adds iOS-style "drag to select" (swipe-to-select)
-/// functionality over a scrollable grid.
-///
-/// It listens for sustained long-press-and-drag gestures, performs hit-testing
-/// to figure out exactly which [AssetEntity] is under the finger, and invokes
-/// [onAssetHover] so the parent state can toggle its selection.
-///
-/// It also handles automatic scrolling when dragging near the top or bottom
-/// edge of the viewport.
+import '../../gallery_suite.dart';
+
+// A wrapper that adds iOS-style "drag to select" (swipe-to-select)
+// functionality over a scrollable grid.
+//
+// It listens for sustained long-press-and-drag gestures, performs hit-testing
+// to figure out exactly which [AssetEntity] is under the finger, and invokes
+// [onAssetHover] so the parent state can toggle its selection.
+//
+// It also handles automatic scrolling when dragging near the top or bottom
+// edge of the viewport.
 class DraggableSelectionGrid extends StatefulWidget {
-  /// The scrollable child, usually a `MasonryGridView` or `GridView`.
+  // The scrollable child, usually a `MasonryGridView` or `GridView`.
   final Widget child;
 
-  /// The scroll controller attached to the [child]. Required for auto-scrambling.
+  // The scroll controller attached to the [child]. Required for auto-scrambling.
   final ScrollController scrollController;
 
-  /// Called repeatedly during a drag sequence when a new [AssetEntity] is hovered.
-  final void Function(AssetEntity asset) onAssetHover;
+  // Called repeatedly during a drag sequence when a new [PickerAsset] is hovered.
+  final void Function(PickerAsset asset) onAssetHover;
 
-  /// Called when the user initiates a drag. Useful to initialize a "batch selection mode".
+  // Called when the user initiates a drag. Useful to initialize a "batch selection mode".
   final VoidCallback? onDragStart;
 
-  /// Called when the drag ends or is canceled.
+  // Called when the drag ends or is canceled.
   final VoidCallback? onDragEnd;
 
-  /// Set to false to disable this feature purely logic-side.
+  // Set to false to disable this feature purely logic-side.
   final bool enabled;
 
   const DraggableSelectionGrid({
@@ -83,8 +84,8 @@ class _DraggableSelectionGridState extends State<DraggableSelectionGrid> {
     widget.onDragEnd?.call();
   }
 
-  /// Processes the [PointerEvent] coordinates through the semantic render tree
-  /// to find any [MetaData] widget containing an [AssetEntity].
+  // Processes the [PointerEvent] coordinates through the semantic render tree
+  // to find any [MetaData] widget containing an [AssetEntity].
   void _processHit(Offset globalPosition) {
     final renderBox = context.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
@@ -98,8 +99,8 @@ class _DraggableSelectionGridState extends State<DraggableSelectionGrid> {
     for (final entry in result.path) {
       if (entry.target is RenderMetaData) {
         final renderMetaData = entry.target as RenderMetaData;
-        if (renderMetaData.metaData is AssetEntity) {
-          final asset = renderMetaData.metaData as AssetEntity;
+        if (renderMetaData.metaData is PickerAsset) {
+          final asset = renderMetaData.metaData as PickerAsset;
           if (!_processedIdsThisDrag.contains(asset.id)) {
             _processedIdsThisDrag.add(asset.id);
             widget.onAssetHover(asset);
@@ -110,8 +111,8 @@ class _DraggableSelectionGridState extends State<DraggableSelectionGrid> {
     }
   }
 
-  /// Evaluates whether the user's finger is close to the vertical edges
-  /// of the viewport to trigger programmatic auto-scrolling.
+  // Evaluates whether the user's finger is close to the vertical edges
+  // of the viewport to trigger programmatic auto-scrolling.
   void _checkAutoScroll(Offset globalPosition) {
     final renderBox = context.findRenderObject() as RenderBox?;
     if (renderBox == null) return;

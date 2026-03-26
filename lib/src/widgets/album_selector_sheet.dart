@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
-import '../intl/picker_text_delegate.dart';
-import '../models/picker_theme.dart';
-import '../services/media_service.dart';
-import 'album_tile.dart';
-import 'google_photo_tile.dart';
+import '../../gallery_suite.dart';
 
 class AlbumSelectorSheet extends StatelessWidget {
   final List<AssetPathEntity> albums;
@@ -16,6 +12,8 @@ class AlbumSelectorSheet extends StatelessWidget {
   final MediaService service;
   final void Function(AssetPathEntity) onSelect;
   final VoidCallback? onGooglePhotosTap;
+  final bool isGooglePhotosConnected;
+  final VoidCallback? onGooglePhotosSignOut;
 
   const AlbumSelectorSheet({
     super.key,
@@ -28,6 +26,8 @@ class AlbumSelectorSheet extends StatelessWidget {
     required this.service,
     required this.onSelect,
     this.onGooglePhotosTap,
+    this.isGooglePhotosConnected = false,
+    this.onGooglePhotosSignOut,
   });
 
   @override
@@ -49,7 +49,7 @@ class AlbumSelectorSheet extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             child: Row(
               children: [
                 Text(
@@ -61,6 +61,35 @@ class AlbumSelectorSheet extends StatelessWidget {
                     letterSpacing: -0.3,
                   ),
                 ),
+
+                // Sign Out
+                if (isGooglePhotosConnected &&
+                    onGooglePhotosSignOut != null) ...[
+                  const Spacer(),
+                  TextButton.icon(
+                    onPressed: onGooglePhotosSignOut,
+                    icon: Icon(Icons.logout_rounded,
+                        size: 16, color: Colors.white),
+                    label: Text(
+                      textDelegate.googlePhotosDisconnect,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      backgroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -74,7 +103,7 @@ class AlbumSelectorSheet extends StatelessWidget {
               itemBuilder: (_, i) {
                 final hasGoogle = onGooglePhotosTap != null;
 
-                // ── Google Photos Cloud Tile (Top item) ─────────────
+                // -- Google Photos Cloud Tile (Top item) ------------
                 if (hasGoogle && i == 0) {
                   return GooglePhotosTile(
                     theme: theme,

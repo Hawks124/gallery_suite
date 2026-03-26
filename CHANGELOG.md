@@ -10,10 +10,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 Welcome to the first stable release of `gallery_suite`! This package provides a premium, fully customized in-app media picker experience.
 
-- **Pure Dart & Multi-Platform**: Platform-agnostic Dart library supporting iOS, Android, Web, and macOS based on underlying federated plugins. ✅
+- **Pure Dart & Multi-Platform**: Platform-agnostic Dart library supporting iOS, Android, Web, and macOS. ✅
 - **Google Photos Built-in Provider**: Natively browse, select, and organize Google Photos assets directly within the grid. ✅
-- **Smart Cloud-to-Local Bridge**: Automatic background downloading of cloud assets to local temporary files for seamless host app integration. ✅
-- **March 2025 Policy Compliant**: Fully integrated the new `photospicker.mediaitems.readonly` scope and Picker API. ✅
+- **Native iCloud Integration**: Transparent support for iCloud photo libraries with zero configuration required. ✅
+- **Glassmorphic Cloud Indicators**: Visual feedback badges for iCloud and remote assets to ensure a responsive user experience. ✅
+- **Smart Cloud-to-Local Bridge**: Automatic background downloading of cloud assets to local temporary files. ✅
+- **March 2025 Policy Compliant**: Fully integrated the latest Google Photos Picker API. ✅
 
 ### ✨ Core Pickers
 
@@ -77,6 +79,9 @@ Welcome to the first stable release of `gallery_suite`! This package provides a 
 - **Polymorphic Architecture**: The package intelligently returns mixed arrays of `MediaItem`s containing either local `AssetEntity` files or `RemotePickerAsset` metadata, gracefully disabling local-only features (like BYOE editors) for cloud URLs.
 - **2026 Policy Compliant (Picker API)**: Fully integrated the new `photospicker.mediaitems.readonly` scope and API to bypass Google's March 2025 restrictive rollout, avoiding the need for an expensive CASA Tier-2 security audit.
 - **Robust Security**: Utilizes a strict platform-independent PKCE OAuth2 flow for the Picker API, managed globally via a single initialization call to `GooglePhotosService.instance.init()`.
+- **Zero-Dependency Disk Persistence**: Appends and saves imported cloud assets (alongside authentication state) locally `path_provider`, allowing sessions and selected media to survive hot-restarts and app closures without relying on heavy state management tools.
+- **Intelligent Auto-Refresh**: Seamlessly handles OAuth2 token lifespan limits by exchanging the `refresh_token` in the background, ensuring uninterrupted user experiences.
+- **Secure Sign-Out Flow**: Added an integrated "Sign Out" button inside the Album selector sheet, protected by a beautiful `StandardExitConfirmation` dialog and a loading overlay to prevent accidental data loss.
 
 #### 🔒 Exit Confirmation Prevention
 

@@ -7,12 +7,14 @@ class VideoPreviewSheet extends StatefulWidget {
   final PickerAsset asset;
   final PickerTheme theme;
   final Color primaryColor;
+  final PickerTextDelegate textDelegate;
 
   const VideoPreviewSheet({
     super.key,
     required this.asset,
     required this.theme,
     required this.primaryColor,
+    required this.textDelegate,
   });
 
   static Future<bool> show(
@@ -20,6 +22,7 @@ class VideoPreviewSheet extends StatefulWidget {
     PickerAsset asset,
     PickerTheme theme,
     Color primaryColor,
+    PickerTextDelegate textDelegate,
   ) async {
     final result = await showModalBottomSheet<bool>(
       context: context,
@@ -31,6 +34,7 @@ class VideoPreviewSheet extends StatefulWidget {
         asset: asset,
         theme: theme,
         primaryColor: primaryColor,
+        textDelegate: textDelegate,
       ),
     );
     return result == true;
@@ -179,7 +183,7 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Aperçu Vidéo',
+                            widget.textDelegate.videoPreviewTitle,
                             style: TextStyle(
                               color: widget.theme.secondaryText,
                               fontSize: 13,
@@ -192,7 +196,7 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            widget.asset.title ?? 'Sans titre',
+                            widget.asset.title ?? widget.textDelegate.videoUntitled,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -273,7 +277,7 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
                   color: widget.theme.secondaryText, size: 48),
               const SizedBox(height: 16),
               Text(
-                'Impossible de lire cette vidéo.',
+                widget.textDelegate.videoErrorDescription,
                 style: TextStyle(
                     color: widget.theme.secondaryText,
                     fontSize: 15,
@@ -491,9 +495,9 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
           ],
         ),
         alignment: Alignment.center,
-        child: const Text(
-          'Sélectionner cette vidéo',
-          style: TextStyle(
+        child: Text(
+          widget.textDelegate.videoSelectButton,
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 17,
             fontWeight: FontWeight.w700,

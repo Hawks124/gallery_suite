@@ -1,5 +1,4 @@
-/// This file exports all models used by the picker.
-library;
+// This file exports all models used by the picker.
 
 export 'picker_config.dart';
 export 'media_item.dart' show MediaItem;

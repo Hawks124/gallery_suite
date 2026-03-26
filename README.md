@@ -60,7 +60,8 @@ Unlike other pickers that force you to download massive editor dependencies or b
 | Swipe-To-Select    | No                | No                     | ✅ Yes (iOS Photos style)           |
 | Inline Search      | No                | No                     | ✅ Yes (Cross-platform Dart filter) |
 | BYOE Image Editing | No                | No                     | ✅ Yes (Dependency Injection)       |
-| Cloud Providers    | No                | No                     | ✅ Yes (Google Photos Built-in)     |
+| Cloud Providers    | No                | No                     | ✅ Yes (Google & iCloud Built-in)   |
+| UI Feedback        | No                | No                     | ✅ Yes (Cloud Status Badges)        |
 | UI Theming         | System restricted | Custom                 | Fully customizable per-instance     |
 
 > **❤️ A note on Open Source:** `gallery_suite` is proudly powered by the incredible `photo_manager` engine (created by the brilliant authors of `wechat_assets_picker`). While their picker perfectly replicates the WeChat experience, `gallery_suite` focuses on an alternative iOS-inspired masonry design with zero-dependency features like BYOE editing and Glassmorphism.
@@ -98,6 +99,7 @@ Unlike other pickers that force you to download massive editor dependencies or b
 - 🖌️ **Bring Your Own Editor (BYOE) Architecture** — Why bloat your app with forced editors? Pass your favorite editor (like `pro_image_editor`) to the `onEditMedia` callback. The picker natively intercepts the edit, displays an elegant Pencil action in the Fullscreen Preview, and flawlessly updates the preview strip to the new edited image.
 - 🌍 **Zero-Dependency Internationalization (Intl)** — Translate 100% of the UI (buttons, search bar, empty states) without installing heavy `intl` packages. Uses a clean `PickerTextDelegate` pattern.
 - 🔒 **Exit Confirmation Prevention** — Built-in `PopScope` protection. If a user tries to swipe back or press the Android back button after spending time selecting/editing photos, a beautiful Glassmorphic dialog prevents accidental data loss.
+- ☁️ **Native iCloud Support** — Transparently browse and select photos from your iCloud library on iOS. Includes sleek, glassmorphic "Cloud" badges for assets that are being fetched from the cloud.
 - Fully customizable theming via `PickerConfig.brightness` and `primaryColor`.
 - Haptic feedback and native-feeling micro-animations and _Glassmorphism_.
 - Smooth skeleton loaders and optimized pagination (80 items per page).
@@ -428,6 +430,22 @@ final assets = await CustomMediaPicker.show(
 );
 ```
 
+#### 💾 Zero-Dependency Disk Persistence
+
+The Google Photos integration includes a **lightweight, native persistence layer** built entirely with `path_provider` and `dart:io`. This means:
+
+- **Session Survival**: Your OAuth2 tokens (`access_token`, `refresh_token`) and imported cloud assets are saved to local JSON files. Users stay logged in across hot restarts and app closures.
+- **Intelligent Auto-Refresh**: When tokens expire, the service silently exchanges the `refresh_token` in the background — users never see a re-login screen.
+- **No Heavy Dependencies**: No Riverpod, no Bloc, no Hive. The entire state is managed with native `ValueNotifier`s and atomic file I/O.
+
+#### 🔐 Secure Sign-Out
+
+Users can disconnect their Google account directly from the Album Selector sheet. The sign-out flow includes:
+
+1. A **confirmation dialog** (reusing the premium `StandardExitConfirmation` design) warning users that their imported photos will become invisible.
+2. A **loading overlay** while the session is being cleaned.
+3. **Full cleanup**: local JSON files are deleted, tokens are cleared, and the UI automatically returns to the local device gallery.
+
 #### 🚀 Smart Cloud Downloads (Automatic Bridging)
 
 One of the most powerful features of `gallery_suite` is the **Automatic Bridge**. Most Flutter apps (and native plugins) expect a local `File` path to display or upload images. However, Google Photos items are essentially remote URLs.
@@ -448,6 +466,16 @@ for (final item in assets) {
   }
 }
 ```
+
+### ☁️ Native iCloud Support (iOS)
+
+`gallery_suite` provides **Zero-Config iCloud Integration**. Because it leverages the native iOS photo library via the `photo_manager` engine, iCloud photos are seamlessly merged into the main masonry grid without any extra setup.
+
+- **Automated UI Feedback**: For assets stored only in the cloud, the picker automatically displays a subtle, glassmorphic **Cloud badge**.
+- **Transparent Downloading**: When an iCloud-only asset is selected, the operating system handles the download progress natively, and the picker provides the local `File` once it's ready.
+- **No API Keys Required**: Unlike Google Photos, iCloud support is 100% native and requires only the standard `NSPhotoLibraryUsageDescription` in your `Info.plist`.
+
+---
 
 ### 🛠️ Google Cloud Platform (GCP) Setup Guide
 
@@ -775,9 +803,9 @@ The entire look and feel is controlled via `PickerConfig`. Here is exactly what 
 
 We use [Semantic Versioning](https://semver.org/). This package is currently evolving rapidly:
 
-| Version    | Status    | Highlights                                                                                                                                                                                                                                                    |
-| ---------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **v1.0.0** | ✅ Stable | Core engine (Grid, Video, Audio), Live Camera Tile, iOS-style swipe-to-select, Heavy Performance Optimizations (LRU Cache, Decode Queue, Prefetching), Injectable Bring Your Own Editor (BYOE) Architecture, Dart-side Inline Media Filtering / Search engine |
+| Version    | Status    | Highlights                                                                                                                                                                                                                                                                                                                              |
+| ---------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **v1.0.0** | ✅ Stable | Core engine (Grid, Video, Audio), Live Camera Tile, iOS-style swipe-to-select, Heavy Performance Optimizations (LRU Cache, Decode Queue, Prefetching), BYOE Architecture, Inline Search, Google Photos Cloud Provider with native persistence, auto-refresh tokens, secure sign-out flow, iCloud integration, and Drag & Drop Reorder |
 
 ---
 

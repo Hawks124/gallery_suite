@@ -21,8 +21,8 @@ This document outlines the planned roadmap and potential future features for the
 
 ## 🏗️ Long-Term Vision
 
-- [ ] **Web Support**: Expand `photo_manager` abstractions to fully support a seamless web-based file selection fallback that mirrors the mobile app UI.
-- [ ] **Desktop Support (macOS / Windows)**: Native-feeling grid dragging and window-based optimizations.
+- [ ] **Web Support (HTML5 File Input)**: Since `photo_manager` relies on native mobile APIs, the web implementation will abstract the UI and fallback to an elegant `file_selector` or standard `<input type="file" multiple>` overlay that mirrors the mobile masonry layout once files are loaded into browser memory.
+- [ ] **Desktop Support (macOS / Windows)**: Integrate `file_selector` for native window dialogs, and support drag-and-drop file inputs directly into the Masonry Grid window using `desktop_drop`. Ensure keyboard shortcuts (Shift+Click) mirror mobile dragging behaviors.
 
 ---
 

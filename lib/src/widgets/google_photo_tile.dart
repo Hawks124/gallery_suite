@@ -29,30 +29,12 @@ class GooglePhotosTile extends StatelessWidget {
           child: Row(
             children: [
               // Premium Widget-like Cloud Icon
-              Container(
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      primaryColor.withValues(alpha: 0.2),
-                      primaryColor.withValues(alpha: 0.05),
-                    ],
-                  ),
-                  border: Border.all(
-                    color: primaryColor.withValues(alpha: 0.1),
-                    width: 1,
-                  ),
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.cloud_rounded,
-                    color: primaryColor,
-                    size: 28,
-                  ),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  'assets/images/google-photo.png',
+                  package: 'gallery_suite',
+                  fit: BoxFit.contain,
                 ),
               ),
               const SizedBox(width: 14),
@@ -71,7 +53,7 @@ class GooglePhotosTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      'Cloud Storage',
+                      'Pick from Cloud Storage',
                       style: TextStyle(
                         color: theme.secondaryText,
                         fontSize: 13,

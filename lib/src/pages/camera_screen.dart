@@ -6,18 +6,18 @@ import 'package:flutter/services.dart';
 
 import '../../gallery_suite.dart';
 
-/// A premium, full-screen camera screen built with the `camera` package.
-///
-/// This screen is launched internally by the picker when the user taps the
-/// camera tile in the media grid. It handles photo capture or video recording
-/// based on [captureMode].
-///
-/// Returns a [File] via [Navigator.pop] on success, or `null` on cancel.
+// A premium, full-screen camera screen built with the `camera` package.
+//
+// This screen is launched internally by the picker when the user taps the
+// camera tile in the media grid. It handles photo capture or video recording
+// based on [captureMode].
+//
+// Returns a [File] via [Navigator.pop] on success, or `null` on cancel.
 class CameraScreen extends StatefulWidget {
-  /// Whether to capture a photo or record a video.
+  // Whether to capture a photo or record a video.
   final CameraCaptureMode captureMode;
 
-  /// The primary accent color for UI elements (capture button ring, etc.).
+  // The primary accent color for UI elements (capture button ring, etc.).
   final Color primaryColor;
 
   const CameraScreen({
@@ -252,7 +252,7 @@ class _CameraScreenState extends State<CameraScreen>
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Camera preview — scaled to fill screen with no borders
+        // Camera preview - scaled to fill screen with no borders
         Transform.scale(
           scale: scale,
           child: Center(

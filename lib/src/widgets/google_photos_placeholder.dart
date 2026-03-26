@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../intl/picker_text_delegate.dart';
 import '../models/picker_theme.dart';
 
-/// A placeholder widget displayed when the user taps "☁️ Google Photos" but hasn't authenticated yet.
+// A placeholder widget displayed when the user taps "   Google Photos" but hasn't authenticated yet.
 
 class GooglePhotosConnectPlaceholder extends StatelessWidget {
   final PickerTheme theme;
@@ -30,7 +30,7 @@ class GooglePhotosConnectPlaceholder extends StatelessWidget {
             hasScrollBody: false,
             child: Column(
               children: [
-                // ── Top Illustration ───────────────────────────────────────
+                // -- Top Illustration --------------------------------------
                 Expanded(
                   child: SafeArea(
                     bottom: false,
@@ -56,7 +56,7 @@ class GooglePhotosConnectPlaceholder extends StatelessWidget {
                   ),
                 ),
 
-                // ── Bottom Card ─────────────────────────────────────────────
+                // -- Bottom Card --------------------------------------------
                 Container(
                   width: double.infinity,
                   decoration: BoxDecoration(
@@ -89,34 +89,6 @@ class GooglePhotosConnectPlaceholder extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      // Text.rich(
-                      //   TextSpan(
-                      //     children: [
-                      //       TextSpan(
-                      //         text: textDelegate.googlePhotosConnectTitle,
-                      //         style: TextStyle(
-                      //           color: primaryColor,
-                      //           fontSize: 26,
-                      //           fontWeight: FontWeight.w800,
-                      //           height: 1.3,
-                      //           letterSpacing: -0.5,
-                      //         ),
-                      //       ),
-                      //       // TextSpan(
-                      //       //   text: textDelegate
-                      //       //       .googlePhotosConnectTitleHighlight,
-                      //       //   style: TextStyle(
-                      //       //     color: primaryColor,
-                      //       //     fontSize: 26,
-                      //       //     fontWeight: FontWeight.w800,
-                      //       //     height: 1.3,
-                      //       //     letterSpacing: -0.5,
-                      //       //   ),
-                      //       // ),
-                      //     ],
-                      //   ),
-                      // ),
-                      // const SizedBox(height: 16),
                       Text(
                         textDelegate.googlePhotosConnectSubtitle,
                         style: TextStyle(
@@ -206,7 +178,7 @@ class GooglePhotosConnectPlaceholder extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      // ── Lock Icon + "Read-only" Badge ─────────────────────
+                      // -- Lock Icon + "Read-only" Badge --------------------
                       SafeArea(
                         top: false,
                         child: Row(
@@ -219,7 +191,7 @@ class GooglePhotosConnectPlaceholder extends StatelessWidget {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              'Read-only · OAuth 2.0',
+                              'Read-only   OAuth 2.0',
                               style: TextStyle(
                                 color:
                                     theme.secondaryText.withValues(alpha: 0.5),

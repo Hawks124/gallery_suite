@@ -5,34 +5,34 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../gallery_suite.dart';
 
-/// A full-screen, zoomable preview page for a single media asset.
-///
-/// When the user taps a selected thumbnail in the bottom preview strip,
-/// this page is pushed as a full-screen dialog. It first shows the low-res
-/// [thumbnail] (if available) while loading the full-resolution file from
-/// disk, then swaps to the high-res version once ready.
-///
-/// Supports pinch-to-zoom via [InteractiveViewer].
-///
-/// If [onEdit] is provided, an edit button is displayed in the AppBar
-/// allowing the user to invoke their custom editor (BYOE Architecture).
-/// The edit runs in-place — the preview stays open and updates its
-/// displayed image when the editor returns a new file.
+// A full-screen, zoomable preview page for a single media asset.
+//
+// When the user taps a selected thumbnail in the bottom preview strip,
+// this page is pushed as a full-screen dialog. It first shows the low-res
+// [thumbnail] (if available) while loading the full-resolution file from
+// disk, then swaps to the high-res version once ready.
+//
+// Supports pinch-to-zoom via [InteractiveViewer].
+//
+// If [onEdit] is provided, an edit button is displayed in the AppBar
+// allowing the user to invoke their custom editor (BYOE Architecture).
+// The edit runs in-place - the preview stays open and updates its
+// displayed image when the editor returns a new file.
 class FullscreenPreviewPage extends StatefulWidget {
-  /// The asset to display in full resolution.
+  // The asset to display in full resolution.
   final PickerAsset asset;
 
-  /// An optional low-res thumbnail to display while the full file loads.
+  // An optional low-res thumbnail to display while the full file loads.
   final Uint8List? thumbnail;
 
-  /// An optional already-edited file to display instead of the original asset.
+  // An optional already-edited file to display instead of the original asset.
   final File? editedFile;
 
-  /// Async edit callback. Returns the edited [File] or null if cancelled.
-  /// The preview page stays open and updates its display with the result.
+  // Async edit callback. Returns the edited [File] or null if cancelled.
+  // The preview page stays open and updates its display with the result.
   final Future<File?> Function()? onEdit;
 
-  /// Creates a [FullscreenPreviewPage] for the given [asset].
+  // Creates a [FullscreenPreviewPage] for the given [asset].
   const FullscreenPreviewPage({
     super.key,
     required this.asset,
@@ -93,7 +93,7 @@ class _FullscreenPreviewPageState extends State<FullscreenPreviewPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
-        // No manual `leading` — fullscreenDialog: true adds the close button.
+        // No manual `leading` - fullscreenDialog: true adds the close button.
         actions: [
           if (widget.onEdit != null)
             _isEditing

@@ -1,5 +1,5 @@
-/// This file exports all services used by the picker.
-///
+// This file exports all services used by the picker.
+
 library;
 
 export 'media_service.dart' show MediaService;

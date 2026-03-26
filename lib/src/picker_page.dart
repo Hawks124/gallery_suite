@@ -1,3 +1,6 @@
+/// Internal implementation of the main picker UI.
+library;
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
@@ -8,6 +11,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
+
 import '../gallery_suite.dart';
 
 /// The main entry point for the custom media picker.
@@ -18,9 +22,9 @@ import '../gallery_suite.dart';
 ///
 /// The picker automatically routes to the correct UI based on
 /// [PickerConfig.requestType]:
-/// - [RequestType.image] → 3-column masonry grid with multi-select.
-/// - [RequestType.video] → 3-column masonry grid; tap → inline preview sheet.
-/// - [RequestType.audio] → scrollable list with inline `just_audio` playback.
+/// - [RequestType.image]   3-column masonry grid with multi-select.
+/// - [RequestType.video]   3-column masonry grid; tap   inline preview sheet.
+/// - [RequestType.audio]   scrollable list with inline `just_audio` playback.
 ///
 /// ### Example
 /// ```dart
@@ -48,8 +52,8 @@ class CustomMediaPicker {
   /// Opens the media picker as a full-screen route that slides up from the
   /// bottom.
   ///
-  /// - [context] — the [BuildContext] used to push the route.
-  /// - [config] — optional [PickerConfig]; defaults to an image picker with
+  /// - [context] - the [BuildContext] used to push the route.
+  /// - [config] - optional [PickerConfig]; defaults to an image picker with
   ///   up to 10 items selectable.
   ///
   /// Returns `null` if the user cancels, or a non-empty [List<MediaItem>]
@@ -124,11 +128,12 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   final TextEditingController _searchCtrl = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
 
-  // ── Google Photos Cloud State ──────────────────────────────────────────────
+  // -- Google Photos Cloud State ----------------------------------------------
   final GooglePhotosService _googleService = GooglePhotosService.instance;
+  final GooglePhotosProvider _googleProvider = GooglePhotosProvider.instance;
   bool _isCloudMode = false;
-  List<PickerAsset> _cloudAssets = [];
   bool _isCloudLoading = false;
+  bool _isSignOutLoading = false;
 
   /// Initial page loads 80 items; subsequent pages fetch 120 for fewer
   /// round-trips on large libraries.
@@ -155,6 +160,10 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       duration: const Duration(milliseconds: 220),
     );
     _scrollController.addListener(_onScroll);
+
+    // Restore preserved cloud assets from disk asynchronously
+    _googleProvider.restoreState();
+
     _initialize();
   }
 
@@ -231,67 +240,6 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     await _loadAlbums();
   }
 
-  Future<void> _pickFromGooglePhotos() async {
-    if (_isCloudLoading) return;
-
-    setState(() => _isCloudLoading = true);
-    try {
-      final session = await _googleService.createPickerSession();
-      if (session == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text('Impossible de créer la session Google Photos')),
-          );
-        }
-        setState(() => _isCloudLoading = false);
-        return;
-      }
-
-      final pickerUri = session['pickerUri']!;
-      final sessionId = session['id']!;
-
-      debugPrint('[PickerPage] session: $sessionId');
-      debugPrint('[PickerPage] pickerUri: $pickerUri');
-      debugPrint(
-          '[PickerPage] redirectScheme: ${_googleService.redirectScheme}');
-
-      try {
-        await FlutterWebAuth2.authenticate(
-          url: pickerUri,
-          callbackUrlScheme: _googleService.redirectScheme,
-        );
-      } catch (e) {
-        debugPrint('[PickerPage] Auth finished with status/error: $e');
-      }
-
-      // Once we return from the web auth (even if canceled by manual closure),
-      // we fetch using the captured sessionId.
-      final picked = await _googleService.fetchPickedPhotos(sessionId);
-      if (mounted) {
-        setState(() {
-          // Add only unique new assets to the cloud list
-          final newCloud =
-              picked.where((p) => !_cloudAssets.any((a) => a.id == p.id));
-          _cloudAssets.addAll(newCloud);
-
-          // Auto-select newly picked items
-          for (final p in picked) {
-            if (!_selected.any((s) => s.id == p.id)) {
-              if (_selected.length < widget.config.maxSelection) {
-                _selected.add(p);
-              }
-            }
-          }
-          _isCloudLoading = false;
-        });
-      }
-    } catch (e) {
-      debugPrint('General Picker error: $e');
-      if (mounted) setState(() => _isCloudLoading = false);
-    }
-  }
-
   Future<void> _loadAlbums() async {
     final albums = await _service.getAlbums(widget.config.requestType);
     if (!mounted) return;
@@ -337,13 +285,13 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   }
 
   void _onScroll() {
-    // ── Pagination trigger (1500px = ~2 screens ahead) ────────────────────
+    // -- Pagination trigger (1500px = ~2 screens ahead) --------------------
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 1500) {
       if (!_isLoadingMore && _hasMore && !_isLoading) _loadAssets();
     }
 
-    // ── Prefetch thumbnails for items about to come on screen ────────────
+    // -- Prefetch thumbnails for items about to come on screen ------------
     if (widget.config.prefetchEnabled && _assets.isNotEmpty) {
       _prefetchVisibleRange();
     }
@@ -438,6 +386,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       asset,
       _theme,
       widget.config.primaryColor,
+      widget.config.textDelegate,
     );
     if (confirmed && mounted) {
       if (asset is LocalPickerAsset) {
@@ -494,29 +443,19 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     Navigator.of(context).pop(items);
   }
 
-  // ── Google Photos Cloud Methods ────────────────────────────────────────────
+  // -- Google Photos Cloud Methods --------------------------------------------
 
   void _enterCloudMode() {
     setState(() {
       _isCloudMode = true;
-      _cloudAssets = [];
     });
   }
 
   void _exitCloudMode() {
     setState(() {
       _isCloudMode = false;
-      _cloudAssets = [];
     });
   }
-
-  // Future<void> _disconnectGoogle() async {
-  //   await _googleService.signOut();
-  //   setState(() {
-  //     _isCloudMode = false;
-  //     _cloudAssets = [];
-  //   });
-  // }
 
   Future<void> _connectGoogle() async {
     setState(() => _isCloudLoading = true);
@@ -525,6 +464,66 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
     if (mounted) {
       setState(() => _isCloudLoading = false);
+    }
+  }
+
+  Future<void> _pickFromGooglePhotos() async {
+    setState(() => _isCloudLoading = true);
+    try {
+      final sessionData = await _googleService.createPickerSession();
+      if (sessionData == null) return;
+
+      final pickedUrl = sessionData['pickerUri'];
+      final sessionId = sessionData['id'];
+
+      if (pickedUrl != null && sessionId != null) {
+        // Launch Google Photos Picker UI
+        try {
+          await FlutterWebAuth2.authenticate(
+            url: pickedUrl,
+            callbackUrlScheme: _googleService.redirectScheme,
+          );
+        } catch (e) {
+          // WebAuth2 throws if user cancels the flow, but Google Photos API session
+          // might still have items if they picked "Done" then closed.
+          debugPrint('WebAuth2 flow ended: $e');
+        }
+
+        // Fetch what the user actually picked in the session
+        final newPhotos = await _googleService.fetchPickedPhotos(sessionId);
+        await _googleProvider.importPhotos(newPhotos);
+      }
+    } finally {
+      if (mounted) setState(() => _isCloudLoading = false);
+    }
+  }
+
+  Future<void> _handleGooglePhotosSignOut() async {
+    // Show confirmation dialog
+    final confirmation = StandardExitConfirmation(
+      title: widget.config.textDelegate.googlePhotosDisconnectConfirmationTitle,
+      content:
+          widget.config.textDelegate.googlePhotosDisconnectConfirmationSubtitle,
+      confirmText: widget.config.textDelegate.googlePhotosDisconnect,
+      cancelText: widget.config.textDelegate.cancel,
+    );
+
+    final shouldSignOut = await confirmation.show(
+      context,
+      widget.config.primaryColor,
+    );
+
+    if (!shouldSignOut || !mounted) return;
+
+    setState(() => _isSignOutLoading = true);
+
+    try {
+      await _googleProvider.clearAll();
+      if (_isCloudMode) _exitCloudMode();
+    } finally {
+      if (mounted) {
+        setState(() => _isSignOutLoading = false);
+      }
     }
   }
 
@@ -568,6 +567,11 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                       _enterCloudMode();
                     }
                   : null,
+          isGooglePhotosConnected: _googleService.isAuthenticated,
+          onGooglePhotosSignOut: () {
+            Navigator.pop(context);
+            _handleGooglePhotosSignOut();
+          },
         ),
       ),
     ).whenComplete(() {
@@ -600,7 +604,27 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
         child: Scaffold(
           backgroundColor: _theme.background,
           appBar: _buildAppBar(),
-          body: _buildBody(),
+          body: Stack(
+            children: [
+              _buildBody(),
+              if (_isSignOutLoading)
+                Container(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: _theme.surface,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: CircularProgressIndicator(
+                        color: widget.config.primaryColor,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -649,10 +673,11 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                         Flexible(
                           child: Text(
                             _isVideoMode
-                                ? 'Vidéos'
+                                ? widget.config.textDelegate.videosLabel
                                 : _isCloudMode
                                     ? widget.config.textDelegate.googlePhotos
-                                    : (_currentAlbum?.name ?? 'Photos'),
+                                    : (_currentAlbum?.name ??
+                                        widget.config.textDelegate.imagesLabel),
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: _theme.primaryText,
@@ -707,12 +732,32 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   }
 
   Widget _buildBody() {
-    if (_permissionDenied) return _buildPermissionDenied();
+    if (_permissionDenied) {
+      return PermissionDeniedWidget(
+        theme: _theme,
+        title: widget.config.textDelegate.permissionDeniedTitle,
+        subtitle: widget.config.textDelegate.permissionDeniedSubtitle,
+        buttonText: widget.config.textDelegate.permissionDeniedButton,
+      );
+    }
 
     return Column(
       children: [
         Container(height: 0.5, color: _theme.separator),
-        if (!_isCloudMode) _buildInlineSearchBar(),
+        if (!_isCloudMode)
+          InlineSearchBar(
+            theme: _theme,
+            hintText: widget.config.textDelegate.searchPlaceholder,
+            searchQuery: _searchQuery,
+            searchCtrl: _searchCtrl,
+            searchFocus: _searchFocus,
+            onChanged: _onSearchChanged,
+            onCancel: () {
+              _searchCtrl.clear();
+              _onSearchChanged('');
+              _searchFocus.unfocus();
+            },
+          ),
         Expanded(
           child: _isCloudMode ? _buildCloudBody() : _buildGrid(),
         ),
@@ -739,255 +784,329 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       );
     }
 
-    // Show loading spinner on first fetch
-    if (_cloudAssets.isEmpty && _isCloudLoading) {
-      return const Center(child: CircularProgressIndicator.adaptive());
-    }
+    return ValueListenableBuilder<List<RemotePickerAsset>>(
+        valueListenable: _googleProvider.importedAssets,
+        builder: (context, cloudAssets, _) {
+          // Show loading spinner on first fetch
+          if (cloudAssets.isEmpty && _isCloudLoading) {
+            return const Center(child: CircularProgressIndicator.adaptive());
+          }
 
-    // Show empty state with Import Button and Sign Out
-    if (_cloudAssets.isEmpty && !_isCloudLoading) {
-      return Container(
-        color: _theme.background,
-        child: Stack(
-          children: [
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/images/sad-cloud.png',
-                      width: 200,
-                      height: 200,
-                      package: 'gallery_suite',
-                      fit: BoxFit.contain,
-                    ),
-                    const SizedBox(height: 32),
-                    Text(
-                      widget.config.textDelegate.googlePhotosEmptyStateTitle,
-                      style: TextStyle(
-                        color: _theme.primaryText,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      widget.config.textDelegate.googlePhotosEmptyStateSubtitle,
-                      style: TextStyle(
-                        color: _theme.secondaryText,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w400,
-                        height: 1.5,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 32),
-                    ElevatedButton.icon(
-                      onPressed: _pickFromGooglePhotos,
-                      icon: const Icon(Icons.add_photo_alternate_outlined,
-                          size: 20),
-                      label: Text(
-                          widget.config.textDelegate.googlePhotosImportButton),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: widget.config.primaryColor,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 28, vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (_cloudAssets.isNotEmpty) _buildImportButton(),
-          ],
-        ),
-      );
-    }
-
-    // Show cloud photos grid
-    return Stack(
-      children: [
-        MasonryGridView.count(
-          crossAxisCount: 3,
-          mainAxisSpacing: 2,
-          crossAxisSpacing: 2,
-          padding: EdgeInsets.zero,
-          itemCount: _cloudAssets.length + (_isCloudLoading ? 1 : 0),
-          itemBuilder: (context, index) {
-            // Loading indicator at the bottom
-            if (index >= _cloudAssets.length) {
-              return const Padding(
-                padding: EdgeInsets.all(16),
-                child: Center(child: CircularProgressIndicator.adaptive()),
-              );
-            }
-
-            final asset = _cloudAssets[index];
-            final remoteAsset = asset as RemotePickerAsset;
-            final selIdx = _selected.indexWhere((e) => e.id == asset.id);
-            final isSelected = selIdx >= 0;
-
-            // Calculate aspect ratio for masonry
-            final aspectRatio = (asset.width > 0 && asset.height > 0)
-                ? asset.width / asset.height
-                : 1.0;
-
-            return GestureDetector(
-              onTap: () {
-                _toggleSelection(asset);
-              },
-              child: AspectRatio(
-                aspectRatio: aspectRatio.clamp(0.5, 2.0),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    CachedNetworkImage(
-                      imageUrl: remoteAsset.thumbUrl,
-                      httpHeaders: remoteAsset.headers,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                        color: _theme.elevated,
-                      ),
-                      errorWidget: (_, __, ___) => Container(
-                        color: _theme.elevated,
-                        child: Icon(Icons.broken_image_rounded,
-                            color: _theme.secondaryText, size: 28),
-                      ),
-                    ),
-                    if (isSelected)
-                      Container(
-                        color: Colors.black.withValues(alpha: 0.4),
-                        alignment: Alignment.center,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: widget.config.primaryColor,
-                            shape: BoxShape.circle,
+          // Show empty state with Import Button
+          if (cloudAssets.isEmpty && !_isCloudLoading) {
+            return Container(
+              color: _theme.background,
+              child: Stack(
+                children: [
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/images/sad-cloud.png',
+                            width: 200,
+                            height: 200,
+                            package: 'gallery_suite',
+                            fit: BoxFit.contain,
                           ),
-                          child: Text(
-                            '${selIdx + 1}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
+                          const SizedBox(height: 32),
+                          Text(
+                            widget.config.textDelegate
+                                .googlePhotosEmptyStateTitle,
+                            style: TextStyle(
+                              color: _theme.primaryText,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.5,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            widget.config.textDelegate
+                                .googlePhotosEmptyStateSubtitle,
+                            style: TextStyle(
+                              color: _theme.secondaryText,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w400,
+                              height: 1.5,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 32),
+                          ElevatedButton.icon(
+                            onPressed: _pickFromGooglePhotos,
+                            icon: const Icon(Icons.add_photo_alternate_outlined,
+                                size: 20),
+                            label: Text(widget
+                                .config.textDelegate.googlePhotosImportButton),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: widget.config.primaryColor,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 28, vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              textStyle: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                  ],
-                ),
+                    ),
+                  ),
+                  if (cloudAssets.isNotEmpty) _buildImportButton(),
+                ],
               ),
             );
-          },
-        ),
-        _buildImportButton(), // Replaced _buildDisconnectButton with _buildImportButton
-      ],
-    );
+          }
+
+          // Show cloud photos grid
+          return Stack(
+            children: [
+              DraggableSelectionGrid(
+                scrollController: _scrollController,
+                enabled: !_isVideoMode && widget.config.enableSwipeToSelect,
+                onAssetHover: (asset) {
+                  final idx = _selectionIndex(asset.id);
+                  if (idx == -1 &&
+                      _selected.length < widget.config.maxSelection) {
+                    HapticFeedback.selectionClick();
+                    setState(() => _selected.add(asset));
+                  }
+                },
+                child: MasonryGridView.builder(
+                  controller: _scrollController,
+                  padding: EdgeInsets.zero,
+                  gridDelegate:
+                      const SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                  ),
+                  mainAxisSpacing: 2,
+                  crossAxisSpacing: 2,
+                  itemCount: cloudAssets.length + (_isCloudLoading ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    // Loading indicator at the bottom
+                    if (index >= cloudAssets.length) {
+                      return const Padding(
+                        padding: EdgeInsets.all(16),
+                        child:
+                            Center(child: CircularProgressIndicator.adaptive()),
+                      );
+                    }
+
+                    final asset = cloudAssets[index];
+                    final selIdx =
+                        _selected.indexWhere((e) => e.id == asset.id);
+                    final isSelected = selIdx >= 0;
+
+                    // Calculate aspect ratio for masonry
+                    final aspectRatio = (asset.width > 0 && asset.height > 0)
+                        ? asset.width / asset.height
+                        : 1.0;
+
+                    return AspectRatio(
+                      aspectRatio: aspectRatio.clamp(0.5, 2.0),
+                      child: MetaData(
+                        metaData: asset,
+                        behavior: HitTestBehavior.translucent,
+                        child: GestureDetector(
+                          onTap: () {
+                            if (_isVideoMode) {
+                              _onVideoTap(asset);
+                            } else {
+                              _toggleSelection(asset);
+                            }
+                          },
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              CachedNetworkImage(
+                                imageUrl: asset.thumbUrl,
+                                httpHeaders: asset.headers,
+                                fit: BoxFit.cover,
+                                placeholder: (_, __) => Container(
+                                  color: _theme.elevated,
+                                ),
+                                errorWidget: (_, __, ___) => Container(
+                                  color: _theme.elevated,
+                                  child: Icon(Icons.broken_image_rounded,
+                                      color: _theme.secondaryText, size: 28),
+                                ),
+                              ),
+                              if (isSelected)
+                                Container(
+                                  color: Colors.black.withValues(alpha: 0.4),
+                                  alignment: Alignment.center,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: widget.config.primaryColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Text(
+                                      '${selIdx + 1}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              _buildDeleteButton(),
+              _buildImportButton(),
+            ],
+          );
+        });
   }
 
   Widget _buildImportButton() {
     return Positioned(
       bottom: 24,
       right: 24,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _pickFromGooglePhotos,
-          borderRadius: BorderRadius.circular(100),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            decoration: BoxDecoration(
-              color: _theme.surface,
-              borderRadius: BorderRadius.circular(100),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.12),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: _pickFromGooglePhotos,
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                side: BorderSide(
+                  color: _theme.isDark
+                      ? Colors.white.withValues(alpha: 0.15)
+                      : Colors.grey.withValues(alpha: 0.3),
                 ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.add_photo_alternate_rounded,
-                    color: widget.config.primaryColor, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  widget.config.textDelegate.googlePhotosImportButton,
-                  style: TextStyle(
-                    color: _theme.primaryText,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                backgroundColor: Colors.transparent,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: Text(
+                      widget.config.textDelegate.googlePhotosImportButton,
+                      style: TextStyle(
+                        color: _theme.primaryText,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
+          const SizedBox(width: 16),
+          Material(
+            color: _theme.isDark ? Colors.white : const Color(0xFF1E1E1E),
+            shape: const CircleBorder(),
+            child: InkWell(
+              onTap: _pickFromGooglePhotos,
+              customBorder: const CircleBorder(),
+              child: SizedBox(
+                width: 62,
+                height: 62,
+                child: Icon(
+                  Icons.add_photo_alternate_rounded,
+                  color: _theme.isDark ? Colors.black : Colors.white,
+                  size: 22,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildInlineSearchBar() {
-    return Container(
-      color: _theme.surface,
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-      child: Container(
-        height: 38,
-        decoration: BoxDecoration(
-          color: _theme.background, // Contrast against surface
-          borderRadius: BorderRadius.circular(30),
-        ),
-        child: TextField(
-          controller: _searchCtrl,
-          focusNode: _searchFocus,
-          style: TextStyle(color: _theme.primaryText, fontSize: 16),
-          textInputAction: TextInputAction.search,
-          onChanged: _onSearchChanged,
-          decoration: InputDecoration(
-            hintText: widget.config.textDelegate.searchPlaceholder,
-            hintStyle:
-                TextStyle(color: _theme.secondaryText.withValues(alpha: 0.5)),
-            prefixIcon:
-                Icon(Icons.search, color: _theme.secondaryText, size: 20),
-            suffixIcon: _searchQuery.isNotEmpty
-                ? IconButton(
-                    icon: Icon(Icons.cancel,
-                        color: _theme.secondaryText, size: 16),
-                    onPressed: () {
-                      _searchCtrl.clear();
-                      _onSearchChanged('');
-                      _searchFocus.unfocus();
-                    },
-                  )
-                : null,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(30),
-              borderSide: BorderSide(color: Colors.transparent),
+  Widget _buildDeleteButton() {
+    final count = _selected.whereType<RemotePickerAsset>().length;
+    // Don't build at all if selected strip completely covers it, but with AnimatedScale
+    // it smoothly disappears instead.
+    if (!_isCloudMode) return const SizedBox.shrink();
+
+    return Positioned(
+      bottom: 84, // Sit gracefully above the import button
+      right: 24,
+      child: AnimatedScale(
+        scale: count > 0 ? 1.0 : 0.0,
+        curve: Curves.easeOutBack,
+        duration: const Duration(milliseconds: 250),
+        child: IgnorePointer(
+          ignoring: count == 0,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () async {
+                HapticFeedback.mediumImpact();
+                final idsToDelete = _selected
+                    .whereType<RemotePickerAsset>()
+                    .map((e) => e.id)
+                    .toList();
+
+                for (final id in idsToDelete) {
+                  await _googleProvider.removePhoto(id);
+                }
+
+                if (mounted) {
+                  setState(() {
+                    _selected.removeWhere((e) =>
+                        e is RemotePickerAsset && idsToDelete.contains(e.id));
+                  });
+                }
+              },
+              borderRadius: BorderRadius.circular(100),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444), // Dense semantic red
+                  borderRadius: BorderRadius.circular(100),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.25),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.delete_outline_rounded,
+                        color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${widget.config.textDelegate.googlePhotosDeleteButton} ($count)',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(30),
-              borderSide: BorderSide(color: Colors.transparent),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(30),
-              borderSide: BorderSide(color: _theme.elevated),
-            ),
-            contentPadding: const EdgeInsets.symmetric(vertical: 9.5),
           ),
         ),
       ),
@@ -1021,7 +1140,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     }
 
     final List<PickerAsset> displayAssets = _isCloudMode
-        ? _cloudAssets
+        ? _googleProvider.importedAssets.value
         : (_isSearching && _searchQuery.isNotEmpty)
             ? _searchResults.map((e) => LocalPickerAsset(e)).toList()
             : _assets.map((e) => LocalPickerAsset(e)).toList();
@@ -1096,11 +1215,11 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
         scrollController: _scrollController,
         enabled: enableSwipe,
         onAssetHover: (asset) {
-          // Toggle selection during swipe (only add or remove once per drag pass)
+          // Toggle selection during swipe (asset is now a PickerAsset from hit-testing)
           final idx = _selectionIndex(asset.id);
           if (idx == -1 && _selected.length < widget.config.maxSelection) {
             HapticFeedback.selectionClick();
-            setState(() => _selected.add(LocalPickerAsset(asset)));
+            setState(() => _selected.add(asset));
           }
         },
         child: MasonryGridView.builder(
@@ -1260,67 +1379,6 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
             },
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildPermissionDenied() {
-    return Container(
-      color: _theme.background,
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            'assets/images/denied.png',
-            width: 300,
-            height: 300,
-            package: 'gallery_suite',
-            fit: BoxFit.contain,
-          ),
-          const SizedBox(height: 32),
-          Text(
-            'Accès aux photos refusé',
-            style: TextStyle(
-              color: _theme.primaryText,
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Autorisez l\'accès dans les réglages pour continuer à parcourir vos médias locaux.',
-            style: TextStyle(
-              color: _theme.secondaryText,
-              fontSize: 15,
-              fontWeight: FontWeight.w400,
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 32),
-          ElevatedButton.icon(
-            onPressed: PhotoManager.openSetting,
-            icon: const Icon(Icons.settings_rounded, size: 20),
-            label: const Text('Ouvrir les réglages'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: widget.config.primaryColor,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(100),
-              ),
-              textStyle: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

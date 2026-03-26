@@ -42,6 +42,7 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
   late AnimationController _pulseCtrl;
   late Animation<double> _pulseAnim;
   bool _isPressed = false;
+  bool _isLocallyAvailable = true;
 
   @override
   void initState() {
@@ -76,6 +77,10 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
   Future<void> _loadThumbnail() async {
     final asset = widget.asset;
     if (asset is LocalPickerAsset) {
+      // Check iCloud status
+      final isLocal = await asset.entity.isLocallyAvailable();
+      if (mounted) setState(() => _isLocallyAvailable = isLocal);
+
       final data = await _service.getThumbnail(asset.entity);
       if (mounted) {
         _pulseCtrl.stop();
@@ -111,6 +116,8 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
             children: [
               _buildImage(),
               if (widget.asset.type == AssetType.video) _buildVideoBadge(),
+              if (!_isLocallyAvailable && widget.asset is LocalPickerAsset)
+                _buildCloudBadge(),
               if (widget.showPlayOverlay) _buildCenterPlayOverlay(),
               _buildSelectionOverlay(),
             ],
@@ -300,6 +307,31 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
       ],
     );
   }
+
+  Widget _buildCloudBadge() {
+    return Positioned(
+      top: 7,
+      left: 7,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Icon(
+              Icons.cloud_queue_rounded,
+              color: Colors.white,
+              size: 13,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class SelectedPreviewItem extends StatefulWidget {
@@ -330,6 +362,7 @@ class _SelectedPreviewItemState extends State<SelectedPreviewItem>
   final MediaService _service = MediaService();
   late AnimationController _enterCtrl;
   late Animation<double> _enterAnim;
+  bool _isLocallyAvailable = true;
 
   @override
   void initState() {
@@ -351,6 +384,9 @@ class _SelectedPreviewItemState extends State<SelectedPreviewItem>
   Future<void> _load() async {
     final asset = widget.asset;
     if (asset is LocalPickerAsset) {
+      final isLocal = await asset.entity.isLocallyAvailable();
+      if (mounted) setState(() => _isLocallyAvailable = isLocal);
+
       final data = await _service.getPreviewThumbnail(asset.entity);
       if (mounted) setState(() => _data = data);
     }
@@ -417,6 +453,8 @@ class _SelectedPreviewItemState extends State<SelectedPreviewItem>
                               )),
               ),
             ),
+            if (!_isLocallyAvailable && widget.asset is LocalPickerAsset)
+              _buildCloudBadge(),
             Positioned(
               top: -5,
               right: -5,
@@ -466,26 +504,32 @@ class _SelectedPreviewItemState extends State<SelectedPreviewItem>
                 ),
               ),
             ),
-            // if (widget.onEdit != null)
-            //   Positioned(
-            //     bottom: 4,
-            //     right: 4,
-            //     child: Container(
-            //       width: 16,
-            //       height: 16,
-            //       decoration: BoxDecoration(
-            //         color: widget.primaryColor,
-            //         shape: BoxShape.circle,
-            //       ),
-            //       alignment: Alignment.center,
-            //       child: const Icon(
-            //         Icons.edit_rounded,
-            //         color: Colors.white,
-            //         size: 9,
-            //       ),
-            //     ),
-            //   ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCloudBadge() {
+    return Positioned(
+      top: 5,
+      left: 5,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+          child: Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Icon(
+              Icons.cloud_queue_rounded,
+              color: Colors.white,
+              size: 11,
+            ),
+          ),
         ),
       ),
     );
