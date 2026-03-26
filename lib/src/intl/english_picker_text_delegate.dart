@@ -27,7 +27,8 @@ class EnglishPickerTextDelegate extends PickerTextDelegate {
         'Log in with your Google account to freely browse and select your photos stored in the cloud directly from this application.',
     super.googlePhotosConnectButton = 'Connect to Google',
     super.googlePhotosDisconnect = 'Sign out',
-    super.googlePhotosDisconnectConfirmationTitle = 'Sign out of Google Photos?',
+    super.googlePhotosDisconnectConfirmationTitle =
+        'Sign out of Google Photos?',
     super.googlePhotosDisconnectConfirmationSubtitle =
         'Your imported cloud photos will no longer be visible until you sign in again.',
     super.googlePhotosErrorSession = 'Failed to create Google Photos session',

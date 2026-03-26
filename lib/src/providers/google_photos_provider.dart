@@ -6,7 +6,7 @@ import '../models/picker_asset.dart';
 import '../services/google_photos_service.dart';
 
 /// Manages the state and persistence of Google Photos authentication and imported assets.
-/// 
+///
 /// This provider uses [ValueNotifier] to expose reactive state to the UI without requiring
 /// heavy external state management packages. It uses `path_provider` and `dart:io` to
 /// persist data as lightweight JSON files.
@@ -15,8 +15,9 @@ class GooglePhotosProvider {
   static final GooglePhotosProvider instance = GooglePhotosProvider._();
 
   /// Reactive list of assets imported from Google Photos.
-  final ValueNotifier<List<RemotePickerAsset>> importedAssets = ValueNotifier([]);
-  
+  final ValueNotifier<List<RemotePickerAsset>> importedAssets =
+      ValueNotifier([]);
+
   /// Indicating whether the authentication state is currently being loaded from disk.
   final ValueNotifier<bool> isAuthStateLoading = ValueNotifier(false);
 
@@ -46,7 +47,7 @@ class GooglePhotosProvider {
         final access = data['access_token'] as String?;
         final refresh = data['refresh_token'] as String?;
         final expiryStr = data['expiry'] as String?;
-        
+
         DateTime? expiry;
         if (expiryStr != null) {
           expiry = DateTime.tryParse(expiryStr);
@@ -55,8 +56,11 @@ class GooglePhotosProvider {
         service.setTokens(access, refresh, expiry);
 
         // Check token expiry
-        if (access != null && expiry != null && DateTime.now().isAfter(expiry)) {
-          debugPrint('[GooglePhotosProvider] Access token expired. Attempting refresh.');
+        if (access != null &&
+            expiry != null &&
+            DateTime.now().isAfter(expiry)) {
+          debugPrint(
+              '[GooglePhotosProvider] Access token expired. Attempting refresh.');
           if (refresh != null) {
             final refreshed = await service.refreshAccessToken();
             if (refreshed) {
@@ -79,19 +83,20 @@ class GooglePhotosProvider {
       if (assetsFile.existsSync()) {
         final content = await assetsFile.readAsString();
         final List<dynamic> decoded = json.decode(content);
-        
+
         // If authenticated, inject the authorization headers so images can actually load
-        final headers = service.accessToken != null 
-            ? {'Authorization': 'Bearer ${service.accessToken}'} 
+        final headers = service.accessToken != null
+            ? {'Authorization': 'Bearer ${service.accessToken}'}
             : null;
 
         final loadedAssets = decoded
             .map((e) => RemotePickerAsset.fromJson(e as Map<String, dynamic>,
                 injectedHeaders: headers?.cast<String, String>()))
             .toList();
-            
+
         importedAssets.value = loadedAssets;
-        debugPrint('[GooglePhotosProvider] Restored ${loadedAssets.length} assets');
+        debugPrint(
+            '[GooglePhotosProvider] Restored ${loadedAssets.length} assets');
       }
     } catch (e) {
       debugPrint('[GooglePhotosProvider] Error restoring state: $e');
@@ -104,7 +109,7 @@ class GooglePhotosProvider {
   Future<void> saveState() async {
     try {
       final service = GooglePhotosService.instance;
-      
+
       // Save Auth State
       final authFile = await _authFile;
       if (service.accessToken != null || service.refreshToken != null) {
@@ -129,16 +134,16 @@ class GooglePhotosProvider {
   /// Appends new photos to the import list, preventing duplicates.
   Future<void> importPhotos(List<RemotePickerAsset> newPhotos) async {
     if (newPhotos.isEmpty) return;
-    
+
     final current = List<RemotePickerAsset>.from(importedAssets.value);
     final existingIds = current.map((e) => e.id).toSet();
-    
+
     for (final asset in newPhotos) {
       if (!existingIds.contains(asset.id)) {
         current.add(asset);
       }
     }
-    
+
     importedAssets.value = current;
     await saveState();
   }
@@ -156,7 +161,7 @@ class GooglePhotosProvider {
     importedAssets.value = [];
     final service = GooglePhotosService.instance;
     await service.signOut(); // Disconnects Google SignIn & clears memory tokens
-    
+
     try {
       final authFile = await _authFile;
       if (authFile.existsSync()) authFile.deleteSync();

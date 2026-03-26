@@ -196,7 +196,8 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            widget.asset.title ?? widget.textDelegate.videoUntitled,
+                            widget.asset.title ??
+                                widget.textDelegate.videoUntitled,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(

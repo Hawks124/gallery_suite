@@ -27,10 +27,12 @@ class FrenchPickerTextDelegate extends PickerTextDelegate {
         'Connectez-vous avec votre compte Google pour parcourir et sélectionner librement vos photos stockées dans le cloud directement depuis cette application.',
     super.googlePhotosConnectButton = 'Se connecter à Google',
     super.googlePhotosDisconnect = 'Se déconnecter',
-    super.googlePhotosDisconnectConfirmationTitle = 'Se déconnecter de Google Photos ?',
+    super.googlePhotosDisconnectConfirmationTitle =
+        'Se déconnecter de Google Photos ?',
     super.googlePhotosDisconnectConfirmationSubtitle =
         'Vos photos cloud importées ne seront plus visibles jusqu\'à ce que vous vous reconnectiez.',
-    super.googlePhotosErrorSession = 'Impossible de créer la session Google Photos',
+    super.googlePhotosErrorSession =
+        'Impossible de créer la session Google Photos',
     super.googlePhotosEmptyStateTitle =
         'Votre bibliothèque est protégée ou vide',
     super.googlePhotosEmptyStateSubtitle =

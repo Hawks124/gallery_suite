@@ -124,8 +124,9 @@ class GooglePhotosService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
         _accessToken = data['access_token'] as String?;
-        _tokenExpiry = DateTime.now().add(Duration(seconds: data['expires_in'] as int? ?? 3599));
-        
+        _tokenExpiry = DateTime.now()
+            .add(Duration(seconds: data['expires_in'] as int? ?? 3599));
+
         // Re-authenticate the internal client
         if (_accessToken != null) {
           final credentials = auth.AccessCredentials(
@@ -243,7 +244,8 @@ class GooglePhotosService {
         final data = json.decode(tokenResponse.body) as Map<String, dynamic>;
         _accessToken = data['access_token'] as String?;
         _refreshToken = data['refresh_token'] as String?;
-        _tokenExpiry = DateTime.now().add(Duration(seconds: data['expires_in'] as int? ?? 3599));
+        _tokenExpiry = DateTime.now()
+            .add(Duration(seconds: data['expires_in'] as int? ?? 3599));
 
         if (_accessToken != null) {
           final returnedScopes = data['scope'] as String?;
@@ -418,7 +420,7 @@ class GooglePhotosService {
         final items = body['mediaItems'] as List<dynamic>? ?? [];
         debugPrint(
             '[GooglePhotosService] Found ${items.length} media items in session');
-        
+
         final List<RemotePickerAsset> newAssets = items
             .map((item) => _parseMediaItem(item as Map<String, dynamic>))
             .whereType<RemotePickerAsset>()
