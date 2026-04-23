@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../gallery_suite.dart';
 
@@ -112,12 +113,16 @@ class _CameraScreenState extends State<CameraScreen>
     try {
       await controller.initialize();
 
-      // Check flash support
-      try {
-        await controller.setFlashMode(_flashMode);
-        _hasFlash = true;
-      } catch (_) {
+      // Check flash support (Web cameras do not have flash hardware)
+      if (kIsWeb) {
         _hasFlash = false;
+      } else {
+        try {
+          await controller.setFlashMode(_flashMode);
+          _hasFlash = true;
+        } catch (_) {
+          _hasFlash = false;
+        }
       }
 
       if (mounted) {

@@ -1,8 +1,9 @@
 // Data structures for unified local and remote media assets.
 
 import 'dart:io';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:photo_manager/photo_manager.dart';
+export 'package:photo_manager/photo_manager.dart' show AssetType;
 
 // A unified representation of any media asset that the picker can display,
 // whether from the local device gallery or from a remote cloud source
@@ -91,6 +92,10 @@ class RemotePickerAsset implements PickerAsset {
   // For Google Photos, append `=w400-h400-c` for thumbnails or `=d` for full-res download.
   final String baseUrl;
 
+  // Reference to the authenticated service to handle Web-specific byte fetching.
+  // Using [dynamic] to avoid circular dependency with GooglePhotosService.
+  final dynamic googleService;
+
   // Optional HTTP headers required to access the URL (e.g., Authorization headers).
   final Map<String, String>? headers;
 
@@ -104,6 +109,7 @@ class RemotePickerAsset implements PickerAsset {
     this.height = 0,
     this.duration = Duration.zero,
     this.headers,
+    this.googleService,
   });
 
   Map<String, dynamic> toJson() => {
@@ -117,7 +123,7 @@ class RemotePickerAsset implements PickerAsset {
       };
 
   factory RemotePickerAsset.fromJson(Map<String, dynamic> json,
-      {Map<String, String>? injectedHeaders}) {
+      {Map<String, String>? injectedHeaders, dynamic googleService}) {
     return RemotePickerAsset(
       id: json['id'] as String,
       baseUrl: json['baseUrl'] as String,
@@ -127,6 +133,7 @@ class RemotePickerAsset implements PickerAsset {
       height: json['height'] as int? ?? 0,
       duration: Duration(milliseconds: json['duration_ms'] as int? ?? 0),
       headers: injectedHeaders,
+      googleService: googleService,
     );
   }
 
@@ -135,6 +142,12 @@ class RemotePickerAsset implements PickerAsset {
   // For Google Photos API, this appends dimensions and crop directives.
   // Videos MUST include `-v` to return an image thumbnail instead of video bytes.
   String get thumbUrl {
+    // For Google Photos Picker API 2025 signed URLs (ppa/), appending parameters
+    // often fails due to signature mismatch or CORS on all platforms it breaks the signature.
+    if (baseUrl.contains('/ppa/')) {
+      return baseUrl;
+    }
+
     if (type == AssetType.video) {
       return '$baseUrl=w400-h400-c-v';
     }
@@ -144,10 +157,26 @@ class RemotePickerAsset implements PickerAsset {
   // Returns the full-resolution download URL.
   // Videos use `=dv` to download the video file, images use `=d`.
   String get fullUrl {
-    if (type == AssetType.video) {
-      return '$baseUrl=dv';
+    // For Google Photos Picker API 2025 signed URLs (ppa/), appending parameters
+    // often fails due to signature mismatch or CORS on all platforms it breaks the signature.
+    if (baseUrl.contains('/ppa/')) {
+      return baseUrl;
     }
-    return '$baseUrl=d';
+
+    if (type == AssetType.video) {
+      // Use =m18 for Web (transcoded mp4) for better compatibility
+      // Use =dv for other platforms (direct video)
+      final suffix = kIsWeb ? '=m18' : '=dv';
+      return '$baseUrl$suffix';
+    }
+    return '$baseUrl=w2048-h2048'; // High resolution for photos
+  }
+
+  /// Returns the raw bytes for this asset.
+  ///
+  /// Fetches from Google Photos using the authenticated service.
+  Future<Uint8List?> get bytes async {
+    return googleService?.getMediaBytes(fullUrl);
   }
 }
 
@@ -183,13 +212,14 @@ class FilePickerAsset implements PickerAsset {
   // Creates a [FilePickerAsset] from a file path.
   FilePickerAsset({
     required this.filePath,
+    String? title,
     this.bytes,
     this.width = 0,
     this.height = 0,
     this.duration = Duration.zero,
   })  : id = filePath.hashCode.toRadixString(36),
-        title = filePath.split(Platform.pathSeparator).last,
-        type = _inferType(filePath);
+        title = title ?? filePath.split('/').last.split('\\').last,
+        type = _inferType(title ?? filePath);
 
   // Convenience: return the local [File].
   File get file => File(filePath);

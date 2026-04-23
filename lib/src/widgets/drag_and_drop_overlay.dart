@@ -50,43 +50,53 @@ class _DragAndDropOverlayState extends State<DragAndDropOverlay> {
             Positioned.fill(
               child: ClipRect(
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                  filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                   child: Container(
-                    color: widget.theme.surface.withValues(alpha: 0.6),
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 30),
-                        decoration: BoxDecoration(
-                          color: widget.theme.surface,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: widget.primaryColor.withValues(alpha: 0.5),
-                            width: 2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 20,
-                              spreadRadius: 5,
-                            )
-                          ],
+                    color: widget.theme.surface.withValues(alpha: 0.8),
+                    padding: const EdgeInsets.all(32),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: widget.primaryColor.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: widget.primaryColor.withValues(alpha: 0.6),
+                          width: 3,
                         ),
+                      ),
+                      child: Center(
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
-                              Icons.file_upload_outlined,
-                              size: 64,
-                              color: widget.primaryColor,
+                            Container(
+                              padding: const EdgeInsets.all(28),
+                              decoration: BoxDecoration(
+                                color:
+                                    widget.primaryColor.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.cloud_upload_rounded,
+                                size: 72,
+                                color: widget.primaryColor,
+                              ),
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 24),
                             Text(
                               widget.label,
                               style: TextStyle(
                                 color: widget.theme.primaryText,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Release files to instantly add them to your selection',
+                              style: TextStyle(
+                                color: widget.theme.secondaryText,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],

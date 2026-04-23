@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import '../utils/web_utils.dart';
 import '../intl/picker_text_delegate.dart';
 import '../models/picker_theme.dart';
 
@@ -102,80 +104,95 @@ class GooglePhotosConnectPlaceholder extends StatelessWidget {
                       SafeArea(
                         top: false,
                         bottom: false,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: onConnect,
-                                style: OutlinedButton.styleFrom(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 18),
-                                  side: BorderSide(
-                                    color: isDark
-                                        ? Colors.white.withValues(alpha: 0.15)
-                                        : Colors.grey.withValues(alpha: 0.3),
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(100),
-                                  ),
-                                  backgroundColor: Colors.transparent,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Image.asset(
-                                      'assets/images/google.png',
-                                      package: 'gallery_suite',
-                                      width: 22,
-                                      height: 22,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                        return Image.asset(
-                                          'assets/images/google.png',
-                                          width: 22,
-                                          height: 22,
-                                        );
-                                      },
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Flexible(
-                                      child: Text(
-                                        textDelegate.googlePhotosConnectButton,
-                                        style: TextStyle(
-                                          color: theme.primaryText,
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.w700,
-                                          letterSpacing: -0.3,
+                        child: kIsWeb
+                            ? Container(
+                                constraints:
+                                    const BoxConstraints(minHeight: 56),
+                                width: double.infinity,
+                                alignment: Alignment.center,
+                                child: WebUtils.renderWebLoginButton(),
+                              )
+                            : Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: onConnect,
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 18),
+                                        side: BorderSide(
+                                          color: isDark
+                                              ? Colors.white
+                                                  .withValues(alpha: 0.15)
+                                              : Colors.grey
+                                                  .withValues(alpha: 0.3),
                                         ),
-                                        overflow: TextOverflow.ellipsis,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(100),
+                                        ),
+                                        backgroundColor: Colors.transparent,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Image.asset(
+                                            'assets/images/google.png',
+                                            package: 'gallery_suite',
+                                            width: 22,
+                                            height: 22,
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                              return Image.asset(
+                                                'assets/images/google.png',
+                                                width: 22,
+                                                height: 22,
+                                              );
+                                            },
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Flexible(
+                                            child: Text(
+                                              textDelegate
+                                                  .googlePhotosConnectButton,
+                                              style: TextStyle(
+                                                color: theme.primaryText,
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.w700,
+                                                letterSpacing: -0.3,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Material(
-                              color: isDark
-                                  ? Colors.white
-                                  : const Color(0xFF1E1E1E),
-                              shape: const CircleBorder(),
-                              child: InkWell(
-                                onTap: onConnect,
-                                customBorder: const CircleBorder(),
-                                child: SizedBox(
-                                  width: 62,
-                                  height: 62,
-                                  child: Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                    color: isDark ? Colors.black : Colors.white,
-                                    size: 22,
                                   ),
-                                ),
+                                  const SizedBox(width: 16),
+                                  Material(
+                                    color: isDark
+                                        ? Colors.white
+                                        : const Color(0xFF1E1E1E),
+                                    shape: const CircleBorder(),
+                                    child: InkWell(
+                                      onTap: onConnect,
+                                      customBorder: const CircleBorder(),
+                                      child: SizedBox(
+                                        width: 62,
+                                        height: 62,
+                                        child: Icon(
+                                          Icons.arrow_forward_ios_rounded,
+                                          color: isDark
+                                              ? Colors.black
+                                              : Colors.white,
+                                          size: 22,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
                       ),
                       const SizedBox(height: 24),
                       // -- Lock Icon + "Read-only" Badge --------------------

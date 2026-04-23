@@ -57,6 +57,19 @@ Welcome to the first stable release of `gallery_suite`! This package provides a 
 - **Built-in Languages**: Ships with `EnglishPickerTextDelegate` and `FrenchPickerTextDelegate` out-of-the-box.
 - **Micro-Overrides**: Easily override single words natively via `FrenchPickerTextDelegate(confirm: 'Envoyer')`.
 
+#### 📋 Smart Clipboard Integration
+
+- **Seamless Media Paste**: Natively parses the system clipboard for raw image bytes (e.g., screenshots), local file paths, or remote media URLs (with automatic MIME detection).
+- **Isolated Pseudo-Album**: Displays pasted multi-media assets beautifully inside the masonry grid as a virtual "Clipboard" album, exactly like Google Photos or local storage.
+- **Opt-In & Pure Dart**: Completely optional (`enableSmartClipboard: true`) and zero-bloat. Raw bytes are securely flushed to temporary files to prevent OOM errors and memory leaks.
+- **Cross-Picker Support**: The Smart Clipboard is natively accessible not only in the Image Picker's Album Sheet but also directly inside the Audio Picker's AppBar via an intelligent trailing icon.
+
+#### 🛠️ Pre-Selected Media (Initial Selection)
+
+- **Seamless Editing**: Easily pass a `initialSelection` list of `MediaItem`s to the `PickerConfig` to re-open the picker with those items already selected.
+- **Smart Mapping**: The package automatically matches the injected items with the grid assets using their `id`, preserving the exact visual selection state across sessions.
+- **Cross-Picker Support**: Works natively for Image, Video, and Audio pickers.
+
 #### 🖌️ Bring Your Own Editor (BYOE) Integration
 
 - **Zero Bloatware Image Editing**: Natively edit/crop selected images inside the picker via the new `onEditMedia` callback in `PickerConfig` without adding heavy editor dependencies to the package.

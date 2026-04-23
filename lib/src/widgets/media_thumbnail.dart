@@ -1,12 +1,17 @@
-import 'dart:typed_data';
 import 'dart:io';
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:photo_manager/photo_manager.dart';
-import '../services/media_service.dart';
+import 'dart:async';
+import 'package:video_player/video_player.dart';
+import 'video_preview_sheet.dart';
+import '../sources/media_source_factory.dart';
 import '../pages/fullscreen_preview_page.dart';
 import '../models/picker_asset.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import '../models/picker_theme.dart';
+import '../intl/picker_text_delegate.dart';
+import '../services/google_photos_service.dart';
+import 'auth_image.dart';
 
 class MediaThumbnailWidget extends StatefulWidget {
   final PickerAsset asset;
@@ -17,6 +22,8 @@ class MediaThumbnailWidget extends StatefulWidget {
   final bool showPlayOverlay;
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
+  final GooglePhotosService? googleService;
+  final PickerTheme theme;
 
   const MediaThumbnailWidget({
     super.key,
@@ -25,6 +32,8 @@ class MediaThumbnailWidget extends StatefulWidget {
     required this.primaryColor,
     required this.isDark,
     required this.onTap,
+    required this.theme,
+    this.googleService,
     this.showPlayOverlay = false,
     this.selectionNumber,
     this.onLongPress,
@@ -38,11 +47,11 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
     with SingleTickerProviderStateMixin {
   Uint8List? _thumbnail;
   bool _loading = true;
-  final MediaService _service = MediaService.instance;
   late AnimationController _pulseCtrl;
   late Animation<double> _pulseAnim;
   bool _isPressed = false;
   bool _isLocallyAvailable = true;
+  VideoPlayerController? _videoThumbnailController;
 
   @override
   void initState() {
@@ -71,26 +80,98 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
   @override
   void dispose() {
     _pulseCtrl.dispose();
+    _videoThumbnailController?.dispose();
     super.dispose();
   }
 
   Future<void> _loadThumbnail() async {
     final asset = widget.asset;
+
+    if (asset is RemotePickerAsset) {
+      // Remote assets don't need manual thumbnail loading.
+      if (mounted) {
+        _pulseCtrl.stop();
+        setState(() => _loading = false);
+      }
+      return;
+    }
+
     if (asset is LocalPickerAsset) {
       // Check iCloud status
       final isLocal = await asset.entity.isLocallyAvailable();
       if (mounted) setState(() => _isLocallyAvailable = isLocal);
+    }
 
-      final data = await _service.getThumbnail(asset.entity);
-      if (mounted) {
-        _pulseCtrl.stop();
-        setState(() {
-          _thumbnail = data;
-          _loading = false;
-        });
+    if (asset is FilePickerAsset &&
+        asset.bytes == null &&
+        asset.type == AssetType.video) {
+      _initVideoThumbnail();
+      return;
+    }
+
+    if (asset is FilePickerAsset) {
+      if (asset.bytes != null && asset.bytes!.isNotEmpty) {
+        if (mounted) {
+          _pulseCtrl.stop();
+          setState(() {
+            _thumbnail = asset.bytes;
+            _loading = false;
+          });
+        }
+        return;
       }
-    } else {
-      // Remote assets don't need manual thumbnail loading from MediaService.
+
+      if (asset.type == AssetType.image) {
+        try {
+          final file = File(asset.filePath);
+          if (file.existsSync() && !kIsWeb) {
+            final data = await file.readAsBytes();
+            if (mounted) {
+              _pulseCtrl.stop();
+              setState(() {
+                _thumbnail = data;
+                _loading = false;
+              });
+            }
+            return;
+          }
+        } catch (_) {}
+      }
+    }
+
+    final source = MediaSourceFactory.activeSource;
+    final data = await source.getThumbnail(asset);
+
+    if (mounted) {
+      _pulseCtrl.stop();
+      setState(() {
+        _thumbnail = data;
+        _loading = false;
+      });
+    }
+  }
+
+  Future<void> _initVideoThumbnail() async {
+    final asset = widget.asset;
+    if (asset is! FilePickerAsset) return;
+
+    try {
+      final controller = kIsWeb
+          ? VideoPlayerController.networkUrl(Uri.parse(asset.filePath))
+          : VideoPlayerController.file(File(asset.filePath));
+
+      await controller.initialize();
+      if (!mounted) {
+        controller.dispose();
+        return;
+      }
+      _pulseCtrl.stop();
+      setState(() {
+        _videoThumbnailController = controller;
+        _loading = false;
+      });
+    } catch (e) {
+      debugPrint('[MediaThumbnail] Video init error: $e');
       if (mounted) {
         _pulseCtrl.stop();
         setState(() => _loading = false);
@@ -131,20 +212,41 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
     final asset = widget.asset;
 
     if (asset is RemotePickerAsset) {
-      return CachedNetworkImage(
+      return AuthImage(
         imageUrl: asset.thumbUrl,
-        httpHeaders: asset.headers,
-        fit: BoxFit.cover,
-        placeholder: (_, __) => _buildShimmer(),
-        errorWidget: (_, __, ___) => Container(
-          color: _themeHighlight(),
-          child: Icon(Icons.broken_image_rounded,
-              color: widget.isDark ? Colors.white24 : Colors.black26, size: 24),
-        ),
+        googleService: widget.googleService,
+        theme: widget.theme,
+        headers: asset.headers,
       );
     }
 
-    if (_loading || _thumbnail == null) {
+    if (_loading) {
+      return _buildShimmer();
+    }
+
+    if (_thumbnail == null) {
+      if (asset.type == AssetType.video) {
+        if (_videoThumbnailController != null &&
+            _videoThumbnailController!.value.isInitialized) {
+          return FittedBox(
+            fit: BoxFit.cover,
+            clipBehavior: Clip.hardEdge,
+            child: SizedBox(
+              width: _videoThumbnailController!.value.size.width,
+              height: _videoThumbnailController!.value.size.height,
+              child: VideoPlayer(_videoThumbnailController!),
+            ),
+          );
+        }
+        return Container(
+          color: _themeBase(),
+          child: Center(
+            child: Icon(Icons.video_camera_back_outlined,
+                color: widget.isDark ? Colors.white30 : Colors.black26,
+                size: 32),
+          ),
+        );
+      }
       return _buildShimmer();
     }
 
@@ -339,8 +441,11 @@ class SelectedPreviewItem extends StatefulWidget {
   final int index;
   final Color primaryColor;
   final VoidCallback onRemove;
+  final PickerTheme theme;
+  final GooglePhotosService? googleService;
   final File? editedFile;
   final Future<File?> Function()? onEdit;
+  final PickerTextDelegate textDelegate;
 
   const SelectedPreviewItem({
     super.key,
@@ -348,8 +453,11 @@ class SelectedPreviewItem extends StatefulWidget {
     required this.index,
     required this.primaryColor,
     required this.onRemove,
+    required this.theme,
+    this.googleService,
     this.editedFile,
     this.onEdit,
+    required this.textDelegate,
   });
 
   @override
@@ -359,7 +467,6 @@ class SelectedPreviewItem extends StatefulWidget {
 class _SelectedPreviewItemState extends State<SelectedPreviewItem>
     with SingleTickerProviderStateMixin {
   Uint8List? _data;
-  final MediaService _service = MediaService();
   late AnimationController _enterCtrl;
   late Animation<double> _enterAnim;
   bool _isLocallyAvailable = true;
@@ -383,13 +490,32 @@ class _SelectedPreviewItemState extends State<SelectedPreviewItem>
 
   Future<void> _load() async {
     final asset = widget.asset;
+    if (asset is RemotePickerAsset) return;
+
     if (asset is LocalPickerAsset) {
       final isLocal = await asset.entity.isLocallyAvailable();
       if (mounted) setState(() => _isLocallyAvailable = isLocal);
-
-      final data = await _service.getPreviewThumbnail(asset.entity);
-      if (mounted) setState(() => _data = data);
     }
+
+    // Short-circuit for file-based assets (clipboard, desktop drop, etc.)
+    // NativeMediaSource.getPreviewThumbnail() ignores these, returning null.
+    if (asset is FilePickerAsset) {
+      Uint8List? data;
+      if (asset.bytes != null && asset.bytes!.isNotEmpty) {
+        data = asset.bytes;
+      } else if (!kIsWeb) {
+        try {
+          final f = File(asset.filePath);
+          if (f.existsSync()) data = await f.readAsBytes();
+        } catch (_) {}
+      }
+      if (mounted) setState(() => _data = data);
+      return;
+    }
+
+    final source = MediaSourceFactory.activeSource;
+    final data = await source.getPreviewThumbnail(asset);
+    if (mounted) setState(() => _data = data);
   }
 
   @override
@@ -403,54 +529,68 @@ class _SelectedPreviewItemState extends State<SelectedPreviewItem>
           children: [
             GestureDetector(
               onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    fullscreenDialog: true,
-                    builder: (_) => FullscreenPreviewPage(
-                      asset: widget.asset,
-                      thumbnail: _data,
-                      editedFile: widget.editedFile,
-                      onEdit: widget.onEdit,
+                if (widget.asset.type == AssetType.video) {
+                  VideoPreviewSheet.show(
+                    context,
+                    widget.asset,
+                    widget.theme,
+                    widget.primaryColor,
+                    widget.textDelegate,
+                    widget.googleService,
+                  );
+                } else {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      fullscreenDialog: true,
+                      builder: (_) => FullscreenPreviewPage(
+                        asset: widget.asset,
+                        thumbnail: _data,
+                        editedFile: widget.editedFile,
+                        onEdit: widget.onEdit,
+                        theme: widget.theme,
+                        googleService: widget.googleService,
+                      ),
                     ),
-                  ),
-                );
+                  );
+                }
               },
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: widget.editedFile != null
-                    ? Image.file(
-                        widget.editedFile!,
-                        width: 66,
-                        height: 66,
-                        fit: BoxFit.cover,
-                        gaplessPlayback: true,
-                      )
-                    : (widget.asset is RemotePickerAsset)
-                        ? CachedNetworkImage(
-                            imageUrl:
-                                (widget.asset as RemotePickerAsset).thumbUrl,
-                            httpHeaders:
-                                (widget.asset as RemotePickerAsset).headers,
-                            width: 66,
-                            height: 66,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(
-                              color: const Color(0xFF2C2C2E),
-                            ),
-                          )
-                        : (_data != null
-                            ? Image.memory(
-                                _data!,
-                                width: 66,
-                                height: 66,
-                                fit: BoxFit.cover,
-                                gaplessPlayback: true,
-                              )
-                            : Container(
-                                width: 66,
-                                height: 66,
-                                color: const Color(0xFF2C2C2E),
-                              )),
+              child: Hero(
+                tag: 'preview_${widget.asset.id}',
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: widget.editedFile != null
+                      ? Image.file(
+                          widget.editedFile!,
+                          width: 66,
+                          height: 66,
+                          fit: BoxFit.cover,
+                          gaplessPlayback: true,
+                        )
+                      : (widget.asset is RemotePickerAsset)
+                          ? AuthImage(
+                              imageUrl:
+                                  (widget.asset as RemotePickerAsset).thumbUrl,
+                              googleService: widget.googleService,
+                              theme: widget.theme,
+                              headers:
+                                  (widget.asset as RemotePickerAsset).headers,
+                              width: 66,
+                              height: 66,
+                            )
+                          : (_data != null
+                              ? Image.memory(
+                                  _data!,
+                                  width: 66,
+                                  height: 66,
+                                  fit: BoxFit.cover,
+                                  gaplessPlayback: true,
+                                )
+                              : Container(
+                                  width: 66,
+                                  height: 66,
+                                  color: const Color(0xFF2C2C2E),
+                                )),
+                ),
               ),
             ),
             if (!_isLocallyAvailable && widget.asset is LocalPickerAsset)

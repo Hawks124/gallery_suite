@@ -1,8 +1,16 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:gallery_suite/gallery_suite.dart';
+
+class PickedMedia {
+  final File? file;
+  final Uint8List? bytes;
+  final String title;
+  PickedMedia({this.file, this.bytes, this.title = ''});
+}
 
 // ----------------------------------------------------------------------------
 // Gallery Suite - Example App
@@ -22,10 +30,33 @@ import 'package:gallery_suite/gallery_suite.dart';
 
 // Entry point for the Gallery Suite example application.
 void main() {
+  // Ensure Flutter is initialized before calling services.
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // -- GOOGLE PHOTOS INITIALIZATION ------------------------------------------
+  // To enable Google Photos, you must initialize the service with your
+  // Google Cloud credentials.
+  //
+  // 1. WEB: Create a 'Web Application' client ID in GCP.
+  //    IMPORTANT: Add your origin (e.g. http://localhost:<port>) to
+  //    'Authorized JavaScript origins' in GCP to avoid FedCM/CORS errors.
+  //
+  // 2. ANDROID/iOS: Create a 'Native' client ID in GCP.
+  //    The redirectScheme MUST match the format 'com.googleusercontent.apps.<id>'.
+  // --------------------------------------------------------------------------
+  GooglePhotosService.instance.init(
+    clientId: kIsWeb
+        ? 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com'
+        : 'YOUR_NATIVE_CLIENT_ID.apps.googleusercontent.com',
+    apiKey: 'YOUR_API_KEY_HERE',
+    redirectScheme: 'com.googleusercontent.apps.YOUR_NATIVE_CLIENT_ID',
+  );
+
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark,
   ));
+
   runApp(const ExampleApp());
 }
 
@@ -72,10 +103,15 @@ class PickerDemoPage extends StatefulWidget {
 }
 
 class _PickerDemoPageState extends State<PickerDemoPage> {
-  final List<File> _pickedImages = [];
-  File? _pickedVideo;
-  File? _pickedAudio;
-  String? _audioTitle;
+  // 📸 We store the processed files/bytes for the UI
+  final List<PickedMedia> _pickedImages = [];
+  PickedMedia? _pickedVideo;
+  PickedMedia? _pickedAudio;
+
+  // 🔄 We store the raw MediaItems to demonstrate the `initialSelection` state-restoration feature
+  List<MediaItem> _selectedImageItems = [];
+  List<MediaItem> _selectedVideoItems = [];
+  List<MediaItem> _selectedAudioItems = [];
 
   // -- IMAGE PICKER --------------------------------------------------------
   // This is the most feature-rich mode. It showcases:
@@ -104,6 +140,12 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         // across the grid to rapidly select multiple images without lifting.
         // The grid auto-scrolls when your finger nears the top/bottom edge.
         enableSwipeToSelect: true,
+
+        //  Smart Clipboard integration: adds a tile to paste URLs, files, and bytes
+        enableSmartClipboard: true,
+
+        //  Restore previously selected items when the picker opens!
+        initialSelection: _selectedImageItems,
 
         //  Bring Your Own Editor (BYOE): Add a custom image editor
         // without adding bloatware to the internal package!
@@ -139,7 +181,8 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         // NOTE: Ensure "Google Photos Picker API" is enabled in your GCP Console.
         googlePhotosConfig: const GooglePhotosConfig(
           enabled: true,
-          // clientId: 'YOUR_CLIENT_ID.apps.googleusercontent.com',
+          // NOTE: For Web, you MUST use a 'Web Application' Client ID from GCP.
+          // clientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
         ),
 
         //  Brand accent used for selection badges, checkmarks, seek bars,
@@ -186,15 +229,35 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
     if (assets == null || !mounted) return;
 
     // The picker returns `List<MediaItem>`, a convenient wrapper around
-    // `AssetEntity`. Extract standard Dart `File` objects asynchronously
-    // before uploading to your backend.
-    final files = (await Future.wait(assets.map((e) => e.file)))
-        .whereType<File>()
-        .toList();
+    // Extract standard Dart `File` objects synchronously, or native Memory Bytes on Web.
+    final items = <PickedMedia>[];
+    for (final asset in assets) {
+      if (kIsWeb && (asset.isFile || asset.isRemote)) {
+        final b = await asset.bytes;
+        if (b == null || b.isEmpty) continue;
+        items.add(PickedMedia(
+          bytes: b,
+          title: asset.title ?? (asset.isRemote ? 'Cloud Image' : 'Web Image'),
+        ));
+      } else {
+        final f = await asset.file;
+        if (f != null) {
+          items.add(PickedMedia(
+            file: f,
+            title: asset.title ?? f.path.split(RegExp(r'[\\/]')).last,
+          ));
+        }
+      }
+    }
 
-    setState(() => _pickedImages
-      ..clear()
-      ..addAll(files));
+    if (mounted) {
+      setState(() {
+        _selectedImageItems = List.from(assets);
+        _pickedImages
+          ..clear()
+          ..addAll(items);
+      });
+    }
   }
 
   // -- VIDEO PICKER --------------------------------------------------------
@@ -216,14 +279,30 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
 
         primaryColor: const Color(0xFFE11D48),
         brightness: Theme.of(context).brightness,
+        enableSmartClipboard: true,
+        initialSelection: _selectedVideoItems,
       ),
     );
 
     if (assets == null || assets.isEmpty || !mounted) return;
 
-    final file = await assets.first.file;
-    if (file != null && mounted) {
-      setState(() => _pickedVideo = file);
+    final asset = assets.first;
+    _selectedVideoItems = List.from(assets);
+    if (kIsWeb && (asset.isFile || asset.isRemote)) {
+      final b = await asset.bytes;
+      setState(() => _pickedVideo = PickedMedia(
+            bytes: b,
+            title:
+                asset.title ?? (asset.isRemote ? 'Cloud Video' : 'Web Video'),
+          ));
+    } else {
+      final f = await asset.file;
+      if (f != null && mounted) {
+        setState(() => _pickedVideo = PickedMedia(
+              file: f,
+              title: asset.title ?? f.path.split(RegExp(r'[\\/]')).last,
+            ));
+      }
     }
   }
 
@@ -242,17 +321,30 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
 
         primaryColor: const Color(0xFF0D9488),
         brightness: Theme.of(context).brightness,
+        enableSmartClipboard: true,
+        initialSelection: _selectedAudioItems,
       ),
     );
 
     if (assets == null || assets.isEmpty || !mounted) return;
 
-    final file = await assets.first.file;
-    if (file != null && mounted) {
-      setState(() {
-        _pickedAudio = file;
-        _audioTitle = assets.first.title;
-      });
+    final asset = assets.first;
+    _selectedAudioItems = List.from(assets);
+    if (kIsWeb && (asset.isFile || asset.isRemote)) {
+      final b = await asset.bytes;
+      setState(() => _pickedAudio = PickedMedia(
+            bytes: b,
+            title:
+                asset.title ?? (asset.isRemote ? 'Cloud Audio' : 'Web Audio'),
+          ));
+    } else {
+      final f = await asset.file;
+      if (f != null && mounted) {
+        setState(() => _pickedAudio = PickedMedia(
+              file: f,
+              title: asset.title ?? f.path.split(RegExp(r'[\\/]')).last,
+            ));
+      }
     }
   }
 
@@ -365,7 +457,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                   isDark: isDark,
                   child: _pickedVideo != null
                       ? _buildFilePreview(
-                          _pickedVideo!.path,
+                          _pickedVideo!.title,
                           Icons.videocam_rounded,
                           const Color(0xFFE11D48),
                         )
@@ -385,7 +477,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                   isDark: isDark,
                   child: _pickedAudio != null
                       ? _buildFilePreview(
-                          _audioTitle ?? _pickedAudio!.path,
+                          _pickedAudio!.title,
                           Icons.audiotrack_rounded,
                           const Color(0xFF0D9488),
                         )
@@ -519,24 +611,37 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         physics: const BouncingScrollPhysics(),
         itemCount: _pickedImages.length,
         separatorBuilder: (_, __) => const SizedBox(width: 10),
-        itemBuilder: (_, i) => Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-            image: DecorationImage(
-              image: FileImage(_pickedImages[i]),
-              fit: BoxFit.cover,
+        itemBuilder: (_, i) {
+          final media = _pickedImages[i];
+          final hasImage = media.bytes != null || media.file != null;
+          return Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: hasImage ? null : const Color(0xFF334155),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+              image: hasImage
+                  ? DecorationImage(
+                      image: media.bytes != null
+                          ? MemoryImage(media.bytes!) as ImageProvider
+                          : FileImage(media.file!),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
             ),
-          ),
-        ),
+            child: hasImage
+                ? null
+                : const Icon(Icons.image_outlined,
+                    color: Colors.white54, size: 32),
+          );
+        },
       ),
     );
   }
@@ -559,7 +664,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              path.split(Platform.pathSeparator).last,
+              path.split(RegExp(r'[\\/]')).last,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(

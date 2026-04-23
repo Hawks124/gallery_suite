@@ -120,6 +120,27 @@ class PickerConfig {
   // Configuration for the Google Photos cloud provider.
   final GooglePhotosConfig googlePhotosConfig;
 
+  // Pre-selected assets passed by the developer.
+  //
+  // Use this to re-open the picker with items already selected (e.g. editing
+  // an existing post draft). The picker will automatically match the IDs of
+  // these items and display them as selected in the grid.
+  final List<MediaItem>? initialSelection;
+
+  /// Whether to enable the Smart Clipboard integration.
+  ///
+  /// When `true`, the picker's album sheet will display a "Clipboard" tile
+  /// (after Google Photos, before local albums). Tapping it scans the system
+  /// clipboard for copied images, videos, audio files, or media URLs and
+  /// displays them in an isolated grid for selection.
+  ///
+  /// **Android Setup Required:** This feature depends on the `pasteboard`
+  /// package. On Android, you must add a `<provider>` entry and a
+  /// `provider_paths.xml` file. See the README for the full setup guide.
+  ///
+  /// Defaults to `false` (opt-in).
+  final bool enableSmartClipboard;
+
   // Creates a [PickerConfig] with the given options.
   //
   // All parameters are optional - calling `const PickerConfig()` gives you
@@ -142,5 +163,7 @@ class PickerConfig {
     this.exitConfirmation,
     this.textDelegate = const EnglishPickerTextDelegate(),
     this.googlePhotosConfig = const GooglePhotosConfig(),
+    this.initialSelection,
+    this.enableSmartClipboard = false,
   });
 }

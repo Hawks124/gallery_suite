@@ -46,6 +46,19 @@ abstract class PickerTextDelegate {
   final String permissionDeniedSubtitle;
   final String permissionDeniedButton;
 
+  // -- Smart Clipboard ------------------------------------------------------
+  /// Label for the clipboard tile in the album sheet.
+  final String clipboard;
+
+  /// Subtitle shown below the clipboard tile label.
+  final String clipboardSubtitle;
+
+  /// Shown when the clipboard contains no detectable media.
+  final String clipboardEmpty;
+
+  /// Shown while the clipboard content is being read / fetched.
+  final String clipboardLoading;
+
   const PickerTextDelegate({
     required this.confirm,
     required this.cancel,
@@ -78,5 +91,9 @@ abstract class PickerTextDelegate {
     required this.permissionDeniedTitle,
     required this.permissionDeniedSubtitle,
     required this.permissionDeniedButton,
+    required this.clipboard,
+    required this.clipboardSubtitle,
+    required this.clipboardEmpty,
+    required this.clipboardLoading,
   });
 }

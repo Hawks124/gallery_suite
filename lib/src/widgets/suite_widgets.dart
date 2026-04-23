@@ -14,3 +14,5 @@ export 'google_photo_tile.dart';
 export 'permission_denied.dart';
 export 'inline_search.dart';
 export 'drag_and_drop_overlay.dart';
+export 'auth_image.dart';
+export 'clipboard_tile.dart';

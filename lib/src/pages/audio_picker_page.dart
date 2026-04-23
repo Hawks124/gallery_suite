@@ -1,13 +1,14 @@
 import 'dart:async';
+// ignore: unused_import
 import 'dart:io';
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import '../../gallery_suite.dart';
-import '../../gallery_suite.dart' as my_models;
 
 class AudioPickerPage extends StatefulWidget {
   final PickerConfig config;
@@ -19,13 +20,14 @@ class AudioPickerPage extends StatefulWidget {
 }
 
 class _AudioPickerPageState extends State<AudioPickerPage> {
-  final MediaService _service = MediaService();
+  final MediaSource _source = MediaSourceFactory.activeSource;
   final AudioPlayer _player = AudioPlayer();
   final ScrollController _scrollController = ScrollController();
+  AlbumDescriptor? _album;
 
-  List<AssetEntity> _assets = [];
-  final List<AssetEntity> _selected = [];
-  AssetEntity? _playingAsset;
+  List<PickerAsset> _assets = [];
+  final List<PickerAsset> _selected = [];
+  PickerAsset? _playingAsset;
 
   bool _isLoading = true;
   bool _isLoadingMore = false;
@@ -37,7 +39,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
   // Search State
   bool _isSearching = false;
   String _searchQuery = '';
-  List<AssetEntity> _searchResults = [];
+  List<PickerAsset> _searchResults = [];
   bool _isSearchLoading = false;
   Timer? _searchDebounce;
   final TextEditingController _searchCtrl = TextEditingController();
@@ -52,6 +54,19 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
   @override
   void initState() {
     super.initState();
+
+    if (widget.config.initialSelection != null) {
+      for (final item in widget.config.initialSelection!) {
+        if (item.asset != null) {
+          _selected.add(LocalPickerAsset(item.asset!));
+        } else if (item.remoteAsset != null) {
+          _selected.add(item.remoteAsset!);
+        } else if (item.fileAsset != null) {
+          _selected.add(item.fileAsset!);
+        }
+      }
+    }
+
     _player.positionStream.listen((pos) {
       if (mounted) setState(() => _position = pos);
     });
@@ -89,6 +104,9 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
     _searchFocus.dispose();
     _player.dispose();
     _scrollController.dispose();
+    if (widget.config.enableSmartClipboard) {
+      ClipboardService.instance.dispose();
+    }
     super.dispose();
   }
 
@@ -112,16 +130,24 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
         _isSearching = true;
       });
 
+      if (_album == null) return;
       try {
-        final albums = await _service.getAlbums(widget.config.requestType);
-        if (albums.isNotEmpty) {
-          final results = await _service.searchAssets(albums.first, trimmed);
-          if (mounted && _searchQuery == trimmed) {
-            setState(() {
-              _searchResults = results;
-              _isSearchLoading = false;
-            });
-          }
+        final results = await _source.getAssets(
+          album: _album!,
+          page: 0,
+          pageSize: 500, // Load enough for search
+        );
+
+        final filtered = results
+            .where((a) =>
+                (a.title ?? '').toLowerCase().contains(trimmed.toLowerCase()))
+            .toList();
+
+        if (mounted && _searchQuery == trimmed) {
+          setState(() {
+            _searchResults = filtered;
+            _isSearchLoading = false;
+          });
         }
       } catch (e) {
         debugPrint('Search error: $e');
@@ -131,7 +157,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
   }
 
   Future<void> _initialize() async {
-    final granted = await _service.requestPermission();
+    final granted = await _source.requestPermission();
     if (!granted) {
       if (mounted) {
         setState(() {
@@ -141,48 +167,61 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
       }
       return;
     }
-    await _loadAssets(reset: true);
+
+    try {
+      final albums = await _source.getAlbums(RequestType.audio);
+      if (albums.isNotEmpty) {
+        _album = albums.first;
+        await _loadAssets(reset: true);
+      } else {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _loadAssets({bool reset = false}) async {
+    if (_album == null) return;
+
     if (reset) {
       _page = 0;
       _hasMore = true;
     }
-    if (!_hasMore) return;
+    if (!_hasMore || _isLoadingMore) return;
 
     setState(() => reset ? _isLoading = true : _isLoadingMore = true);
 
-    final albums = await _service.getAlbums(widget.config.requestType);
-    if (albums.isEmpty) {
+    try {
+      final assets = (await _source.getAssets(
+        album: _album!,
+        page: _page,
+        pageSize: _pageSize,
+      ))
+          .where((a) => a.type == AssetType.audio)
+          .toList();
+
+      if (mounted) {
+        setState(() {
+          if (reset) {
+            _assets = assets;
+            _isLoading = false;
+          } else {
+            _assets.addAll(assets);
+            _isLoadingMore = false;
+          }
+          _hasMore = assets.length >= _pageSize;
+          _page++;
+        });
+      }
+    } catch (e) {
       if (mounted) {
         setState(() {
           _isLoading = false;
           _isLoadingMore = false;
         });
       }
-      return;
     }
-
-    final all = albums.first;
-    final assets = await _service.getAssets(
-      album: all,
-      page: _page,
-      pageSize: _pageSize,
-    );
-
-    if (!mounted) return;
-    setState(() {
-      if (reset) {
-        _assets = assets;
-        _isLoading = false;
-      } else {
-        _assets.addAll(assets);
-        _isLoadingMore = false;
-      }
-      _hasMore = assets.length >= _pageSize;
-      _page++;
-    });
   }
 
   void _onScroll() {
@@ -194,7 +233,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
     }
   }
 
-  Future<void> _playAsset(AssetEntity asset) async {
+  Future<void> _playAsset(PickerAsset asset) async {
     final isSame = _playingAsset?.id == asset.id;
 
     if (isSame) {
@@ -208,23 +247,33 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
 
     HapticFeedback.selectionClick();
 
-    File? file;
-    try {
-      file = await asset.file;
-    } catch (_) {}
-    if (file == null || !file.existsSync()) return;
-
     setState(() => _playingAsset = asset);
 
     try {
-      await _player.setAudioSource(AudioSource.uri(Uri.file(file.path)));
+      if (asset is LocalPickerAsset) {
+        final file = await asset.entity.file;
+        if (file != null) {
+          await _player.setAudioSource(AudioSource.uri(Uri.file(file.path)));
+        }
+      } else if (asset is RemotePickerAsset) {
+        await _player.setAudioSource(
+            AudioSource.uri(Uri.parse(asset.fullUrl), headers: asset.headers));
+      } else if (asset is FilePickerAsset) {
+        if (kIsWeb) {
+          await _player
+              .setAudioSource(AudioSource.uri(Uri.parse(asset.filePath)));
+        } else {
+          await _player
+              .setAudioSource(AudioSource.uri(Uri.file(asset.filePath)));
+        }
+      }
       await _player.play();
     } catch (_) {
       if (mounted) setState(() => _playingAsset = null);
     }
   }
 
-  void _selectAsset(AssetEntity asset) {
+  void _selectAsset(PickerAsset asset) {
     HapticFeedback.selectionClick();
     setState(() {
       final idx = _selected.indexWhere((e) => e.id == asset.id);
@@ -235,7 +284,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                  'Vous ne pouvez s lectionner que ${widget.config.maxSelection}  l ment(s).'),
+                  'Vous ne pouvez sélectionner que ${widget.config.maxSelection} élément(s).'),
               backgroundColor: _theme.elevated,
               behavior: SnackBarBehavior.floating,
               duration: const Duration(seconds: 3),
@@ -271,12 +320,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
     if (_selected.isEmpty) return;
     _player.stop();
 
-    final items = _selected.map((asset) {
-      return my_models.MediaItem(
-        asset: asset,
-        useOriginalFile: widget.config.useOriginalFile,
-      );
-    }).toList();
+    final items = _selected.map((asset) => MediaItem.fromAsset(asset)).toList();
 
     Navigator.of(context).pop(items);
   }
@@ -359,24 +403,60 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                 ),
                 Positioned(
                   right: 4,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    transitionBuilder: (child, anim) => ScaleTransition(
-                      scale: CurvedAnimation(
-                          parent: anim, curve: Curves.easeOutBack),
-                      child: FadeTransition(opacity: anim, child: child),
-                    ),
-                    child: _selected.isNotEmpty
-                        ? SendButton(
-                            key: const ValueKey('send'),
-                            label: widget.config.textDelegate.confirm,
-                            count: widget.config.maxSelection > 1
-                                ? _selected.length
-                                : null,
-                            color: widget.config.primaryColor,
-                            onTap: _onConfirm,
-                          )
-                        : const SizedBox(key: ValueKey('empty'), width: 80),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (kIsWeb ||
+                          (!kIsWeb && (Platform.isWindows || Platform.isLinux)))
+                        IconButton(
+                          onPressed: () async {
+                            if (_source is FileSelectorMediaSource) {
+                              final newFiles = await (_source
+                                      as FileSelectorMediaSource)
+                                  .pickFiles(requestType: RequestType.audio);
+                              if (newFiles.isNotEmpty && mounted) {
+                                _initialize();
+                              }
+                            }
+                          },
+                          icon: Icon(Icons.add_rounded,
+                              color: widget.config.primaryColor, size: 28),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          splashRadius: 24,
+                        ),
+                      if (widget.config.enableSmartClipboard && !kIsWeb)
+                        IconButton(
+                          onPressed: _fetchClipboardForAudio,
+                          tooltip: widget.config.textDelegate.clipboardSubtitle,
+                          icon: Icon(Icons.content_paste_rounded,
+                              color: widget.config.primaryColor, size: 24),
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          constraints: const BoxConstraints(),
+                          splashRadius: 24,
+                        ),
+                      const SizedBox(width: 8),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        transitionBuilder: (child, anim) => ScaleTransition(
+                          scale: CurvedAnimation(
+                              parent: anim, curve: Curves.easeOutBack),
+                          child: FadeTransition(opacity: anim, child: child),
+                        ),
+                        child: _selected.isNotEmpty
+                            ? SendButton(
+                                key: const ValueKey('send'),
+                                label: widget.config.textDelegate.confirm,
+                                count: widget.config.maxSelection > 1
+                                    ? _selected.length
+                                    : null,
+                                color: widget.config.primaryColor,
+                                onTap: _onConfirm,
+                              )
+                            : const SizedBox(key: ValueKey('empty'), width: 80),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                   ),
                 ),
               ],
@@ -452,6 +532,54 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
     );
   }
 
+  // -- Smart Clipboard --------------------------------------------------------
+
+  Future<void> _fetchClipboardForAudio() async {
+    setState(() => _isLoading = true);
+    try {
+      final assets = await ClipboardService.instance.fetchAssets();
+      if (!mounted) return;
+
+      if (assets.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.config.textDelegate.clipboardEmpty),
+            backgroundColor: _theme.elevated,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+
+      // Filter for audio only
+      final audioAssets =
+          assets.where((a) => a.type == AssetType.audio).toList();
+      if (audioAssets.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.config.textDelegate.noMediaFound),
+            backgroundColor: _theme.elevated,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+
+      setState(() {
+        _assets.insertAll(0, audioAssets);
+        // Auto-select if we only found 1 and multi-select is off
+        if (widget.config.maxSelection == 1 && audioAssets.length == 1) {
+          _selected.clear();
+          _selected.add(audioAssets.first);
+        } else if (_selected.length < widget.config.maxSelection) {
+          _selected.add(audioAssets.first); // auto select first found
+        }
+      });
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   Widget _buildList() {
     if (_isLoading || (_isSearching && _isSearchLoading)) {
       return Center(
@@ -484,6 +612,8 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
         (_isSearching && _searchQuery.isNotEmpty) ? _searchResults : _assets;
 
     if (!_isSearching && _assets.isEmpty) {
+      final bool isWebOrDesktop =
+          kIsWeb || (!kIsWeb && (Platform.isWindows || Platform.isLinux));
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -498,6 +628,33 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                   fontSize: 16,
                   fontWeight: FontWeight.w500),
             ),
+            if (isWebOrDesktop && _source is FileSelectorMediaSource) ...[
+              const SizedBox(height: 24),
+              GestureDetector(
+                onTap: () async {
+                  final newFiles = await (_source as FileSelectorMediaSource)
+                      .pickFiles(requestType: RequestType.audio);
+                  if (newFiles.isNotEmpty && mounted) {
+                    _initialize();
+                  }
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: widget.config.primaryColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    'Sélectionner des fichiers',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       );
@@ -528,7 +685,6 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
           isSelected: _selected.any((e) => e.id == asset.id),
           primaryColor: widget.config.primaryColor,
           theme: _theme,
-          service: _service,
           onPlay: () => _playAsset(asset),
           onSelect: () => _selectAsset(asset),
         );
@@ -663,6 +819,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
   }
 
   Widget _buildPermissionDenied() {
+    final isWeb = kIsWeb;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -679,7 +836,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Acc s refus ',
+              isWeb ? 'Aucun audio' : 'Accès refusé',
               style: TextStyle(
                 color: _theme.primaryText,
                 fontSize: 20,
@@ -689,14 +846,28 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
             ),
             const SizedBox(height: 10),
             Text(
-              'Autorisez l\'acc s dans les r glages pour continuer.',
+              isWeb
+                  ? 'Sélectionnez des fichiers audio depuis votre appareil pour commencer.'
+                  : 'Autorisez l\'accès dans les réglages pour continuer.',
               style: TextStyle(
                   color: _theme.secondaryText, fontSize: 14, height: 1.5),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
             GestureDetector(
-              onTap: () => PhotoManager.openSetting(),
+              onTap: () async {
+                if (isWeb) {
+                  if (_source is FileSelectorMediaSource) {
+                    final newFiles = await (_source as FileSelectorMediaSource)
+                        .pickFiles(requestType: RequestType.audio);
+                    if (newFiles.isNotEmpty && mounted) {
+                      _initialize(); // Reload to pick up the new virtual album content
+                    }
+                  }
+                } else {
+                  PhotoManager.openSetting();
+                }
+              },
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
@@ -704,9 +875,9 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                   color: widget.config.primaryColor,
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Text(
-                  'Ouvrir les r glages',
-                  style: TextStyle(
+                child: Text(
+                  isWeb ? 'Sélectionner des fichiers' : 'Ouvrir les réglages',
+                  style: const TextStyle(
                       color: Colors.white,
                       fontSize: 15,
                       fontWeight: FontWeight.w600),

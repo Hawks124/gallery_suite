@@ -43,5 +43,9 @@ class FrenchPickerTextDelegate extends PickerTextDelegate {
     super.permissionDeniedSubtitle =
         'Autorisez l\'accès dans les réglages pour continuer à parcourir vos médias locaux.',
     super.permissionDeniedButton = 'Ouvrir les réglages',
+    super.clipboard = 'Presse-papier',
+    super.clipboardSubtitle = 'Coller depuis le presse-papier',
+    super.clipboardEmpty = 'Aucun média trouvé dans le presse-papier.',
+    super.clipboardLoading = 'Lecture du presse-papier…',
   });
 }

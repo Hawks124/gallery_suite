@@ -1,17 +1,16 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:photo_manager/photo_manager.dart';
 import '../models/picker_theme.dart';
-import '../services/media_service.dart';
+import '../models/picker_asset.dart';
+import '../sources/media_source_factory.dart';
 
 class AudioTile extends StatefulWidget {
-  final AssetEntity asset;
+  final PickerAsset asset;
   final bool isPlaying;
   final bool isCurrentTrack;
   final bool isSelected;
   final Color primaryColor;
   final PickerTheme theme;
-  final MediaService service;
   final VoidCallback onPlay;
   final VoidCallback onSelect;
 
@@ -23,7 +22,6 @@ class AudioTile extends StatefulWidget {
     required this.isSelected,
     required this.primaryColor,
     required this.theme,
-    required this.service,
     required this.onPlay,
     required this.onSelect,
   });
@@ -64,7 +62,8 @@ class _AudioTileState extends State<AudioTile>
   }
 
   Future<void> _loadThumb() async {
-    final data = await widget.service.getThumbnail(widget.asset);
+    final data =
+        await MediaSourceFactory.activeSource.getThumbnail(widget.asset);
     if (mounted) setState(() => _thumb = data);
   }
 
@@ -85,7 +84,7 @@ class _AudioTileState extends State<AudioTile>
   @override
   Widget build(BuildContext context) {
     final title = _cleanTitle(widget.asset.title ?? 'Audio');
-    final duration = widget.asset.videoDuration;
+    final duration = widget.asset.duration;
 
     return GestureDetector(
       onTap: widget.onPlay,

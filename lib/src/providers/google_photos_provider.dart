@@ -36,6 +36,10 @@ class GooglePhotosProvider {
   /// Should be called early when the picker is initialized.
   Future<void> restoreState() async {
     isAuthStateLoading.value = true;
+    if (kIsWeb) {
+      isAuthStateLoading.value = false;
+      return;
+    }
     try {
       final service = GooglePhotosService.instance;
 
@@ -90,8 +94,11 @@ class GooglePhotosProvider {
             : null;
 
         final loadedAssets = decoded
-            .map((e) => RemotePickerAsset.fromJson(e as Map<String, dynamic>,
-                injectedHeaders: headers?.cast<String, String>()))
+            .map((e) => RemotePickerAsset.fromJson(
+                  e as Map<String, dynamic>,
+                  googleService: service,
+                  injectedHeaders: headers?.cast<String, String>(),
+                ))
             .toList();
 
         importedAssets.value = loadedAssets;
@@ -107,6 +114,7 @@ class GooglePhotosProvider {
 
   /// Persists the current authentication state and imported assets to disk.
   Future<void> saveState() async {
+    if (kIsWeb) return;
     try {
       final service = GooglePhotosService.instance;
 
@@ -161,6 +169,8 @@ class GooglePhotosProvider {
     importedAssets.value = [];
     final service = GooglePhotosService.instance;
     await service.signOut(); // Disconnects Google SignIn & clears memory tokens
+
+    if (kIsWeb) return;
 
     try {
       final authFile = await _authFile;

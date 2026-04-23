@@ -8,7 +8,9 @@ import 'dart:io';
 
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show decodeImageFromList;
 import 'package:photo_manager/photo_manager.dart' show RequestType;
+import 'package:video_player/video_player.dart';
 
 import '../models/picker_asset.dart';
 import 'media_source.dart';
@@ -75,13 +77,15 @@ class FileSelectorMediaSource implements MediaSource {
     if (asset.bytes != null) return asset.bytes;
 
     // Otherwise, read file bytes directly
-    try {
-      final file = File(asset.filePath);
-      if (await file.exists()) {
-        return await file.readAsBytes();
+    if (!kIsWeb) {
+      try {
+        final file = File(asset.filePath);
+        if (await file.exists()) {
+          return await file.readAsBytes();
+        }
+      } catch (e) {
+        debugPrint('[FileSelectorMediaSource] Error reading thumbnail: $e');
       }
-    } catch (e) {
-      debugPrint('[FileSelectorMediaSource] Error reading thumbnail: $e');
     }
     return null;
   }
@@ -136,13 +140,49 @@ class FileSelectorMediaSource implements MediaSource {
       if (_loadedAssets.any((a) => a.filePath == xfile.path)) continue;
 
       Uint8List? bytes;
+      int width = 0;
+      int height = 0;
+      Duration duration = Duration.zero;
+
       try {
-        bytes = await xfile.readAsBytes();
-      } catch (_) {}
+        final ext = xfile.name.split('.').last.toLowerCase();
+        final isVideo =
+            {'mp4', 'mov', 'avi', 'mkv', 'webm', '3gp'}.contains(ext);
+        final isAudio =
+            {'mp3', 'wav', 'aac', 'flac', 'ogg', 'm4a'}.contains(ext);
+
+        if (isVideo || isAudio) {
+          VideoPlayerController? ctrl;
+          try {
+            if (kIsWeb) {
+              ctrl = VideoPlayerController.networkUrl(Uri.parse(xfile.path));
+            } else {
+              ctrl = VideoPlayerController.file(File(xfile.path));
+            }
+            await ctrl.initialize();
+            duration = ctrl.value.duration;
+          } catch (_) {}
+          ctrl?.dispose();
+        } else {
+          bytes = await xfile.readAsBytes();
+          if (bytes.isNotEmpty) {
+            final image = await decodeImageFromList(bytes);
+            width = image.width;
+            height = image.height;
+            image.dispose();
+          }
+        }
+      } catch (e) {
+        debugPrint('[FileSelectorMediaSource] Error decoding file: $e');
+      }
 
       newAssets.add(FilePickerAsset(
         filePath: xfile.path,
+        title: xfile.name,
         bytes: bytes,
+        width: width,
+        height: height,
+        duration: duration,
       ));
     }
 

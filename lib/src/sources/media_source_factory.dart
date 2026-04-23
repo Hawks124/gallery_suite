@@ -15,7 +15,16 @@ import 'file_selector_media_source.dart';
 class MediaSourceFactory {
   MediaSourceFactory._();
 
-  static MediaSource create() {
+  static MediaSource? _instance;
+
+  /// Returns the singleton [MediaSource] for the current app session.
+  /// This ensures Web/Desktop selections persist across picker opens.
+  static MediaSource get activeSource {
+    _instance ??= _create();
+    return _instance!;
+  }
+
+  static MediaSource _create() {
     if (kIsWeb) {
       return FileSelectorMediaSource();
     }

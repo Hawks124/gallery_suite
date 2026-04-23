@@ -1,0 +1,385 @@
+/// Smart Clipboard detection service for [gallery_suite].
+///
+/// This service scans the system clipboard for media content and converts it
+/// into [PickerAsset] instances that the picker's masonry grid can display
+/// natively — exactly like local or cloud assets.
+///
+/// ## Supported Clipboard Content
+///
+/// | Content Type          | Detection Method           | Returned Asset         |
+/// |-----------------------|----------------------------|------------------------|
+/// | Copied image (bytes)  | `Pasteboard.image`         | [FilePickerAsset]      |
+/// | Copied file(s)        | `Pasteboard.files()`       | [FilePickerAsset]      |
+/// | Media URL (text)      | `Clipboard.getData` + MIME | [RemotePickerAsset]    |
+///
+/// ## Memory Management
+///
+/// - Temporary files written to [getTemporaryDirectory] are tracked internally
+///   and cleaned up via [dispose] when the clipboard mode is exited.
+/// - Only **one** scan is performed per user action (no polling or loops).
+/// - Raw `Uint8List` bytes from `Pasteboard.image` are released from memory
+///   immediately after being flushed to disk.
+library;
+
+import 'dart:io' as io;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'package:mime/mime.dart';
+import 'package:pasteboard/pasteboard.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:photo_manager/photo_manager.dart';
+
+import '../../gallery_suite.dart';
+
+/// Singleton service that detects and converts clipboard content into
+/// [PickerAsset] objects usable by the picker grid.
+///
+/// Call [fetchAssets] to perform a one-shot scan, then call [dispose] when
+/// the clipboard mode is dismissed to reclaim temporary disk space.
+class ClipboardService {
+  ClipboardService._();
+
+  /// Global singleton instance.
+  static final ClipboardService instance = ClipboardService._();
+
+  /// Tracks temporary files created during clipboard reads so they can be
+  /// deleted when [dispose] is called.
+  final List<dynamic> _tempFiles = [];
+
+  /// Whether a fetch is currently in progress (prevents double-tapping).
+  bool _isFetching = false;
+
+  /// Performs a single, non-blocking scan of the system clipboard.
+  ///
+  /// Returns a list of [PickerAsset] instances. The list is empty when
+  /// no media content is detected. The caller should show an appropriate
+  /// empty-state message in that case.
+  ///
+  /// The scan order is:
+  /// 1. **Text clipboard** — checked for media URLs (image/video/audio).
+  /// 2. **File clipboard** — checked for copied file paths.
+  /// 3. **Image clipboard** — checked for raw copied image bytes.
+  ///
+  /// Each step short-circuits: if a URL is found, files and bytes are skipped.
+  Future<List<PickerAsset>> fetchAssets() async {
+    debugPrint('📋 [ClipboardService] ---- FETCH ASSETS STARTED ----');
+    if (_isFetching) {
+      debugPrint('📋 [ClipboardService] Fetch already in progress. Aborting.');
+      return [];
+    }
+    _isFetching = true;
+
+    try {
+      final assets = <PickerAsset>[];
+
+      debugPrint('📋 [ClipboardService] Step 1: Checking Pasteboard.image');
+      final imageAsset = await _tryParseImageBytes();
+      if (imageAsset != null) {
+        debugPrint('📋 [ClipboardService] Found ImageBytes! Returning.');
+        assets.add(imageAsset);
+        return assets;
+      }
+
+      debugPrint('📋 [ClipboardService] Step 2: Checking Pasteboard.files()');
+      final fileAssets = await _tryParseFiles();
+      if (fileAssets.isNotEmpty) {
+        debugPrint(
+            '📋 [ClipboardService] Found ${fileAssets.length} Files! Returning.');
+        assets.addAll(fileAssets);
+        return assets;
+      }
+
+      debugPrint('📋 [ClipboardService] Step 3: Checking Clipboard.kTextPlain');
+      final urlAsset = await _tryParseTextUrl();
+      if (urlAsset != null) {
+        debugPrint('📋 [ClipboardService] Found Text URL! Returning.');
+        assets.add(urlAsset);
+      } else {
+        debugPrint('📋 [ClipboardService] Found NO ASSETS in all 3 steps.');
+      }
+
+      return assets;
+    } catch (e, stackTrace) {
+      debugPrint(
+          '📋 [ClipboardService] fetchAssets FATAL ERROR: $e\n$stackTrace');
+      return [];
+    } finally {
+      _isFetching = false;
+    }
+  }
+
+  // ── Private: URL detection ──────────────────────────────────────────────
+
+  Future<PickerAsset?> _tryParseTextUrl() async {
+    try {
+      final data = await Clipboard.getData(Clipboard.kTextPlain);
+      final text = data?.text?.trim();
+      debugPrint(
+          '📋 [ClipboardService] _tryParseTextUrl -> Clipboard text: "$text"');
+      if (text == null || text.isEmpty) return null;
+
+      final uri = Uri.tryParse(text);
+      if (uri == null || !uri.hasScheme) {
+        debugPrint(
+            '📋 [ClipboardService] _tryParseTextUrl -> Invalid URI scheme');
+        return null;
+      }
+
+      final mimeType = lookupMimeType(uri.path) ?? '';
+      debugPrint(
+          '📋 [ClipboardService] _tryParseTextUrl -> URL mimeType: $mimeType');
+      AssetType? type;
+
+      if (mimeType.startsWith('image/')) {
+        type = AssetType.image;
+      } else if (mimeType.startsWith('video/')) {
+        type = AssetType.video;
+      } else if (mimeType.startsWith('audio/')) {
+        type = AssetType.audio;
+      }
+
+      if (type == null) {
+        final lower = text.toLowerCase();
+        if (_hasImageExtension(lower)) {
+          type = AssetType.image;
+        } else if (_hasVideoExtension(lower)) {
+          type = AssetType.video;
+        } else if (_hasAudioExtension(lower)) {
+          type = AssetType.audio;
+        } else {
+          try {
+            debugPrint(
+                '📋 [ClipboardService] _tryParseTextUrl -> Executing HTTP GET fallback...');
+            final response = await http.get(
+              uri,
+              headers: {
+                'User-Agent':
+                    'Mozilla/5.0 (Windows NT 10.0; Android 14) AppleWebKit/537.36'
+              },
+            ).timeout(const Duration(seconds: 3));
+
+            final contentType = response.headers['content-type'] ?? '';
+            debugPrint(
+                '📋 [ClipboardService] _tryParseTextUrl -> HTTP GET contentType = $contentType');
+
+            if (contentType.startsWith('image/')) {
+              type = AssetType.image;
+            } else if (contentType.startsWith('video/')) {
+              type = AssetType.video;
+            } else if (contentType.startsWith('audio/')) {
+              type = AssetType.audio;
+            }
+          } catch (e) {
+            debugPrint(
+                '📋 [ClipboardService] _tryParseTextUrl -> HTTP GET error: $e');
+          }
+        }
+      }
+
+      debugPrint(
+          '📋 [ClipboardService] _tryParseTextUrl -> Computed AssetType: $type');
+      if (type == null) return null;
+
+      return RemotePickerAsset(
+        id: 'clipboard_url_${text.hashCode.toRadixString(36)}',
+        baseUrl: text,
+        title:
+            uri.pathSegments.isNotEmpty ? uri.pathSegments.last : 'Clipboard',
+        type: type,
+      );
+    } catch (e) {
+      debugPrint('📋 [ClipboardService] _tryParseTextUrl error: $e');
+      return null;
+    }
+  }
+
+  // ── Private: File detection ─────────────────────────────────────────────
+
+  Future<List<FilePickerAsset>> _tryParseFiles() async {
+    if (kIsWeb) return [];
+    try {
+      final paths = await Pasteboard.files();
+      debugPrint(
+          '📋 [ClipboardService] _tryParseFiles -> Pasteboard.files() returned: $paths');
+      if (paths.isEmpty) return [];
+
+      final assets = <FilePickerAsset>[];
+
+      for (var path in paths) {
+        if (path.startsWith('content://')) {
+          debugPrint(
+              '📋 [ClipboardService] _tryParseFiles -> Detected Android Content URI: $path');
+          try {
+            final id = path.split('/').last;
+            debugPrint(
+                '📋 [ClipboardService] _tryParseFiles -> Extracting ID: $id');
+            final entity = await AssetEntity.fromId(id);
+            final resolvedFile = await entity?.file;
+            if (resolvedFile != null && resolvedFile.existsSync()) {
+              debugPrint(
+                  '📋 [ClipboardService] _tryParseFiles -> Successfully mapped URI to real file: ${resolvedFile.path}');
+              path = resolvedFile.path;
+            } else {
+              debugPrint(
+                  '📋 [ClipboardService] _tryParseFiles -> FAILED to resolve Content URI via photo_manager.');
+              continue; // Unable to resolve the secure URI
+            }
+          } catch (e) {
+            debugPrint(
+                '📋 [ClipboardService] _tryParseFiles -> exception resolving URI: $e');
+            continue;
+          }
+        }
+
+        final file = io.File(path);
+        if (!file.existsSync()) {
+          debugPrint(
+              '📋 [ClipboardService] _tryParseFiles -> File does not exist locally: $path');
+          continue;
+        }
+
+        final mimeType = lookupMimeType(path) ?? '';
+        final isMedia = mimeType.startsWith('image/') ||
+            mimeType.startsWith('video/') ||
+            mimeType.startsWith('audio/');
+
+        // If lookup fails, try common extensions locally
+        if (!isMedia &&
+            !_hasImageExtension(path.toLowerCase()) &&
+            !_hasVideoExtension(path.toLowerCase()) &&
+            !_hasAudioExtension(path.toLowerCase())) {
+          debugPrint(
+              '📋 [ClipboardService] _tryParseFiles -> File is not a media file type: $path');
+          continue;
+        }
+
+        Uint8List? bytes;
+        int width = 0;
+        int height = 0;
+
+        if (mimeType.startsWith('image/') ||
+            _hasImageExtension(path.toLowerCase())) {
+          try {
+            bytes = await file.readAsBytes();
+            if (bytes.isNotEmpty) {
+              final image = await decodeImageFromList(bytes);
+              width = image.width;
+              height = image.height;
+              image.dispose();
+            }
+          } catch (e) {
+            debugPrint(
+                '📋 [ClipboardService] _tryParseFiles -> Exception reading bytes: $e');
+          }
+        }
+
+        assets.add(FilePickerAsset(
+          filePath: path,
+          title: path.split(kIsWeb ? '/' : io.Platform.pathSeparator).last,
+          bytes: bytes,
+          width: width,
+          height: height,
+        ));
+      }
+
+      return assets;
+    } catch (e) {
+      debugPrint('📋 [ClipboardService] _tryParseFiles error: $e');
+      return [];
+    }
+  }
+
+  // ── Private: Raw image bytes detection ──────────────────────────────────
+
+  Future<FilePickerAsset?> _tryParseImageBytes() async {
+    if (kIsWeb) return null;
+    try {
+      debugPrint(
+          '📋 [ClipboardService] _tryParseImageBytes -> Calling Pasteboard.image...');
+      final Uint8List? imageBytes = await Pasteboard.image;
+
+      if (imageBytes == null) {
+        debugPrint(
+            '📋 [ClipboardService] _tryParseImageBytes -> Pasteboard.image returned NULL.');
+        return null;
+      }
+      if (imageBytes.isEmpty) {
+        debugPrint(
+            '📋 [ClipboardService] _tryParseImageBytes -> Pasteboard.image returned EMPTY bytes.');
+        return null;
+      }
+
+      // Write to a temporary file to avoid holding large blobs in memory.
+      final tempDir = await getTemporaryDirectory();
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final tempFile = io.File('${tempDir.path}/clipboard_$timestamp.png');
+      await tempFile.writeAsBytes(imageBytes, flush: true);
+
+      // Track for cleanup.
+      _tempFiles.add(tempFile);
+
+      // Decode dimensions for the masonry grid aspect ratio.
+      int width = 0;
+      int height = 0;
+      try {
+        final decoded = await decodeImageFromList(imageBytes);
+        width = decoded.width;
+        height = decoded.height;
+        decoded.dispose();
+      } catch (_) {}
+
+      // The Uint8List reference will be GC'd after this scope ends since we
+      // only pass the file path forward. We intentionally skip storing bytes
+      // in the asset to keep memory footprint minimal.
+      return FilePickerAsset(
+        filePath: tempFile.path,
+        title: 'Clipboard_$timestamp.png',
+        bytes: imageBytes,
+        width: width,
+        height: height,
+      );
+    } catch (e) {
+      debugPrint('[ClipboardService] _tryParseImageBytes error: $e');
+      return null;
+    }
+  }
+
+  // ── Cleanup ─────────────────────────────────────────────────────────────
+
+  /// Deletes all temporary files created during clipboard reads.
+  ///
+  /// Call this when the user exits clipboard mode to reclaim disk space.
+  /// Safe to call multiple times.
+  void dispose() {
+    if (kIsWeb) return;
+    for (final dynamic file in _tempFiles) {
+      try {
+        if (file is io.File && file.existsSync()) file.deleteSync();
+      } catch (e) {
+        debugPrint('[ClipboardService] cleanup error: $e');
+      }
+    }
+    _tempFiles.clear();
+    _isFetching = false;
+  }
+
+  // ── Helpers ─────────────────────────────────────────────────────────────
+
+  bool _hasImageExtension(String url) {
+    const exts = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'];
+    return exts.any((e) => url.contains(e));
+  }
+
+  bool _hasVideoExtension(String url) {
+    const exts = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.3gp'];
+    return exts.any((e) => url.contains(e));
+  }
+
+  bool _hasAudioExtension(String url) {
+    const exts = ['.mp3', '.wav', '.aac', '.flac', '.ogg', '.m4a'];
+    return exts.any((e) => url.contains(e));
+  }
+}

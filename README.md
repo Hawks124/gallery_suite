@@ -51,22 +51,36 @@ Unlike other pickers that force you to download massive editor dependencies or b
 
 **Compared to similar packages:**
 
-| Feature            | `image_picker`    | `wechat_assets_picker` | `gallery_suite`                     |
-| ------------------ | ----------------- | ---------------------- | ----------------------------------- |
-| Platforms Supported| All               | iOS, Android, macOS    | ✅ All (Mobile, Web, Desktop)        |
-| Assets supported   | Image, Video      | Image, Video, Audio    | Image, Video, Audio                 |
-| Picker UI          | Native OS dialog  | WeChat-style grid      | Custom Masonry grid                 |
-| Audio/Video        | System default    | Custom                 | Inline playback (Mini-player)       |
-| Multi-select       | Images only       | Yes                    | Yes (Images & Audio)                |
-| In-app Camera      | No                | Via add-on package     | ✅ Yes (Live tile & Custom UI)      |
-| Swipe-To-Select    | No                | No                     | ✅ Yes (iOS Photos style)           |
-| Inline Search      | No                | No                     | ✅ Yes (Cross-platform Dart filter) |
-| BYOE Image Editing | No                | No                     | ✅ Yes (Dependency Injection)       |
-| Cloud Providers    | No                | No                     | ✅ Yes (Google & iCloud Built-in)   |
-| UI Feedback        | No                | No                     | ✅ Yes (Cloud Status Badges)        |
-| UI Theming         | System restricted | Custom                 | Fully customizable per-instance     |
+| Feature             | `image_picker`    | `wechat_assets_picker` | `gallery_suite`                     |
+| ------------------- | ----------------- | ---------------------- | ----------------------------------- |
+| Platforms Supported | All               | iOS, Android, macOS    | ✅ All (Mobile, Web, Desktop)       |
+| Assets supported    | Image, Video      | Image, Video, Audio    | Image, Video, Audio                 |
+| Picker UI           | Native OS dialog  | WeChat-style grid      | Custom Masonry grid                 |
+| Audio/Video         | System default    | Custom                 | Inline playback (Mini-player)       |
+| Multi-select        | Images only       | Yes                    | Yes (Images & Video & Audio)        |
+| In-app Camera       | No                | Via add-on package     | ✅ Yes (Live tile & Custom UI)      |
+| Swipe-To-Select     | No                | No                     | ✅ Yes (iOS Photos style)           |
+| Inline Search       | No                | No                     | ✅ Yes (Cross-platform Dart filter) |
+| BYOE Image Editing  | No                | No                     | ✅ Yes (Dependency Injection)       |
+| Cloud Providers     | No                | No                     | ✅ Yes (Google & iCloud Built-in)   |
+| UI Feedback         | No                | No                     | ✅ Yes (Cloud Status Badges)        |
+| UI Theming          | System restricted | Custom                 | Fully customizable per-instance     |
 
 > **❤️ A note on Open Source:** `gallery_suite` is proudly powered by the incredible `photo_manager` engine (created by the brilliant authors of `wechat_assets_picker`). While their picker perfectly replicates the WeChat experience, `gallery_suite` focuses on an alternative iOS-inspired masonry design with zero-dependency features like BYOE editing and Glassmorphism.
+
+---
+
+## 📱 Platform Compatibility & Status (Google Photos)
+
+The Google Photos integration relies on different underlying OAuth2 logic depending on platform constraints (like Android's Credential Manager limits vs Web's FedCM updates):
+
+| Platform            | Status             | Engine Used                 | Notes                                                                                                                                   |
+| :------------------ | :----------------- | :-------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------- |
+| **Android**         | ✅ Fully Supported | `flutter_web_auth_2` (PKCE) | Uses Chrome Custom Tabs to bypass Android 14 Credential Manager scope restrictions.                                                     |
+| **iOS**             | ✅ Fully Supported | `google_sign_in`            | Uses standard AppAuth native implementation. No known issues with inline video playback.                                                |
+| **Web**             | ✅ Fully Supported | `google_sign_in_web`        | Successfully patched for strict browser CORS & FedCM. Utilizes custom raw HTTP bridging for `<video>` tags.                             |
+| **macOS**           | ⚠️ Experimental    | `google_sign_in_macos`      | Theoretical support; requires enabling macOS support in GCP and linking the macOS Google Sign-In backend.                               |
+| **Windows / Linux** | ⚠️ Experimental    | `flutter_web_auth_2` (PKCE) | Uses local-loopback OAuth servers. You must ensure your redirect URI is mapped to `http://localhost:<port>` rather than custom schemes. |
 
 ---
 
@@ -108,6 +122,8 @@ Unlike other pickers that force you to download massive editor dependencies or b
 
 - 💻 **Web & Desktop Optimization** — Fully supported across Web, Windows, macOS, and Linux via a polymorphic `MediaSource` engine. Features native Drag-and-Drop OS file uploads, intelligent `LayoutBuilder` responsive grid expansion, and `Ctrl+A`/`Cmd+A` keyboard shortcuts.
 - 🔍 **Inline Asset Search** — Instantly filter your entire media library by filename/title with a beautiful iOS-style frosted search bar. Uses lightning-fast Dart-side memory filtering.
+- 🔄 **Pre-Selected Media (Initial Selection)** — Seamlessly re-open the picker with previously selected items already checked by passing a list of `MediaItem`s to `initialSelection`. The grid intelligent auto-maps them by ID.
+- 📋 **Smart Clipboard Integration** — Automatically decodes copied images, file paths, and media URLs from the system clipboard into seamlessly selectable grid assets (Opt-in via `enableSmartClipboard`).
 - 🖌️ **Bring Your Own Editor (BYOE) Architecture** — Why bloat your app with forced editors? Pass your favorite editor (like `pro_image_editor`) to the `onEditMedia` callback. The picker natively intercepts the edit, displays an elegant Pencil action in the Fullscreen Preview, and flawlessly updates the preview strip to the new edited image.
 - 🌍 **Zero-Dependency Internationalization (Intl)** — Translate 100% of the UI (buttons, search bar, empty states) without installing heavy `intl` packages. Uses a clean `PickerTextDelegate` pattern.
 - 🔒 **Exit Confirmation Prevention** — Built-in `PopScope` protection. If a user tries to swipe back or press the Android back button after spending time selecting/editing photos, a beautiful Glassmorphic dialog prevents accidental data loss.
@@ -120,6 +136,7 @@ Unlike other pickers that force you to download massive editor dependencies or b
 ## 📑 Table of Contents
 
 - [🤔 Why Gallery Suite?](#-why-gallery-suite)
+- [📱 Platform Compatibility & Status (Google Photos)](#-platform-compatibility--status-google-photos)
 - [✨ Features](#-features)
 - [🚀 Quick Start](#-quick-start)
 - [📦 Installation & Setup](#-installation--setup)
@@ -131,10 +148,14 @@ Unlike other pickers that force you to download massive editor dependencies or b
   - [🎵 Pick Audio](#-pick-audio)
 - [🧠 Advanced Capabilities](#-advanced-capabilities)
   - [☁️ Google Photos Built-in Provider (Premium Cloud Integration)](#️-google-photos-built-in-provider-premium-cloud-integration)
+    - [Authentication & 2026 Compliance (Picker API)](#authentication--2026-compliance-picker-api)
+    - [Quick Start: Global Initialization](#quick-start-global-initialization)
     - [🛠️ Google Cloud Platform (GCP) Setup Guide](#️-google-cloud-platform-gcp-setup-guide)
-  - [🌍 Internationalization (Intl)](#-internationalization-intl)
-  - [🔒 Exit Confirmation](#-exit-confirmation-accidental-exit-prevention)
   - [🖌️ Bring Your Own Editor (BYOE) Architecture](#️-bring-your-own-editor-byoe-architecture)
+  - [📋 Smart Clipboard Integration](#-smart-clipboard-integration)
+  - [🔒 Exit Confirmation](#-exit-confirmation-accidental-exit-prevention)
+  - [🌍 Internationalization (Intl)](#-internationalization-intl)
+  - [🔄 Pre-Selected Media (Initial Selection)](#-pre-selected-media-initial-selection)
   - [📸 Getting Original Quality Files](#-getting-original-quality-files)
   - [🚫 Disabling the Live Camera Tile](#-disabling-the-live-camera-tile)
   - [👆 Disabling Swipe-To-Select](#-disabling-swipe-to-select)
@@ -266,7 +287,7 @@ android {
 }
 ```
 
-#### 📁 FileProvider Configuration (Required for Android)
+#### 📁 FileProvider Configuration (Required for Android Camera & Smart Clipboard)
 
 Add the following provider inside the `<application>` block of your `AndroidManifest.xml`:
 
@@ -332,6 +353,50 @@ Inside `ios/Runner/Info.plist`:
 
 #### That's it for iOS ✔
 
+### macOS Setup
+
+_(Supports macOS 10.15+)_
+
+macOS development requires adjusting the App Sandbox and linking the Google Sign-in framework if using the cloud features.
+
+**1. Expand App Sandbox (Required for File Picking):**
+Inside `macos/Runner/DebugProfile.entitlements` and `Release.entitlements`, add:
+
+```xml
+<key>com.apple.security.files.user-selected.read-only</key>
+<true/>
+```
+
+**2. Google Photos Auth Redirect:**
+If you enabled Google Photos, add your URL scheme to `macos/Runner/Info.plist`:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>com.googleusercontent.apps.YOUR_CLIENT_ID</string>
+        </array>
+    </dict>
+</array>
+```
+
+### Web Setup
+
+Zero native configuration required! However, if you are using the **Google Photos feature**, you must:
+
+1. Ensure your Web App is served via `localhost` during development.
+2. Add your deployment URL (e.g., `https://myapp.com`) to the **Authorized JavaScript origins** in your Google Cloud Console.
+3. Configure your HTTP headers to support cross-origin isolation if deploying heavy WebGL, though `gallery_suite` works out of the box with standard CORS.
+
+### Windows & Linux Setup
+
+No advanced setup layer is required for local file picking. `gallery_suite` seamlessly integrates the OS native Explorer/Nautilus dialogs.
+If using Google Photos on Desktop, ensure you register an OAuth 2.0 Client ID for **Desktop/Web** on Google Cloud Console and handle the local loopback server generated by `flutter_web_auth_2`.
+
 ---
 
 ## 💻 Core Usage
@@ -374,11 +439,14 @@ final assets = await CustomMediaPicker.show(
   context: context,
   config: PickerConfig(
     requestType: RequestType.video,
-    maxSelection: 1,             // Videos are usually single-select
+    maxSelection: 1,             // Set to > 1 to enable Multi-Video Select!
     showCameraTile: true,        // Camera tile records video in this mode
   ),
 );
 ```
+
+> [!TIP]
+> **Multi-Video Select:** By default, tapping a video opens the `VideoPreviewSheet`. If you set `maxSelection > 1`, hitting "Confirm" from the preview will add it to a selected timeline strip at the bottom of the screen. Users can also select multiple videos via the selection tick.
 
 ### 🎵 Pick Audio
 
@@ -412,15 +480,31 @@ In **March 2025**, Google heavily restricted direct access to the Google Photos 
 Because the modern Picker API requires a secure OAuth2 PKCE(Proof Key for Code Exchange) flow (to bypass Firebase restrictions and ensure platform independence), you **must initialize the service once** at app startup with your GCP credentials:
 
 ```dart
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:gallery_suite/gallery_suite.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Pick the right Client ID based on the Platform
+  String clientId = '';
+  String redirectScheme = '';
+
+  if (kIsWeb) {
+    clientId = 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com';
+  } else if (Platform.isIOS || Platform.isMacOS) {
+    clientId = 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com';
+    redirectScheme = 'com.googleusercontent.apps.YOUR_IOS_CLIENT_ID';
+  } else if (Platform.isAndroid) {
+    clientId = 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com'; // Android uses Web Client ID for PKCE
+    redirectScheme = 'com.googleusercontent.apps.YOUR_WEB_CLIENT_ID';
+  }
+
   // Initialize the Google Photos Service globally
   GooglePhotosService.instance.init(
-    clientId: 'YOUR_OAUTH_CLIENT_ID.apps.googleusercontent.com',
-    redirectScheme: 'com.googleusercontent.apps.YOUR_OAUTH_CLIENT_ID', // Reversed Client ID
+    clientId: clientId,
+    redirectScheme: redirectScheme,
     apiKey: 'YOUR_GOOGLE_CLOUD_API_KEY', // Required for Picker API routing
   );
 
@@ -561,6 +645,33 @@ final assets = await CustomMediaPicker.show(
 );
 ```
 
+### 📋 Smart Clipboard Integration
+
+A highly demanded feature for modern chat and post creation apps is the ability to paste media directly from the OS clipboard. `gallery_suite` provides a built-in, native **Smart Clipboard Integration** that handles the heavy lifting of sniffing MIME types, downloading URLs, and extracting raw image byte streams safely.
+
+To enable this, pass `enableSmartClipboard: true` in your config:
+
+```dart
+final assets = await CustomMediaPicker.show(
+  context: context,
+  config: const PickerConfig(
+    enableSmartClipboard: true, // Turns on the magic
+  ),
+);
+```
+
+#### How it works:
+
+1. When enabled, a "Clipboard" tile appears in the `AlbumSelectorSheet` (and an AppBar icon in Audio mode).
+2. Tapping it performs a triple-fallback scan:
+   - **Text URLs**: Scans the clipboard for direct image/video/audio links and mounts them as `RemotePickerAsset`s.
+   - **Files**: Detects copied file paths and decodes their metadata into `FilePickerAsset`s.
+   - **Raw Bytes**: Safely pulls raw image bytes (e.g. from an iOS screenshot copy or Web copy), flushes them to a temporary file via `path_provider` to prevent RAM OOM errors, and mounts them.
+3. The pasted items are displayed uniformly inside the Masonry Layout grid!
+
+> [!NOTE]
+> **Android Setup:** The Smart Clipboard heavily relies on the `Pasteboard` package to extract Raw Bytes. This requires the **FileProvider Configuration** documented in the [Installation & Setup](#-installation--setup) section.
+
 ### 🔒 Exit Confirmation (Accidental Exit Prevention)
 
 Prevent accidental data loss! When users select or edit images, tapping the android back button or swiping to pop can accidentally discard their hard work. You can solve this by providing an `ExitConfirmationConfig`.
@@ -651,6 +762,52 @@ class MyAppTextDelegate extends EnglishPickerTextDelegate {
 config: PickerConfig(
   textDelegate: const MyAppTextDelegate(),
 )
+```
+
+### 🔄 Pre-Selected Media (Initial Selection / Drafts)
+
+When building features like "Edit Post" or "Add to existing Album", you often need to open the picker with previously selected items already checked. To achieve this, simply maintain a `List<MediaItem>` in your widget's state and pass it directly to `PickerConfig.initialSelection`. The picker will automatically map these items back to the grid and pre-check them!
+
+Here is the recommended architecture pattern for maintaining, passing, and clearing a media draft:
+
+```dart
+class MyChatInputState extends State<MyChatInput> {
+  // 1. Maintain a local draft state
+  List<MediaItem> _draftImageSelection = [];
+  // List<MediaItem> _draftVideoSelection = [];
+  // List<MediaItem> _draftAudioSelection = [];
+
+  Future<void> _openGallery() async {
+    // 2. Open the picker and pass your draft to `initialSelection`
+    final assets = await CustomMediaPicker.show(
+      context: context,
+      config: PickerConfig(
+        requestType: RequestType.image,
+        maxSelection: 10,
+        initialSelection: _draftImageSelection, // The grid will auto-check these items!
+      ),
+    );
+
+    // 3. If canceled natively, do nothing (keep draft intact)
+    if (assets == null || assets.isEmpty) return;
+
+    // 4. Update draft state with the new selection from the gallery
+    setState(() {
+      _draftImageSelection = List.from(assets);
+    });
+  }
+
+  Future<void> _submitToServer() async {
+    if (_draftImageSelection.isEmpty) return;
+
+    // ... Handle your actual file uploads ...
+
+    // 5. Clear the draft once the items are permanently sent(Optional)!
+    setState(() {
+      _draftImageSelection.clear();
+    });
+  }
+}
 ```
 
 ### 📸 Getting Original Quality Files
@@ -790,23 +947,25 @@ For maximum design flexibility, you can override any of these specific tokens:
 
 The entire look and feel is controlled via `PickerConfig`. Here is exactly what you can configure:
 
-| Parameter              | Type                      | Default                     | Description                                                                                                                                                       |
-| ---------------------- | ------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `requestType`          | `RequestType`             | `RequestType.image`         | The specific gallery to open (`image`, `video`, or `audio`).                                                                                                      |
-| `maxSelection`         | `int`                     | `10`                        | The maximum number of assets the user can select. Used in Images and Audio. Video is currently single-select.                                                     |
-| `primaryColor`         | `Color`                   | `Color(0xFF007AFF)`         | The global accent color for checkmarks, badges, seek-bars, and confirm buttons.                                                                                   |
-| `brightness`           | `Brightness?`             | `null`                      | Force a specific theme (`Brightness.dark` or `light`). If `null`, it automatically follows the system `Theme.of(context)`.                                        |
-| `textDelegate`         | `PickerTextDelegate`      | `EnglishPickerTextDelegate` | Handles 100% of the localized strings (buttons, search, empty states) with zero external dependencies.                                                            |
-| `onEditMedia`          | `Function?`               | `null`                      | Optional callback to launch a custom external image editor (e.g. `pro_image_editor`) directly from the Fullscreen Preview.                                        |
-| `googlePhotosConfig`   | `GooglePhotosConfig`      | `default`                   | Configuration for the built-in Google Photos cloud provider (enabled/disabled and other cloud-specific options).                                                  |
-| `exitConfirmation`     | `ExitConfirmationConfig?` | `null`                      | An optional configuration that prevents accidental closing of the picker when users have selected media.                                                          |
-| `showCameraTile`       | `bool`                    | `true`                      | When `true`, renders a live `camera` feed at index `0`. Supports both photo and video depending on `requestType`. Tap to open a full-screen Dribbble-inspired UI. |
-| `enableSwipeToSelect`  | `bool`                    | `true`                      | When `true`, allows the user to long-press and drag their finger across the masonry grid to rapidly select items (iOS Photos style). Includes edge auto-scroll.   |
-| `useOriginalFile`      | `bool`                    | `false`                     | When `true`, fetches the absolute pristine original file rather than a system-optimized/compressed format from iOS or Android cache.                              |
-| `thumbnailCacheSize`   | `int`                     | `200`                       | Maximum number of thumbnails kept in the LRU memory cache. A value of 200 ensures buttery scrolling over 2–3 screens of content.                                  |
-| `maxConcurrentDecodes` | `int`                     | `3`                         | Maximum simultaneous thumbnail decodes. Limiting this ensures scrolling remains 60fps+ by preventing thread starvation on large grids.                            |
-| `prefetchEnabled`      | `bool`                    | `true`                      | When `true`, the picker intelligently pre-loads thumbnails for the next 30 items that are about to appear on-screen during scrolling, eliminating pop-in.         |
-| `themeData`            | `PickerThemeData?`        | `null`                      | Provides full control over individual UI colors (background, surface, text, etc.) which take precedence over the defaults resolved from `brightness`.             |
+| Parameter              | Type                      | Default                     | Description                                                                                                                                                                                               |
+| ---------------------- | ------------------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `requestType`          | `RequestType`             | `RequestType.image`         | The specific gallery to open (`image`, `video`, or `audio`).                                                                                                                                              |
+| `maxSelection`         | `int`                     | `10`                        | The maximum number of assets the user can select. Used in Images and Audio. Video is currently single-select.                                                                                             |
+| `primaryColor`         | `Color`                   | `Color(0xFF007AFF)`         | The global accent color for checkmarks, badges, seek-bars, and confirm buttons.                                                                                                                           |
+| `brightness`           | `Brightness?`             | `null`                      | Force a specific theme (`Brightness.dark` or `light`). If `null`, it automatically follows the system `Theme.of(context)`.                                                                                |
+| `textDelegate`         | `PickerTextDelegate`      | `EnglishPickerTextDelegate` | Handles 100% of the localized strings (buttons, search, empty states) with zero external dependencies.                                                                                                    |
+| `initialSelection`     | `List<MediaItem>?`        | `null`                      | An optional list of previously selected media items. The picker dynamically maps them to the grid assets by ID to restore a prior selection state. [See docs](#-pre-selected-media-initial-selection)     |
+| `enableSmartClipboard` | `bool`                    | `false`                     | An optional flag to enable the Smart Clipboard integration. Appends a clipboard icon to scan system-level URLs, media paths, or raw copied bytes into the grid. [See docs](#-smart-clipboard-integration) |
+| `onEditMedia`          | `Function?`               | `null`                      | Optional callback to launch a custom external image editor (e.g. `pro_image_editor`) directly from the Fullscreen Preview. [See docs](#️-bring-your-own-editor-byoe-architecture)                          |
+| `googlePhotosConfig`   | `GooglePhotosConfig`      | `default`                   | Configuration for the built-in Google Photos cloud provider (enabled/disabled and other cloud-specific options).                                                                                          |
+| `exitConfirmation`     | `ExitConfirmationConfig?` | `null`                      | An optional configuration that prevents accidental closing of the picker when users have selected media.                                                                                                  |
+| `showCameraTile`       | `bool`                    | `true`                      | When `true`, renders a live `camera` feed at index `0`. Supports both photo and video depending on `requestType`. Tap to open a full-screen Dribbble-inspired UI.                                         |
+| `enableSwipeToSelect`  | `bool`                    | `true`                      | When `true`, allows the user to long-press and drag their finger across the masonry grid to rapidly select items (iOS Photos style). Includes edge auto-scroll.                                           |
+| `useOriginalFile`      | `bool`                    | `false`                     | When `true`, fetches the absolute pristine original file rather than a system-optimized/compressed format from iOS or Android cache.                                                                      |
+| `thumbnailCacheSize`   | `int`                     | `200`                       | Maximum number of thumbnails kept in the LRU memory cache. A value of 200 ensures buttery scrolling over 2–3 screens of content.                                                                          |
+| `maxConcurrentDecodes` | `int`                     | `3`                         | Maximum simultaneous thumbnail decodes. Limiting this ensures scrolling remains 60fps+ by preventing thread starvation on large grids.                                                                    |
+| `prefetchEnabled`      | `bool`                    | `true`                      | When `true`, the picker intelligently pre-loads thumbnails for the next 30 items that are about to appear on-screen during scrolling, eliminating pop-in.                                                 |
+| `themeData`            | `PickerThemeData?`        | `null`                      | Provides full control over individual UI colors (background, surface, text, etc.) which take precedence over the defaults resolved from `brightness`.                                                     |
 
 ---
 
@@ -824,8 +983,8 @@ The entire look and feel is controlled via `PickerConfig`. Here is exactly what 
 
 We use [Semantic Versioning](https://semver.org/). This package is currently evolving rapidly:
 
-| Version    | Status    | Highlights                                                                                                                                                                                                                                                                                                                              |
-| ---------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Version    | Status    | Highlights                                                                                                                                                                                                                                                                                                                            |
+| ---------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **v1.0.0** | ✅ Stable | Core engine (Grid, Video, Audio), Live Camera Tile, iOS-style swipe-to-select, Heavy Performance Optimizations (LRU Cache, Decode Queue, Prefetching), BYOE Architecture, Inline Search, Google Photos Cloud Provider with native persistence, auto-refresh tokens, secure sign-out flow, iCloud integration, and Drag & Drop Reorder |
 
 ---
@@ -853,15 +1012,29 @@ Apache 2.0 — see [LICENSE](LICENSE).
 `gallery_suite` stands on the shoulders of giants. This package would not exist without the incredible work of the following open-source contributors:
 
 **Core Media Engine**
+
 - **[photo_manager](https://pub.dev/packages/photo_manager)** — The high-performance engine powering our native media library access on Android, iOS, and macOS.
 - **[flutter_staggered_grid_view](https://pub.dev/packages/flutter_staggered_grid_view)** — Responsible for the beautiful and fluid Masonry layout of our grids.
 
 **Playback & Camera**
+
 - **[video_player](https://pub.dev/packages/video_player)** — Enabling our seamless, zero-latency inline video previews.
 - **[just_audio](https://pub.dev/packages/just_audio)** — The backbone of our integrated audio playback experience.
 - **[camera](https://pub.dev/packages/camera)** — Allowing us to build a premium, fully-integrated live camera capture experience into the grid.
 
+**Desktop & Web Ecosystem**
+
+- **[file_selector](https://pub.dev/packages/file_selector)** — The robust abstraction bridging our UI to native OS Drag-and-Drop and File Explorer dialogs for Windows, Linux, and Web architectures.
+
+- **[desktop_drop](https://pub.dev/packages/desktop_drop)** — The robust abstraction bridging our UI to native OS Drag-and-Drop and File Explorer dialogs for Windows, Linux, and Web architectures.
+
+**Smart Clipboard System**
+
+- **[pasteboard](https://pub.dev/packages/pasteboard)** — Extracts pristine raw media bytes and file URLs directly from the underlying system clipboard natively.
+- **[mime](https://pub.dev/packages/mime)** — Performs dynamic deep inspection on clipboard URLs to automatically deduce binary MIME types without HTTP overhead.
+
 **Google Photos Cloud Integration**
+
 - **[google_sign_in](https://pub.dev/packages/google_sign_in)** — Provides lightweight Google authentication for non-PKCE flows and user profile resolution.
 - **[flutter_web_auth_2](https://pub.dev/packages/flutter_web_auth_2)** — Powers the secure PKCE OAuth2 flow via Chrome Custom Tabs on Android, enabling our compliant Google Photos integration.
 - **[googleapis_auth](https://pub.dev/packages/googleapis_auth)** — Manages authenticated HTTP clients for the Google Picker API token lifecycle.
@@ -871,6 +1044,7 @@ Apache 2.0 — see [LICENSE](LICENSE).
 - **[crypto](https://pub.dev/packages/crypto)** — Provides SHA-256 hashing for generating PKCE code challenges, ensuring a secure OAuth2 flow.
 
 **Persistence**
+
 - **[path_provider](https://pub.dev/packages/path_provider)** — Resolves the platform-appropriate local storage directories for our zero-dependency JSON persistence layer.
 
 Thank you to the Flutter community for building the "bricks" that allowed us to create this "house". 🏠✨

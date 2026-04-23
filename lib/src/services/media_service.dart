@@ -223,6 +223,9 @@ class MediaService {
     Map<String, String>? headers,
     required String id,
   }) async {
+    if (kIsWeb) {
+      return null;
+    }
     try {
       final tempDir = await getTemporaryDirectory();
       final file = File('${tempDir.path}/remote_asset_$id');

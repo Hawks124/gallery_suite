@@ -14,6 +14,12 @@ class AlbumSelectorSheet extends StatelessWidget {
   final bool isGooglePhotosConnected;
   final VoidCallback? onGooglePhotosSignOut;
 
+  /// Called when the user taps the Clipboard tile to enter clipboard mode.
+  final VoidCallback? onClipboardTap;
+
+  /// Whether the Smart Clipboard feature is enabled in [PickerConfig].
+  final bool enableSmartClipboard;
+
   const AlbumSelectorSheet({
     super.key,
     required this.albums,
@@ -27,6 +33,8 @@ class AlbumSelectorSheet extends StatelessWidget {
     this.onGooglePhotosTap,
     this.isGooglePhotosConnected = false,
     this.onGooglePhotosSignOut,
+    this.onClipboardTap,
+    this.enableSmartClipboard = false,
   });
 
   @override
@@ -96,13 +104,21 @@ class AlbumSelectorSheet extends StatelessWidget {
           Expanded(
             child: ListView.separated(
               controller: scrollController,
-              itemCount: albums.length + (onGooglePhotosTap != null ? 1 : 0),
+              itemCount: albums.length +
+                  (onGooglePhotosTap != null ? 1 : 0) +
+                  (enableSmartClipboard ? 1 : 0),
               separatorBuilder: (_, __) =>
                   Divider(height: 0.5, color: theme.divider, indent: 82),
               itemBuilder: (_, i) {
                 final hasGoogle = onGooglePhotosTap != null;
+                final hasClipboard = enableSmartClipboard;
 
-                // -- Google Photos Cloud Tile (Top item) ------------
+                // ── Special tile indices ────────────────────────────
+                // Index 0: Google Photos tile (if enabled)
+                // Index 1 (or 0 if no GP): Clipboard tile (if enabled)
+                // Remaining: local albums
+
+                // -- Google Photos Cloud Tile (1st special item) ------
                 if (hasGoogle && i == 0) {
                   return GooglePhotosTile(
                     theme: theme,
@@ -112,8 +128,22 @@ class AlbumSelectorSheet extends StatelessWidget {
                   );
                 }
 
-                // Shift local albums down by 1 if Google Photos is present
-                final albumIndex = hasGoogle ? i - 1 : i;
+                // -- Clipboard Tile (2nd special item) ----------------
+                final clipboardIndex = hasGoogle ? 1 : 0;
+                if (hasClipboard && i == clipboardIndex) {
+                  return ClipboardTile(
+                    theme: theme,
+                    primaryColor: primaryColor,
+                    label: textDelegate.clipboard,
+                    subtitle: textDelegate.clipboardSubtitle,
+                    onTap: onClipboardTap ?? () {},
+                  );
+                }
+
+                // -- Local albums ------------------------------------
+                final specialCount =
+                    (hasGoogle ? 1 : 0) + (hasClipboard ? 1 : 0);
+                final albumIndex = i - specialCount;
                 final album = albums[albumIndex];
                 final isCurrent = album.id == currentAlbum?.id;
 

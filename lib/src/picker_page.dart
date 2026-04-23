@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -70,6 +71,9 @@ class CustomMediaPicker {
         fullscreenDialog: true,
         transitionDuration: const Duration(milliseconds: 320),
         reverseTransitionDuration: const Duration(milliseconds: 260),
+        // Cross-platform picker routing.
+        // Audio uses the specialized list-based AudioPickerPage (now cross-platform).
+        // Photo/Video use the grid-based _MediaPickerPage.
         pageBuilder: (ctx, animation, _) => isAudio
             ? AudioPickerPage(config: config)
             : _MediaPickerPage(config: config),
@@ -103,7 +107,7 @@ class _MediaPickerPage extends StatefulWidget {
 
 class _MediaPickerPageState extends State<_MediaPickerPage>
     with SingleTickerProviderStateMixin {
-  final MediaSource _source = MediaSourceFactory.create();
+  final MediaSource _source = MediaSourceFactory.activeSource;
   final ScrollController _scrollController = ScrollController();
 
   List<AlbumDescriptor> _albums = [];
@@ -135,6 +139,12 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   bool _isCloudMode = false;
   bool _isCloudLoading = false;
   bool _isSignOutLoading = false;
+  StreamSubscription<bool>? _authSubscription;
+
+  // -- Smart Clipboard State --------------------------------------------------
+  bool _isClipboardMode = false;
+  bool _isClipboardLoading = false;
+  List<PickerAsset> _clipboardAssets = [];
 
   /// Initial page loads 80 items; subsequent pages fetch 120 for fewer
   /// round-trips on large libraries.
@@ -150,12 +160,37 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   void initState() {
     super.initState();
 
+    // Map any passed initial selection into the internal state.
+    if (widget.config.initialSelection != null) {
+      for (final item in widget.config.initialSelection!) {
+        if (item.asset != null) {
+          _selected.add(LocalPickerAsset(item.asset!));
+        } else if (item.remoteAsset != null) {
+          _selected.add(item.remoteAsset!);
+        } else if (item.fileAsset != null) {
+          _selected.add(item.fileAsset!);
+        }
+
+        if (item.editedFile != null) {
+          _editedFiles[item.asset?.id ??
+              item.remoteAsset?.id ??
+              item.fileAsset?.id ??
+              ''] = item.editedFile!;
+        }
+      }
+    }
+
     // Apply performance config to the shared native decode queue (if applicable).
     // The FileSelectorMediaSource handles its own loading.
-    MediaService.instance.decodeQueue = ThumbnailDecodeQueue(
-      maxConcurrent: widget.config.maxConcurrentDecodes,
-      maxCacheEntries: widget.config.thumbnailCacheSize,
-    );
+    // photo_manager is unavailable on Web/Desktop — skip native decode queue.
+    final isDesktopOrWeb =
+        kIsWeb || (!kIsWeb && (Platform.isWindows || Platform.isLinux));
+    if (!isDesktopOrWeb) {
+      MediaService.instance.decodeQueue = ThumbnailDecodeQueue(
+        maxConcurrent: widget.config.maxConcurrentDecodes,
+        maxCacheEntries: widget.config.thumbnailCacheSize,
+      );
+    }
 
     _chevronCtrl = AnimationController(
       vsync: this,
@@ -165,6 +200,18 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
     // Restore preserved cloud assets from disk asynchronously
     _googleProvider.restoreState();
+
+    // Listen for auth changes (crucial for Web's async GIS flow)
+    _authSubscription =
+        _googleService.onAuthStateChanged.listen((isAuthenticated) {
+      if (mounted) {
+        setState(() {}); // Re-build to hide placeholder/show albums
+      }
+    });
+
+    // Trigger silent sign-in to pre-initialize Google SignIn scripts for Web
+    // and attempt auto-login for all platforms.
+    _googleService.trySilentSignIn();
 
     _initialize();
   }
@@ -185,6 +232,11 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     _searchFocus.dispose();
     _scrollController.dispose();
     _chevronCtrl.dispose();
+    _authSubscription?.cancel();
+    // Reclaim temporary disk space when picker is closed
+    if (widget.config.enableSmartClipboard) {
+      ClipboardService.instance.dispose();
+    }
     super.dispose();
   }
 
@@ -266,11 +318,13 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
     setState(() => reset ? _isLoading = true : _isLoadingMore = true);
 
-    final assets = await _source.getAssets(
+    final assets = (await _source.getAssets(
       album: _currentAlbum!,
       page: _page,
       pageSize: _pageSize,
-    );
+    ))
+        .where((a) => a.type != AssetType.audio)
+        .toList();
 
     if (!mounted) return;
     setState(() {
@@ -345,6 +399,33 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   }
 
   Future<void> _onCameraCaptured(File file) async {
+    // On Web/Desktop, PhotoManager.editor is unavailable — return file as FilePickerAsset
+    final isDesktopOrWeb =
+        kIsWeb || (!kIsWeb && (Platform.isWindows || Platform.isLinux));
+    if (isDesktopOrWeb) {
+      final bytes = await file.readAsBytes();
+      final title = 'Captured_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      int width = 0;
+      int height = 0;
+      try {
+        final image = await decodeImageFromList(bytes);
+        width = image.width;
+        height = image.height;
+        image.dispose();
+      } catch (_) {}
+      final asset = FilePickerAsset(
+        filePath: file.path,
+        title: title,
+        bytes: bytes,
+        width: width,
+        height: height,
+      );
+      if (mounted) {
+        Navigator.of(context).pop([MediaItem.file(fileAsset: asset)]);
+      }
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -403,12 +484,22 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       _theme,
       widget.config.primaryColor,
       widget.config.textDelegate,
+      _googleService,
+      isMultiSelect: widget.config.maxSelection > 1,
     );
     if (confirmed && mounted) {
-      if (asset is LocalPickerAsset) {
-        Navigator.of(context).pop([MediaItem(asset: asset.entity)]);
-      } else if (asset is RemotePickerAsset) {
-        Navigator.of(context).pop([MediaItem.remote(remoteAsset: asset)]);
+      if (widget.config.maxSelection > 1) {
+        if (!_selected.any((e) => e.id == asset.id)) {
+          _toggleSelection(asset);
+        }
+      } else {
+        if (asset is LocalPickerAsset) {
+          Navigator.of(context).pop([MediaItem(asset: asset.entity)]);
+        } else if (asset is RemotePickerAsset) {
+          Navigator.of(context).pop([MediaItem.remote(remoteAsset: asset)]);
+        } else if (asset is FilePickerAsset) {
+          Navigator.of(context).pop([MediaItem.file(fileAsset: asset)]);
+        }
       }
     }
   }
@@ -452,6 +543,11 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       } else if (asset is RemotePickerAsset) {
         items.add(MediaItem.remote(
           remoteAsset: asset,
+          editedFile: _editedFiles[asset.id],
+        ));
+      } else if (asset is FilePickerAsset) {
+        items.add(MediaItem.file(
+          fileAsset: asset,
           editedFile: _editedFiles[asset.id],
         ));
       }
@@ -498,11 +594,9 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
           await FlutterWebAuth2.authenticate(
             url: pickedUrl,
             callbackUrlScheme: _googleService.redirectScheme,
-          );
+          ).timeout(const Duration(seconds: 60));
         } catch (e) {
-          // WebAuth2 throws if user cancels the flow, but Google Photos API session
-          // might still have items if they picked "Done" then closed.
-          debugPrint('WebAuth2 flow ended: $e');
+          debugPrint('WebAuth2 flow ended or timed out: $e');
         }
 
         // Fetch what the user actually picked in the session
@@ -543,11 +637,65 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     }
   }
 
+  // -- Smart Clipboard Methods ------------------------------------------------
+
+  void _enterClipboardMode() {
+    setState(() {
+      _isClipboardMode = true;
+      _isCloudMode = false;
+      _isClipboardLoading = true;
+      _clipboardAssets.clear(); // Clear previous fetch if any
+    });
+
+    _fetchClipboard();
+  }
+
+  void _exitClipboardMode() {
+    setState(() {
+      _isClipboardMode = false;
+      _isClipboardLoading = false;
+    });
+  }
+
+  Future<void> _fetchClipboard() async {
+    try {
+      debugPrint(
+          '📋 [PickerPage] _fetchClipboard -> calling ClipboardService.instance.fetchAssets()...');
+      final assets = await ClipboardService.instance.fetchAssets();
+      debugPrint(
+          '📋 [PickerPage] _fetchClipboard -> got ${assets.length} assets');
+      if (!mounted) return;
+
+      setState(() {
+        _clipboardAssets = assets;
+      });
+
+      // Visible feedback for debugging
+      if (mounted && assets.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                '📋 Clipboard: No media detected. Copy an image or media URL first.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('📋 [PickerPage] _fetchClipboard -> ERROR: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isClipboardLoading = false);
+      }
+    }
+  }
+
   // Legacy _loadCloudPhotos has been permanently removed
   // to comply with Google's March 2025 Privacy Rules.
 
   void _showAlbumSheet() {
-    if (_albums.length <= 1) return;
+    final bool canShowGoogle = widget.config.googlePhotosConfig.enabled;
+    final bool canShowClipboard = widget.config.enableSmartClipboard;
+    if (_albums.length <= 1 && !canShowGoogle && !canShowClipboard) return;
     HapticFeedback.lightImpact();
     _chevronCtrl.forward();
 
@@ -565,7 +713,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
         snapSizes: const [0.48, 0.88],
         builder: (_, scrollController) => AlbumSelectorSheet(
           albums: _albums,
-          currentAlbum: _isCloudMode ? null : _currentAlbum,
+          currentAlbum:
+              (_isCloudMode || _isClipboardMode) ? null : _currentAlbum,
           primaryColor: widget.config.primaryColor,
           theme: _theme,
           textDelegate: widget.config.textDelegate,
@@ -574,20 +723,27 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
           onSelect: (album) {
             Navigator.pop(context);
             if (_isCloudMode) _exitCloudMode();
+            if (_isClipboardMode) _exitClipboardMode();
             _switchAlbum(album);
           },
-          onGooglePhotosTap:
-              (!_isVideoMode && widget.config.googlePhotosConfig.enabled)
-                  ? () {
-                      Navigator.pop(context);
-                      _enterCloudMode();
-                    }
-                  : null,
+          onGooglePhotosTap: (widget.config.googlePhotosConfig.enabled)
+              ? () {
+                  Navigator.pop(context);
+                  _enterCloudMode();
+                }
+              : null,
           isGooglePhotosConnected: _googleService.isAuthenticated,
           onGooglePhotosSignOut: () {
             Navigator.pop(context);
             _handleGooglePhotosSignOut();
           },
+          enableSmartClipboard: widget.config.enableSmartClipboard,
+          onClipboardTap: widget.config.enableSmartClipboard
+              ? () {
+                  Navigator.pop(context);
+                  _enterClipboardMode();
+                }
+              : null,
         ),
       ),
     ).whenComplete(() {
@@ -606,13 +762,46 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       }
 
       Uint8List? bytes;
+      int width = 0;
+      int height = 0;
+
       try {
-        bytes = await file.readAsBytes();
-      } catch (_) {}
+        final ext = file.name.split('.').last.toLowerCase();
+        final isVideoOrAudio = {
+          'mp4',
+          'mov',
+          'avi',
+          'mkv',
+          'webm',
+          '3gp',
+          'mp3',
+          'wav',
+          'aac',
+          'flac',
+          'ogg',
+          'm4a'
+        }.contains(ext);
+
+        // On Web, do not read huge video/audio blobs eagerly to avoid RAM issues
+        if (!isVideoOrAudio) {
+          bytes = await file.readAsBytes();
+          if (bytes.isNotEmpty) {
+            final image = await decodeImageFromList(bytes);
+            width = image.width;
+            height = image.height;
+            image.dispose();
+          }
+        }
+      } catch (e) {
+        debugPrint('Error decoding dropped file specs: $e');
+      }
 
       newAssets.add(FilePickerAsset(
         filePath: file.path,
+        title: file.name,
         bytes: bytes,
+        width: width,
+        height: height,
       ));
     }
 
@@ -692,7 +881,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   }
 
   void _handleSelectAll() {
-    if (_isVideoMode || widget.config.maxSelection <= 1) return;
+    if (widget.config.maxSelection <= 1) return;
 
     final targetList = _isCloudMode
         ? _googleProvider.importedAssets.value
@@ -755,8 +944,11 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                                 ? widget.config.textDelegate.videosLabel
                                 : _isCloudMode
                                     ? widget.config.textDelegate.googlePhotos
-                                    : (_currentAlbum?.name ??
-                                        widget.config.textDelegate.imagesLabel),
+                                    : _isClipboardMode
+                                        ? widget.config.textDelegate.clipboard
+                                        : (_currentAlbum?.name ??
+                                            widget.config.textDelegate
+                                                .imagesLabel),
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: _theme.primaryText,
@@ -766,7 +958,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                             ),
                           ),
                         ),
-                        if (_albums.length > 1 && !_isVideoMode) ...[
+                        if (_albums.length > 1 ||
+                            widget.config.googlePhotosConfig.enabled) ...[
                           const SizedBox(width: 3),
                           RotationTransition(
                             turns: Tween(begin: 0.0, end: 0.5)
@@ -787,7 +980,9 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (_source.supportsFileAddition && !_isCloudMode)
+                      if (_source.supportsFileAddition &&
+                          !_isCloudMode &&
+                          !_isClipboardMode)
                         IconButton(
                           icon: Icon(Icons.add_circle_outline_rounded,
                               color: widget.config.primaryColor),
@@ -801,7 +996,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                               parent: anim, curve: Curves.easeOutBack),
                           child: FadeTransition(opacity: anim, child: child),
                         ),
-                        child: (!_isVideoMode && _selected.isNotEmpty)
+                        child: (_selected.isNotEmpty)
                             ? SendButton(
                                 key: const ValueKey('send'),
                                 label: widget.config.textDelegate.confirm,
@@ -841,7 +1036,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     return Column(
       children: [
         Container(height: 0.5, color: _theme.separator),
-        if (!_isCloudMode)
+        if (!_isCloudMode && !_isClipboardMode)
           InlineSearchBar(
             theme: _theme,
             hintText: widget.config.textDelegate.searchPlaceholder,
@@ -856,16 +1051,19 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
             },
           ),
         Expanded(
-          child: _isCloudMode ? _buildCloudBody() : _buildGrid(),
+          child: _isCloudMode
+              ? _buildCloudBody()
+              : _isClipboardMode
+                  ? _buildClipboardBody()
+                  : _buildGrid(),
         ),
-        if (!_isVideoMode)
-          AnimatedSize(
-            duration: const Duration(milliseconds: 240),
-            curve: Curves.easeOutCubic,
-            child: _selected.isNotEmpty
-                ? _buildSelectedStrip()
-                : const SizedBox.shrink(),
-          ),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOutCubic,
+          child: _selected.isNotEmpty
+              ? _buildSelectedStrip()
+              : const SizedBox.shrink(),
+        ),
       ],
     );
   }
@@ -969,7 +1167,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
             children: [
               DraggableSelectionGrid(
                 scrollController: _scrollController,
-                enabled: !_isVideoMode && widget.config.enableSwipeToSelect,
+                enabled: (widget.config.maxSelection > 1) &&
+                    widget.config.enableSwipeToSelect,
                 onAssetHover: (asset) {
                   final idx = _selectionIndex(asset.id);
                   if (idx == -1 &&
@@ -1015,7 +1214,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                         behavior: HitTestBehavior.translucent,
                         child: GestureDetector(
                           onTap: () {
-                            if (_isVideoMode) {
+                            if (_isVideoMode &&
+                                widget.config.maxSelection <= 1) {
                               _onVideoTap(asset);
                             } else {
                               _toggleSelection(asset);
@@ -1024,19 +1224,26 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
-                              CachedNetworkImage(
-                                imageUrl: asset.thumbUrl,
-                                httpHeaders: asset.headers,
-                                fit: BoxFit.cover,
-                                placeholder: (_, __) => Container(
-                                  color: _theme.elevated,
-                                ),
-                                errorWidget: (_, __, ___) => Container(
-                                  color: _theme.elevated,
-                                  child: Icon(Icons.broken_image_rounded,
-                                      color: _theme.secondaryText, size: 28),
-                                ),
-                              ),
+                              kIsWeb
+                                  ? AuthImage(
+                                      imageUrl: asset.thumbUrl,
+                                      googleService: _googleService,
+                                      theme: _theme,
+                                    )
+                                  : CachedNetworkImage(
+                                      imageUrl: asset.thumbUrl,
+                                      httpHeaders: asset.headers,
+                                      fit: BoxFit.cover,
+                                      placeholder: (_, __) => Container(
+                                        color: _theme.elevated,
+                                      ),
+                                      errorWidget: (_, __, ___) => Container(
+                                        color: _theme.elevated,
+                                        child: Icon(Icons.broken_image_rounded,
+                                            color: _theme.secondaryText,
+                                            size: 28),
+                                      ),
+                                    ),
                               if (isSelected)
                                 Container(
                                   color: Colors.black.withValues(alpha: 0.4),
@@ -1072,14 +1279,116 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
         });
   }
 
+  Widget _buildClipboardBody() {
+    if (_isClipboardLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator.adaptive(
+              valueColor: AlwaysStoppedAnimation(widget.config.primaryColor),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              widget.config.textDelegate.clipboardLoading,
+              style: TextStyle(
+                color: _theme.secondaryText,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_clipboardAssets.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.content_paste_off_rounded,
+                size: 64, color: _theme.elevated),
+            const SizedBox(height: 16),
+            Text(
+              widget.config.textDelegate.clipboardEmpty,
+              style: TextStyle(
+                color: _theme.secondaryText,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return DraggableSelectionGrid(
+      scrollController: _scrollController,
+      enabled:
+          (widget.config.maxSelection > 1) && widget.config.enableSwipeToSelect,
+      onAssetHover: (asset) {
+        final idx = _selectionIndex(asset.id);
+        if (idx == -1 && _selected.length < widget.config.maxSelection) {
+          HapticFeedback.selectionClick();
+          setState(() => _selected.add(asset));
+        }
+      },
+      child: MasonryGridView.builder(
+        controller: _scrollController,
+        padding: EdgeInsets.zero,
+        gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+        ),
+        mainAxisSpacing: 2,
+        crossAxisSpacing: 2,
+        itemCount: _clipboardAssets.length,
+        itemBuilder: (context, index) {
+          final asset = _clipboardAssets[index];
+          final selIdx = _selected.indexWhere((e) => e.id == asset.id);
+          final isSelected = selIdx >= 0;
+
+          // Compute aspect ratio from asset dimensions; default to 1:1 square
+          // if dimensions are unknown (prevents infinite height crash).
+          final double aspectRatio = (asset.width > 0 && asset.height > 0)
+              ? asset.width / asset.height
+              : 1.0;
+
+          return AspectRatio(
+            aspectRatio: aspectRatio,
+            child: MediaThumbnailWidget(
+              asset: asset,
+              isSelected: isSelected,
+              selectionNumber: selIdx >= 0 ? selIdx + 1 : null,
+              primaryColor: widget.config.primaryColor,
+              isDark: _theme.isDark,
+              theme: _theme,
+              onTap: () {
+                if (_isVideoMode && widget.config.maxSelection <= 1) {
+                  _onVideoTap(asset);
+                } else {
+                  _toggleSelection(asset);
+                }
+              },
+              onLongPress: () {
+                HapticFeedback.lightImpact();
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildImportButton() {
     return Positioned(
       bottom: 24,
+      left: 24,
       right: 24,
-      child: Row(
-        children: [
-          Expanded(
-            child: OutlinedButton(
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            OutlinedButton(
               onPressed: _pickFromGooglePhotos,
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 18),
@@ -1093,44 +1402,38 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                 ),
                 backgroundColor: Colors.transparent,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Flexible(
-                    child: Text(
-                      widget.config.textDelegate.googlePhotosImportButton,
-                      style: TextStyle(
-                        color: _theme.primaryText,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.3,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+              child: Text(
+                widget.config.textDelegate.googlePhotosImportButton,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: _theme.primaryText,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Material(
-            color: _theme.isDark ? Colors.white : const Color(0xFF1E1E1E),
-            shape: const CircleBorder(),
-            child: InkWell(
-              onTap: _pickFromGooglePhotos,
-              customBorder: const CircleBorder(),
-              child: SizedBox(
-                width: 62,
-                height: 62,
-                child: Icon(
-                  Icons.add_photo_alternate_rounded,
-                  color: _theme.isDark ? Colors.black : Colors.white,
-                  size: 22,
+            const SizedBox(width: 16),
+            Material(
+              color: _theme.isDark ? Colors.white : const Color(0xFF1E1E1E),
+              shape: const CircleBorder(),
+              child: InkWell(
+                onTap: _pickFromGooglePhotos,
+                customBorder: const CircleBorder(),
+                child: SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: Icon(
+                    Icons.add_photo_alternate_rounded,
+                    color: _theme.isDark ? Colors.black : Colors.white,
+                    size: 22,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1143,64 +1446,68 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
     return Positioned(
       bottom: 84, // Sit gracefully above the import button
+      left: 24,
       right: 24,
-      child: AnimatedScale(
-        scale: count > 0 ? 1.0 : 0.0,
-        curve: Curves.easeOutBack,
-        duration: const Duration(milliseconds: 250),
-        child: IgnorePointer(
-          ignoring: count == 0,
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () async {
-                HapticFeedback.mediumImpact();
-                final idsToDelete = _selected
-                    .whereType<RemotePickerAsset>()
-                    .map((e) => e.id)
-                    .toList();
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: AnimatedScale(
+          scale: count > 0 ? 1.0 : 0.0,
+          curve: Curves.easeOutBack,
+          duration: const Duration(milliseconds: 250),
+          child: IgnorePointer(
+            ignoring: count == 0,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () async {
+                  HapticFeedback.mediumImpact();
+                  final idsToDelete = _selected
+                      .whereType<RemotePickerAsset>()
+                      .map((e) => e.id)
+                      .toList();
 
-                for (final id in idsToDelete) {
-                  await _googleProvider.removePhoto(id);
-                }
+                  for (final id in idsToDelete) {
+                    await _googleProvider.removePhoto(id);
+                  }
 
-                if (mounted) {
-                  setState(() {
-                    _selected.removeWhere((e) =>
-                        e is RemotePickerAsset && idsToDelete.contains(e.id));
-                  });
-                }
-              },
-              borderRadius: BorderRadius.circular(100),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEF4444), // Dense semantic red
-                  borderRadius: BorderRadius.circular(100),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFEF4444).withValues(alpha: 0.25),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.delete_outline_rounded,
-                        color: Colors.white, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${widget.config.textDelegate.googlePhotosDeleteButton} ($count)',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                  if (mounted) {
+                    setState(() {
+                      _selected.removeWhere((e) =>
+                          e is RemotePickerAsset && idsToDelete.contains(e.id));
+                    });
+                  }
+                },
+                borderRadius: BorderRadius.circular(100),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444), // Dense semantic red
+                    borderRadius: BorderRadius.circular(100),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.25),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.delete_outline_rounded,
+                          color: Colors.white, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${widget.config.textDelegate.googlePhotosDeleteButton} ($count)',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1236,11 +1543,26 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       );
     }
 
-    final List<PickerAsset> displayAssets = _isCloudMode
+    final List<PickerAsset> totalAssets = _isCloudMode
         ? _googleProvider.importedAssets.value
         : (_isSearching && _searchQuery.isNotEmpty)
             ? _searchResults
             : _assets;
+
+    final displayAssets = totalAssets.where((a) {
+      if (widget.config.requestType == RequestType.video) {
+        return a.type == AssetType.video;
+      }
+      if (widget.config.requestType == RequestType.image) {
+        return a.type == AssetType.image;
+      }
+      if (widget.config.requestType == RequestType.audio) {
+        return a.type == AssetType.audio;
+      }
+      // For combined types (common, all), show both images and videos in the grid,
+      // but exclude audio as it uses the specialized list-based picker.
+      return a.type == AssetType.image || a.type == AssetType.video;
+    }).toList();
 
     if (!_isSearching && _assets.isEmpty) {
       return Center(
@@ -1316,9 +1638,14 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     }
 
     // Determine if the camera tile should be shown
-    final showCamera = !_isSearching && widget.config.showCameraTile;
+    // Hide camera tile on Web/Desktop (WebRTC flash/torch causes crashes, no native integration)
+    final isDesktopOrWeb =
+        kIsWeb || (!kIsWeb && (Platform.isWindows || Platform.isLinux));
+    final showCamera =
+        !isDesktopOrWeb && !_isSearching && widget.config.showCameraTile;
     final cameraOffset = showCamera ? 1 : 0;
-    final enableSwipe = !_isVideoMode && widget.config.enableSwipeToSelect;
+    final enableSwipe =
+        !isDesktopOrWeb && !_isVideoMode && widget.config.enableSwipeToSelect;
 
     // Pagination only when not searching
     final bool isLoadingMoreAssets = _isSearching ? false : _isLoadingMore;
@@ -1396,11 +1723,17 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                     selectionNumber: isSelected ? selIdx + 1 : null,
                     primaryColor: widget.config.primaryColor,
                     isDark: _theme.isDark,
+                    theme: _theme,
+                    googleService: _googleService,
                     showPlayOverlay:
                         _isVideoMode || asset.type == AssetType.video,
-                    onTap: () => _isVideoMode
-                        ? _onVideoTap(asset)
-                        : _toggleSelection(asset),
+                    onTap: () {
+                      if (_isVideoMode && widget.config.maxSelection <= 1) {
+                        _onVideoTap(asset);
+                      } else {
+                        _toggleSelection(asset);
+                      }
+                    },
                   ),
                 ),
               );
@@ -1468,6 +1801,9 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                 index: i + 1,
                 primaryColor: widget.config.primaryColor,
                 onRemove: () => _toggleSelection(asset),
+                theme: _theme,
+                googleService: _googleService,
+                textDelegate: widget.config.textDelegate,
                 editedFile: _editedFiles[asset.id],
                 onEdit: (widget.config.onEditMedia != null &&
                         asset is LocalPickerAsset &&

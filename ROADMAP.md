@@ -4,6 +4,8 @@ This document outlines the planned roadmap and potential future features for the
 
 ## 🚀 Near-Term (Next Minor Releases)
 
+- [x] 🔄 **Pre-selected Media (`initialSelection`)**: [Priority: 🔥 Critical] Allow developers to pass an initial list of selected `MediaItem`s. Vital for editing an existing selection (like adding a 4th photo to an already constructed post).
+- [ ] 🪄 **Auto-Conversion HEIC to JPG**: [Priority: 🔥 High] Background converter to natively transform iOS HEIC/HEVC photos to standard JPG before returning the file, avoiding cross-platform rendering crashes. (NEXT)
 - [x] **Camera Integration**: Allow taking photos and recording videos directly from within the picker grid (a live camera tile as the first item).
 - [x] **Localization Support**: Add robust built-in `intl` delegate for standard translations without forcing developers to manually inject text config for every language.
 - [x] **Draggable Selection**: Allow users to swipe-to-select multiple items rapidly without lifting their finger, similar to iOS Photos.
@@ -11,6 +13,10 @@ This document outlines the planned roadmap and potential future features for the
 
 ## ✨ Upcoming Premium UX Ideas (To Discuss)
 
+- [x] 📋 **Smart Clipboard Integration**: [Priority: 🔥 High] A dynamic grid tile that detects raw images or direct media URLs copied to the device's clipboard. Automatically fetches, decodes, and allows instant selection of copied assets (implemented v1.0.0).
+- [ ] ♿ **A11y (Accessibility) Compliance**: [Priority: 🛡️ High] Inject deep `Semantics` tags for VoiceOver/TalkBack to make the package Enterprise & Government ready. (Long Terms)
+- [x] 🦸‍♂️ **"Hero" Animations**: [Priority: 🌟 Medium] Implement seamless `Hero` flying transitions between the grid thumbnails and full-screen previews (Dribbble-level UX).
+- [ ] 🗜️ **Smart Compression Hooks**: [Priority: 📈 Medium] Add `onCompressMedia` callback or native ultra-light fast bridge for client-side raw video/photo compression.
 - [x] **Drag & Drop Reordering**: Allow users to drag-and-drop images in the bottom preview strip to change their selection order before sending.
 - [ ] **GIF & Sticker Panel**: A dedicated tab to search and select GIFs (via Giphy/Tenor integration) without leaving the picker.
 - [ ] **Document/File Support**: Expand the UI to support picking PDFs and Documents with the same beautiful, glassmorphic design(Canceled).
@@ -21,8 +27,8 @@ This document outlines the planned roadmap and potential future features for the
 
 ## 🏗️ Long-Term Vision
 
-- [ ] **Web Support (HTML5 File Input)**: Since `photo_manager` relies on native mobile APIs, the web implementation will abstract the UI and fallback to an elegant `file_selector` or standard `<input type="file" multiple>` overlay that mirrors the mobile masonry layout once files are loaded into browser memory.
-- [ ] **Desktop Support (macOS / Windows)**: Integrate `file_selector` for native window dialogs, and support drag-and-drop file inputs directly into the Masonry Grid window using `desktop_drop`. Ensure keyboard shortcuts (Shift+Click) mirror mobile dragging behaviors.
+- [x] **Web Support (HTML5 File Input)**: Since `photo_manager` relies on native mobile APIs, the web implementation will abstract the UI and fallback to an elegant `file_selector` or standard `<input type="file" multiple>` overlay that mirrors the mobile masonry layout once files are loaded into browser memory.
+- [x] **Desktop Support (macOS / Windows)**: Integrate `file_selector` for native window dialogs, and support drag-and-drop file inputs directly into the Masonry Grid window using `desktop_drop`. Ensure keyboard shortcuts (Shift+Click) mirror mobile dragging behaviors.
 
 ---
 

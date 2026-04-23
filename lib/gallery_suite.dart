@@ -27,9 +27,7 @@ export 'src/services/google_photos_service.dart' show GooglePhotosService;
 export 'src/pages/camera_screen.dart';
 
 // ── Internationalization (Intl) ─────────────────────────────────────────────
-export 'src/intl/picker_text_delegate.dart';
-export 'src/intl/english_picker_text_delegate.dart';
-export 'src/intl/french_picker_text_delegate.dart';
+export 'src/intl/suite_intl.dart';
 
 // ── Services ────────────────────────────────────────────────────────
 export 'src/services/suite_services.dart';
@@ -44,10 +42,10 @@ export 'src/widgets/suite_widgets.dart';
 export 'src/pages/suite_pages.dart';
 
 // ── Providers ────────────────────────────────────────────────────────
-export 'src/providers/google_photos_provider.dart';
+export 'src/providers/suite_provider.dart';
 
 // ── Sources (MediaSource Abstraction) ────────────────────────────────
 export 'src/sources/suite_sources.dart';
 
-// ── Shared ────────────────────────────────────────────────────────
-// export 'src/shared/snack_bar_utils.dart';
+// ── Utils ────────────────────────────────────────────────────────
+export 'src/utils/web_utils.dart';

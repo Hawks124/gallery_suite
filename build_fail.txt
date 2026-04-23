@@ -1,0 +1,762 @@
+ Error: Method not found: 'JSObject'.
+  RTCSetParameterOptions() : _ = JSObject();
+                                 ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:1358:33: Error: 'JSObject' isn't a type.
+extension type RTCRtpReceiver._(JSObject _) implements JSObject {
+                                ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:1438:43: Error: 'JSObject' isn't a type.
+extension type RTCRtpContributingSource._(JSObject _) implements JSObject {
+                                          ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:1455:46: Error: 'JSObject' isn't a type.
+extension type RTCRtpSynchronizationSource._(JSObject _)
+                                             ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:1486:36: Error: 'JSObject' isn't a type.
+extension type RTCRtpTransceiver._(JSObject _) implements JSObject {
+                                   ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:1506:37: Error: 'JSArray' isn't a type.
+  external void setCodecPreferences(JSArray<RTCRtpCodec> codecs);
+                                    ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:1571:35: Error: 'JSObject' isn't a type.
+extension type RTCDtlsTransport._(JSObject _) implements EventTarget, JSObject {
+                                  ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:1587:37: Error: 'JSObject' isn't a type.
+extension type RTCDtlsFingerprint._(JSObject _) implements JSObject {
+                                    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:1608:34: Error: 'JSObject' isn't a type.
+extension type RTCIceTransport._(JSObject _) implements EventTarget, JSObject {
+                                 ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:1711:35: Error: 'JSObject' isn't a type.
+extension type RTCIceParameters._(JSObject _) implements JSObject {
+                                  ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:1753:32: Error: 'JSObject' isn't a type.
+extension type RTCTrackEvent._(JSObject _) implements Event, JSObject {
+                               ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:1789:36: Error: 'JSObject' isn't a type.
+extension type RTCTrackEventInit._(JSObject _) implements EventInit, JSObject {
+                                   ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:1796:5: 
+Error: 'JSArray' isn't a type.
+    JSArray<MediaStream> streams,
+    ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:1805:24: Error: 'JSArray' isn't a type.
+  external set streams(JSArray<MediaStream> value);
+                       ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:1830:35: Error: 'JSObject' isn't a type.
+extension type RTCSctpTransport._(JSObject _) implements EventTarget, JSObject {
+                                  ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:1874:33: Error: 'JSObject' isn't a type.
+extension type RTCDataChannel._(JSObject _) implements EventTarget, JSObject {
+                                ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:1926:22: Error: 'JSAny' isn't a type.
+  external void send(JSAny data);
+                     ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:2108:37: Error: 'JSObject' isn't a type.
+extension type RTCDataChannelInit._(JSObject _) implements JSObject {
+                                    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:2142:38: Error: 'JSObject' isn't a type.
+extension type RTCDataChannelEvent._(JSObject _) implements Event, JSObject {
+                                     ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:2152:42: Error: 'JSObject' isn't a type.
+extension type RTCDataChannelEventInit._(JSObject _)
+                                         ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:2185:32: Error: 'JSObject' isn't a type.
+extension type RTCDTMFSender._(JSObject _) implements EventTarget, JSObject {
+                               ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:2239:41: Error: 'JSObject' isn't a type.
+extension type RTCDTMFToneChangeEvent._(JSObject _) implements Event, JSObject {
+                                        ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:2252:45: Error: 'JSObject' isn't a type.
+extension type RTCDTMFToneChangeEventInit._(JSObject _)
+                                            ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:2280:33: Error: 'JSObject' isn't a type.
+extension type RTCStatsReport._(JSObject _) implements JSObject {}
+                                ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:2292:27: Error: 'JSObject' isn't a type.
+extension type RTCError._(JSObject _) implements DOMException, JSObject {
+                          ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:2327:31: Error: 'JSObject' isn't a type.
+extension type RTCErrorInit._(JSObject _) implements JSObject {
+                              ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:2359:32: Error: 'JSObject' isn't a type.
+extension type RTCErrorEvent._(JSObject _) implements Event, JSObject {
+                               ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc.dart:2371:36: Error: 'JSObject' isn't a type.
+extension type RTCErrorEventInit._(JSObject _) implements EventInit, JSObject {
+                                   ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:24:47: Error: 'JSObject' isn't a type.
+extension type RTCEncodedVideoFrameMetadata._(JSObject _) implements JSObject {
+                                              ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:27:13: Error: 'JSNumber' isn't a type.
+    JSArray<JSNumber> dependencies,
+            ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:27:5: Error: 'JSArray' isn't a type.
+    JSArray<JSNumber> dependencies,
+    ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:34:13: Error: 'JSNumber' isn't a type.
+    JSArray<JSNumber> contributingSources,
+            ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:34:5: Error: 'JSArray' isn't a type.
+    JSArray<JSNumber> contributingSources,
+    ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:43:37: Error: 'JSNumber' isn't a type.
+  external set dependencies(JSArray<JSNumber> value);
+                                    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:43:29: Error: 'JSArray' isn't a type.
+  external set dependencies(JSArray<JSNumber> value);
+                            ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:57:44: Error: 'JSNumber' isn't a type.
+  external set contributingSources(JSArray<JSNumber> value);
+                                           ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:57:36: Error: 'JSArray' isn't a type.
+  external set contributingSources(JSArray<JSNumber> value);
+                                   ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:81:39: Error: 'JSObject' isn't a type.
+extension type RTCEncodedVideoFrame._(JSObject _) implements JSObject {
+                                      ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:103:21: Error: 'JSArrayBuffer' isn't a type.
+  external set data(JSArrayBuffer value);
+                    ^^^^^^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:105:47: Error: 'JSObject' isn't a type.
+extension type RTCEncodedAudioFrameMetadata._(JSObject _) implements JSObject {
+                                              ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:109:13: Error: 'JSNumber' isn't a type.
+    JSArray<JSNumber> contributingSources,
+            ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:109:5: Error: 'JSArray' isn't a type.
+    JSArray<JSNumber> contributingSources,
+    ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:120:44: Error: 'JSNumber' isn't a type.
+  external set contributingSources(JSArray<JSNumber> value);
+                                           ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:120:36: Error: 'JSArray' isn't a type.
+  external set contributingSources(JSArray<JSNumber> value);
+                                   ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:150:39: Error: 'JSObject' isn't a type.
+extension type RTCEncodedAudioFrame._(JSObject _) implements JSObject {
+                                      ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:166:21: Error: 'JSArrayBuffer' isn't a type.
+  external set data(JSArrayBuffer value);
+                    ^^^^^^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:188:36: Error: 'JSObject' isn't a type.
+extension type RTCTransformEvent._(JSObject _) implements Event, JSObject {
+                                   ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:215:42: Error: 'JSObject' isn't a type.
+extension type RTCRtpScriptTransformer._(JSObject _)
+                                         ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:292:40: Error: 'JSObject' isn't a type.
+extension type RTCRtpScriptTransform._(JSObject _) implements JSObject {
+                                       ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:295:5: Error: 'JSAny' isn't a type.
+    JSAny? options,
+    ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:296:13: Error: 'JSObject' isn't a type.
+    JSArray<JSObject> transfer,
+            ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_encoded_transform.dart:296:5: Error: 'JSArray' isn't a type.
+    JSArray<JSObject> transfer,
+    ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webrtc_identity.dart:18:45: Error: 'JSObject' isn't a type.
+extension type RTCIdentityProviderOptions._(JSObject _) implements JSObject {
+                                            ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/websockets.dart:36:28: Error: 'JSObject' isn't a type.
+extension type WebSocket._(JSObject _) implements EventTarget, JSObject {
+                           ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/websockets.dart:39:5: Error: 'JSAny' isn't a type.
+    JSAny protocols,
+    ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/websockets.dart:76:22: Error: 'JSAny' isn't a type.
+  external void send(JSAny data);
+                     ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/websockets.dart:134:29: Error: 'JSObject' isn't a type.
+extension type CloseEvent._(JSObject _) implements Event, JSObject {
+                            ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/websockets.dart:156:33: Error: 'JSObject' isn't a type.
+extension type CloseEventInit._(JSObject _) implements EventInit, JSObject {
+                                ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webtransport.dart:43:51: Error: 'JSObject' isn't a type.
+extension type WebTransportDatagramDuplexStream._(JSObject _)
+                                                  ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webtransport.dart:117:31: Error: 'JSObject' isn't a type.
+extension type WebTransport._(JSObject _) implements JSObject {
+                              ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webtransport.dart:217:35: Error: 'JSObject' isn't a type.
+extension type WebTransportHash._(JSObject _) implements JSObject {
+                                  ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webtransport.dart:228:38: Error: 'JSObject' isn't a type.
+extension type WebTransportOptions._(JSObject _) implements JSObject {
+                                     ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webtransport.dart:232:5: Error: 'JSArray' isn't a type.
+    JSArray<WebTransportHash> serverCertificateHashes,
+    ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webtransport.dart:243:40: Error: 'JSArray' isn't a type.
+  external set serverCertificateHashes(JSArray<WebTransportHash> value);
+                                       ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webtransport.dart:251:40: Error: 'JSObject' isn't a type.
+extension type WebTransportCloseInfo._(JSObject _) implements JSObject {
+                                       ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webtransport.dart:262:48: Error: 'JSObject' isn't a type.
+extension type WebTransportSendStreamOptions._(JSObject _) implements JSObject {
+                                               ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webtransport.dart:264:5: Error: 'JSObject' isn't a type.
+    JSObject? sendGroup,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webtransport.dart:270:26: Error: 'JSObject' isn't a type.
+  external set sendGroup(JSObject? value);
+                         ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webtransport.dart:287:50: Error: 'JSObject' isn't a type.
+extension type WebTransportBidirectionalStream._(JSObject _)
+                                                 ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webtransport.dart:310:36: Error: 'JSObject' isn't a type.
+extension type WebTransportError._(JSObject _)
+                                   ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webtransport.dart:326:43: Error: 'JSObject' isn't a type.
+extension type WebTransportErrorOptions._(JSObject _) implements JSObject {
+                                          ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webvtt.dart:37:25: Error: 'JSObject' isn't a type.
+extension type VTTCue._(JSObject _) implements TextTrackCue, JSObject {
+                        ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webvtt.dart:108:28: 
+Error: 'JSObject' isn't a type.
+extension type VTTRegion._(JSObject _) implements JSObject {
+                           ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:47:26: Error: 'JSObject' isn't a type.
+extension type XRSpace._(JSObject _) implements EventTarget, JSObject {}
+                         ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:75:35: Error: 'JSObject' isn't a type.
+extension type XRReferenceSpace._(JSObject _) implements XRSpace, JSObject {
+                                  ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:118:29: Error: 'JSObject' isn't a type.
+extension type XRViewport._(JSObject _) implements JSObject {
+                            ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:184:35: Error: 'JSObject' isn't a type.
+extension type XRRigidTransform._(JSObject _) implements JSObject {
+                                  ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:267:25: Error: 'JSObject' isn't a type.
+extension type XRPose._(JSObject _) implements JSObject {
+                        ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:309:31: Error: 'JSObject' isn't a type.
+extension type XRViewerPose._(JSObject _) implements XRPose, JSObject {
+                              ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:340:32: Error: 'JSObject' isn't a type.
+extension type XRInputSource._(JSObject _) implements JSObject {
+                               ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:440:33: Error: 'JSObject' isn't a type.
+extension type XRSessionEvent._(JSObject _) implements Event, JSObject {
+                                ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:451:37: Error: 'JSObject' isn't a type.
+extension type XRSessionEventInit._(JSObject _) implements EventInit, JSObject {
+                                    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:456:14: Error: 'JSObject' isn't a type.
+    required JSObject session,
+             ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:460:24: Error: 'JSObject' isn't a type.
+  external set session(JSObject value);
+                       ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:477:37: Error: 'JSObject' isn't a type.
+extension type XRInputSourceEvent._(JSObject _) implements Event, JSObject {
+                                    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:501:41: Error: 'JSObject' isn't a type.
+extension type XRInputSourceEventInit._(JSObject _)
+                                        ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:507:14: Error: 'JSObject' isn't a type.
+    required JSObject frame,
+             ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:512:22: Error: 'JSObject' isn't a type.
+  external set frame(JSObject value);
+                     ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:525:44: Error: 'JSObject' isn't a type.
+extension type XRInputSourcesChangeEvent._(JSObject _)
+                                           ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:549:48: Error: 'JSObject' isn't a type.
+extension type XRInputSourcesChangeEventInit._(JSObject _)
+                                               ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:555:14: Error: 'JSObject' isn't a type.
+    required JSObject session,
+             ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:556:14: Error: 'JSArray' isn't a type.
+    required JSArray<XRInputSource> added,
+             ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:557:14: Error: 'JSArray' isn't a type.
+    required JSArray<XRInputSource> removed,
+             ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:561:24: Error: 'JSObject' isn't a type.
+  external set session(JSObject value);
+                       ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:563:22: Error: 'JSArray' isn't a type.
+  external set added(JSArray<XRInputSource> value);
+                     ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:565:24: Error: 'JSArray' isn't a type.
+  external set removed(JSArray<XRInputSource> value);
+                       ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:578:40: Error: 'JSObject' isn't a type.
+extension type XRReferenceSpaceEvent._(JSObject _) implements Event, JSObject {
+                                       ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr.dart:600:44: Error: 'JSObject' isn't a type.
+extension type XRReferenceSpaceEventInit._(JSObject _)
+                                           ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr_hand_input.dart:31:25: Error: 'JSObject' isn't a type.
+extension type XRHand._(JSObject _) implements JSObject {}
+                        ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr_hand_input.dart:40:31: Error: 'JSObject' isn't a type.
+extension type XRJointSpace._(JSObject _) implements XRSpace, JSObject {
+                              ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/webxr_hand_input.dart:53:30: Error: 'JSObject' isn't a type.
+extension type XRJointPose._(JSObject _) implements XRPose, JSObject {
+                             ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/xhr.dart:36:44: Error: 'JSObject' isn't a type.
+extension type XMLHttpRequestEventTarget._(JSObject _)
+                                           ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/xhr.dart:66:39: Error: 'JSObject' isn't a type.
+extension type XMLHttpRequestUpload._(JSObject _)
+                                      ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/xhr.dart:90:33: Error: 'JSObject' isn't a type.
+extension type XMLHttpRequest._(JSObject _)
+                                ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/xhr.dart:178:23: Error: 'JSAny' isn't a type.
+  external void send([JSAny? body]);
+                      ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/xhr.dart:502:27: Error: 'JSObject' isn't a type.
+extension type FormData._(JSObject _) implements JSObject {
+                          ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/xhr.dart:518:5: Error: 'JSAny' isn't a type.
+    JSAny blobValueOrValue, [
+    ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/xhr.dart:551:5: Error: 'JSAny' isn't a type.
+    JSAny blobValueOrValue, [
+    ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/xhr.dart:565:32: Error: 'JSObject' isn't a type.
+extension type ProgressEvent._(JSObject _) implements Event, JSObject {
+                               ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/dom/xhr.dart:605:36: Error: 'JSObject' isn't a type.
+extension type ProgressEventInit._(JSObject _) implements EventInit, JSObject {
+                                   ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/lists.dart:11:44: Error: 'JSObject' isn't a type.
+extension type _JSList<T extends JSObject>(JSObject _) implements JSObject {
+                                           ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/cross_origin.dart:10:35: Error: 'JSAny' isn't a type.
+extension type _CrossOriginWindow(JSAny? any) {
+                                  ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/cross_origin.dart:27:5: Error: 'JSAny' isn't a type.
+    JSAny? message, [
+    ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/cross_origin.dart:28:5: Error: 'JSAny' isn't a type.
+    JSAny optionsOrTargetOrigin,
+    ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/cross_origin.dart:29:13: Error: 'JSObject' isn't a type.
+    JSArray<JSObject> transfer,
+            ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/cross_origin.dart:29:5: Error: 'JSArray' isn't a type.
+    JSArray<JSObject> transfer,
+    ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/cross_origin.dart:34:37: Error: 'JSAny' isn't a type.
+extension type _CrossOriginLocation(JSAny? any) {
+                                    ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/cross_origin.dart:51:23: Error: 'JSAny' isn't a type.
+  CrossOriginWindow._(JSAny? o) : _window = _CrossOriginWindow(o);
+                      ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/cross_origin.dart:53:37: Error: 'JSAny' isn't a type.
+  static CrossOriginWindow? _create(JSAny? o) {
+                                    ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/cross_origin.dart:96:5: Error: 'JSAny' isn't a type.
+    JSAny? message, [
+    ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/cross_origin.dart:97:5: Error: 'JSAny' isn't a type.
+    JSAny? optionsOrTargetOrigin,
+    ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/cross_origin.dart:98:13: Error: 'JSObject' isn't a type.
+    JSArray<JSObject>? transfer,
+            ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/cross_origin.dart:98:5: Error: 'JSArray' isn't a type.
+    JSArray<JSObject>? transfer,
+    ^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/cross_origin.dart:132:25: Error: 'JSAny' isn't a type.
+  CrossOriginLocation._(JSAny? o) : _location = _CrossOriginLocation(o);
+                        ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/cross_origin.dart:134:39: Error: 'JSAny' isn't a type.
+  static CrossOriginLocation? _create(JSAny? o) {
+                                      ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/events/providers.dart:615:25: Error: 'JSObject' isn't a type.
+  final jsObject = e as JSObject;
+                        ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/events/providers.dart:618:47: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+  } else if (jsObject.hasProperty('mozHidden'.toJS).toDart) {
+                                              ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/events/providers.dart:620:46: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+  } else if (jsObject.hasProperty('msHidden'.toJS).toDart) {
+                                             ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/events/providers.dart:622:50: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+  } else if (jsObject.hasProperty('webkitHidden'.toJS).toDart) {
+                                                 ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/events/streams.dart:119:7: Error: A value of type '_EventStream<T>' can't be returned from a function with return type 'Stream<T>'.
+ - '_EventStream' is from 'package:web/src/helpers/events/streams.dart' ('/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/events/streams.dart').
+ - 'Stream' is from 'dart:async'.
+      this;
+      ^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/events/streams.dart:165:69: Error: The getter 'toJS' isn't defined for the type 'void Function(Event)'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+            : _wrapZone<html.Event>((e) => (onData as dynamic)(e))?.toJS {
+                                                                    ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/events/streams.dart:218:69: Error: The getter 'toJS' isn't defined for the type 'void Function(Event)'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+        : _wrapZone<html.Event>((e) => (handleData as dynamic)(e))?.toJS;
+                                                                    ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/events/streams.dart:253:66: Error: The getter 'toJS' isn't defined for the type 'bool'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      _target!.addEventListener(_eventType, _onData, _useCapture.toJS);
+                                                                 ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/events/streams.dart:259:69: Error: The getter 'toJS' isn't defined for the type 'bool'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      _target!.removeEventListener(_eventType, _onData, _useCapture.toJS);
+                                                                    ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/events/streams.dart:441:38: Error: The argument type 'void Function(T)?' can't be assigned to the parameter type 'void Function(T)?'.
+      streamController.stream.listen(onData,
+                                     ^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/events/streams.dart:441:31: Error: A value of type 'StreamSubscription<T>' can't be returned from a function with return type 'StreamSubscription<T>'.
+ - 'StreamSubscription' is from 'dart:async'.
+      streamController.stream.listen(onData,
+                              ^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/events/streams.dart:448:24: Error: A value of type 'Stream<T>' can't be returned from a function with return type 'Stream<T>'.
+ - 'Stream' is from 'dart:async'.
+      streamController.stream;
+                       ^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/extensions.dart:39:69: Error: The getter 'toJS' isn't defined for the type 'num'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      (quality == null) ? toDataURL(type) : toDataURL(type, quality.toJS);
+                                                                    ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/extensions.dart:55:7: Error: The method 'jsify' isn't defined for the type 'Map<String, bool>'.
+ - 'Map' is from 'dart:core'.
+Try correcting the name to the name of an existing method, or defining a method named 'jsify'.
+    }.jsify();
+      ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/http.dart:245:33: Error: The argument type 'ProgressEvent' can't be assigned to the parameter type 'Object'.
+ - 'Object' is from 'dart:core'.
+        completer.completeError(e);
+                                ^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/http.dart:249:34: Error: The argument type 'void Function(Object, [StackTrace?])' can't be assigned to the parameter type 'void Function(ProgressEvent)?'.
+ - 'Object' is from 'dart:core'.
+ - 'StackTrace' is from 'dart:core'.
+    xhr.onError.listen(completer.completeError);
+                                 ^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/http.dart:252:46: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      xhr.send(sendData is String ? sendData.toJS : sendData.jsify());
+                                             ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1/lib/src/helpers/http.dart:252:62: Error: The method 'jsify' isn't defined for the type 'Object'.
+ - 'Object' is from 'dart:core'.
+Try correcting the name to the name of an existing method, or defining a method named 'jsify'.
+      xhr.send(sendData is String ? sendData.toJS : sendData.jsify());
+                                                             ^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:23:39: Error: 'JSObject' isn't a type.
+extension type GoogleAccountsOauth2._(JSObject _) implements JSObject {
+                                      ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:39:55: Error: 'JSString' isn't a type.
+  external bool _hasGrantedScope(TokenResponse token, JSString scope);
+                                                      ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:49:72: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+        .every((String scope) => _hasGrantedScope(tokenResponse, scope.toJS));
+                                                                       ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:60:70: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+        .any((String scope) => _hasGrantedScope(tokenResponse, scope.toJS));
+                                                                     ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:77:34: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      return _revoke(accessToken.toJS);
+                                 ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:79:40: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+    return _revokeWithDone(accessToken.toJS, done.toJS);
+                                       ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:79:51: Error: The getter 'toJS' isn't defined for the type 'void Function(TokenRevocationResponse)'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+    return _revokeWithDone(accessToken.toJS, done.toJS);
+                                                  ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:83:25: Error: 'JSString' isn't a type.
+  external void _revoke(JSString accessToken);
+                        ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:85:33: Error: 'JSString' isn't a type.
+  external void _revokeWithDone(JSString accessToken, JSFunction done);
+                                ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:85:55: Error: 'JSFunction' isn't a type.
+  external void _revokeWithDone(JSString accessToken, JSFunction done);
+                                                      ^^^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:92:35: Error: 'JSObject' isn't a type.
+extension type CodeClientConfig._(JSObject _) implements JSObject {
+                                  ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:114:28: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      client_id: client_id.toJS,
+                           ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:115:30: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      scope: scope.join(' ').toJS,
+                             ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:116:55: Error: The getter 'toJS' isn't defined for the type 'bool'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      include_granted_scopes: include_granted_scopes?.toJS,
+                                                      ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:117:46: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      redirect_uri: redirect_uri?.toString().toJS,
+                                             ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:118:27: Error: The getter 'toJS' isn't defined for the type 'void Function(CodeResponse)'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.
+      callback: callback?.toJS,
+                          ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:119:21: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      state: state?.toJS,
+                    ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:120:57: Error: The getter 'toJS' isn't defined for the type 'bool'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      enable_granular_consent: enable_granular_consent?.toJS,
+                                                        ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:121:53: Error: The getter 'toJS' isn't defined for the type 'bool'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      enable_serial_consent: enable_serial_consent?.toJS,
+                                                    ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:122:31: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      login_hint: login_hint?.toJS,
+                              ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:123:15: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      hd: hd?.toJS,
+              ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:124:35: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      ux_mode: ux_mode.toString().toJS,
+                                  ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:125:39: Error: The getter 'toJS' isn't defined for the type 'bool'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      select_account: select_account?.toJS,
+                                      ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:126:39: Error: The getter 'toJS' isn't defined for the type 'void Function(GoogleIdentityServicesError?)'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      error_callback: error_callback?.toJS,
+                                      ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:131:5: Error: 'JSString' isn't a type.
+    JSString? client_id,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:132:5: Error: 'JSString' isn't a type.
+    JSString? scope,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:133:5: Error: 'JSBoolean' isn't a type.
+    JSBoolean? include_granted_scopes,
+    ^^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:134:5: Error: 'JSString' isn't a type.
+    JSString? redirect_uri,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:135:5: Error: 'JSFunction' isn't a type.
+    JSFunction? callback,
+    ^^^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:136:5: Error: 'JSString' isn't a type.
+    JSString? state,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:137:5: Error: 'JSBoolean' isn't a type.
+    JSBoolean? enable_granular_consent,
+    ^^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:138:5: Error: 'JSBoolean' isn't a type.
+    JSBoolean? enable_serial_consent,
+    ^^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:139:5: Error: 'JSString' isn't a type.
+    JSString? login_hint,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:140:5: Error: 'JSString' isn't a type.
+    JSString? hd,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:141:5: Error: 'JSString' isn't a type.
+    JSString? ux_mode,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:142:5: Error: 'JSBoolean' isn't a type.
+    JSBoolean? select_account,
+    ^^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:143:5: Error: 'JSFunction' isn't a type.
+    JSFunction? error_callback,
+    ^^^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:153:29: Error: 'JSObject' isn't a type.
+extension type CodeClient._(JSObject _) implements JSObject {
+                            ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:162:31: Error: 'JSObject' isn't a type.
+extension type CodeResponse._(JSObject _) implements JSObject {
+                              ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:205:36: Error: 'JSObject' isn't a type.
+extension type TokenClientConfig._(JSObject _) implements JSObject {
+                                   ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:225:28: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      client_id: client_id.toJS,
+                           ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:226:26: Error: The getter 'toJS' isn't defined for the type 'void Function(TokenResponse)'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      callback: callback.toJS,
+                         ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:227:30: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      scope: scope.join(' ').toJS,
+                             ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:228:55: Error: The getter 'toJS' isn't defined for the type 'bool'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      include_granted_scopes: include_granted_scopes?.toJS,
+                                                      ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:229:23: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      prompt: prompt?.toJS,
+                      ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:230:57: Error: The getter 'toJS' isn't defined for the type 'bool'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      enable_granular_consent: enable_granular_consent?.toJS,
+                                                        ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:231:53: Error: The getter 'toJS' isn't defined for the type 'bool'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      enable_serial_consent: enable_serial_consent?.toJS,
+                                                    ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:232:31: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      login_hint: login_hint?.toJS,
+                              ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:233:15: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      hd: hd?.toJS,
+              ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:234:21: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      state: state?.toJS,
+                    ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:235:39: Error: The getter 'toJS' isn't defined for the type 'void Function(GoogleIdentityServicesError?)'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      error_callback: error_callback?.toJS,
+                                      ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:240:5: Error: 'JSString' isn't a type.
+    JSString? client_id,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:241:5: Error: 'JSFunction' isn't a type.
+    JSFunction? callback,
+    ^^^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:242:5: Error: 'JSString' isn't a type.
+    JSString? scope,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:243:5: Error: 'JSBoolean' isn't a type.
+    JSBoolean? include_granted_scopes,
+    ^^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:244:5: Error: 'JSString' isn't a type.
+    JSString? prompt,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:245:5: Error: 'JSBoolean' isn't a type.
+    JSBoolean? enable_granular_consent,
+    ^^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:246:5: Error: 'JSBoolean' isn't a type.
+    JSBoolean? enable_serial_consent,
+    ^^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:247:5: Error: 'JSString' isn't a type.
+    JSString? login_hint,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:248:5: Error: 'JSString' isn't a type.
+    JSString? hd,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:249:5: Error: 'JSString' isn't a type.
+    JSString? state,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:250:5: Error: 'JSFunction' isn't a type.
+    JSFunction? error_callback,
+    ^^^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:260:30: Error: 'JSObject' isn't a type.
+extension type TokenClient._(JSObject _) implements JSObject {
+                             ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:282:47: Error: 'JSObject' isn't a type.
+extension type OverridableTokenClientConfig._(JSObject _) implements JSObject {
+                                              ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:342:31: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      scope: scope?.join(' ').toJS,
+                              ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:343:55: Error: The getter 'toJS' isn't defined for the type 'bool'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      include_granted_scopes: include_granted_scopes?.toJS,
+                                                      ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:344:23: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      prompt: prompt?.toJS,
+                      ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:345:57: Error: The getter 'toJS' isn't defined for the type 'bool'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      enable_granular_consent: enable_granular_consent?.toJS,
+                                                        ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:346:53: Error: The getter 'toJS' isn't defined for the type 'bool'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      enable_serial_consent: enable_serial_consent?.toJS,
+                                                    ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:347:31: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.  
+      login_hint: login_hint?.toJS,
+                              ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:348:21: Error: The getter 'toJS' isn't defined for the type 'String'.
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'toJS'.
+      state: state?.toJS,
+                    ^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:353:5: Error: 'JSString' isn't a type.
+    JSString? scope,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:354:5: Error: 'JSBoolean' isn't a type.
+    JSBoolean? include_granted_scopes,
+    ^^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:355:5: Error: 'JSString' isn't a type.
+    JSString? prompt,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:356:5: Error: 'JSBoolean' isn't a type.
+    JSBoolean? enable_granular_consent,
+    ^^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:357:5: Error: 'JSBoolean' isn't a type.
+    JSBoolean? enable_serial_consent,
+    ^^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:358:5: Error: 'JSString' isn't a type.
+    JSString? login_hint,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:359:5: Error: 'JSString' isn't a type.
+    JSString? state,
+    ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:367:32: Error: 'JSObject' isn't a type.
+extension type TokenResponse._(JSObject _) implements JSObject {
+                               ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:431:46: Error: 'JSObject' isn't a type.
+extension type GoogleIdentityServicesError._(JSObject _) implements JSObject {
+                                             ^^^^^^^^
+/C:/Users/WINDOWS%2010/AppData/Local/Pub/Cache/hosted/pub.dev/google_identity_services_web-0.3.3+1/lib/src/js_interop/google_accounts_oauth2.dart:453:42: Error: 'JSObject' isn't a type.
+extension type TokenRevocationResponse._(JSObject _) implements JSObject {
+                                         ^^^^^^^^
+Unhandled exception:
+FileSystemException(uri=org-dartlang-untranslatable-uri:package%3Afile_selector%2Ffile_selector.dart; message=StandardFileSystem only supports file:* and data:* URIs)
+#0      StandardFileSystem.entityForUri (package:front_end/src/api_prototype/standard_file_system.dart:45)
+#1      asFileUri (package:vm/kernel_front_end.dart:1008)
+#2      writeDepfile (package:vm/kernel_front_end.dart:1171)
+<asynchronous suspension>
+#3      FrontendCompiler.compile (package:frontend_server/frontend_server.dart:738)
+<asynchronous suspension>
+#4      starter (package:frontend_server/starter.dart:102)
+<asynchronous suspension>
+#5      main (file:///C:/b/s/w/ir/x/w/sdk/pkg/frontend_server/bin/frontend_server_starter.dart:13)      
+<asynchronous suspension>
+
+Target kernel_snapshot_program failed: Exception
+
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileFlutterBuildRelease'.
+> Process 'command 'D:\flutter\bin\flutter.bat'' finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 5m 6s
+Running Gradle task 'assembleRelease'...                          317,0s
+Gradle task assembleRelease failed with exit code 1
+PS D:\workspace\ira> 

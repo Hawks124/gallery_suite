@@ -41,5 +41,9 @@ class EnglishPickerTextDelegate extends PickerTextDelegate {
     super.permissionDeniedSubtitle =
         'Please allow access in settings to continue browsing your local media.',
     super.permissionDeniedButton = 'Open Settings',
+    super.clipboard = 'Clipboard',
+    super.clipboardSubtitle = 'Paste from clipboard',
+    super.clipboardEmpty = 'No media found in clipboard.',
+    super.clipboardLoading = 'Reading clipboard…',
   });
 }
