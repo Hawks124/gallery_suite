@@ -65,6 +65,9 @@ Unlike other pickers that force you to download massive editor dependencies or b
 | Cloud Providers     | No                | No                     | ✅ Yes (Google & iCloud Built-in)   |
 | UI Feedback         | No                | No                     | ✅ Yes (Cloud Status Badges)        |
 | UI Theming          | System restricted | Custom                 | Fully customizable per-instance     |
+| Smart Clipboard     | No                | No                     | ✅ Yes (URLs, Files, Raw Bytes)     |
+| HEIC Auto-Convert   | No                | No                     | ✅ Yes (Background iOS bridge)      |
+| Hero UI Animations  | No                | No                     | ✅ Yes (Dribbble-level UX)          |
 
 > **❤️ A note on Open Source:** `gallery_suite` is proudly powered by the incredible `photo_manager` engine (created by the brilliant authors of `wechat_assets_picker`). While their picker perfectly replicates the WeChat experience, `gallery_suite` focuses on an alternative iOS-inspired masonry design with zero-dependency features like BYOE editing and Glassmorphism.
 
@@ -155,6 +158,7 @@ The Google Photos integration relies on different underlying OAuth2 logic depend
     - [🛠️ Google Cloud Platform (GCP) Setup Guide](#️-google-cloud-platform-gcp-setup-guide)
   - [🖌️ Bring Your Own Editor (BYOE) Architecture](#️-bring-your-own-editor-byoe-architecture)
   - [📋 Smart Clipboard Integration](#-smart-clipboard-integration)
+  - [🪄 Auto-Conversion HEIC to JPG (Experimental)](#-auto-conversion-heic-to-jpg-experimental)
   - [🔒 Exit Confirmation](#-exit-confirmation-accidental-exit-prevention)
   - [🌍 Internationalization (Intl)](#-internationalization-intl)
   - [🔄 Pre-Selected Media (Initial Selection)](#-pre-selected-media-initial-selection)
@@ -684,6 +688,7 @@ High-Efficiency Image formats (HEIC/HEVC) are the default on modern iOS devices.
 `gallery_suite` provides a built-in safety net: it intercepts HEIC photos and transparently auto-converts them to universally supported JPGs in the background BEFORE returning them!
 
 Because this utilizes deep native iOS bridges (`flutter_image_compress`), we have gracefully wrapped it in defensive fallbacks.
+
 > [!WARNING]
 > This feature is proudly **Experimental** and actively looking for community contributions! Native conversion heavily relies on real, physical iOS devices capturing deep hardware-encoded HEIC files to perfectly test. If the native conversion crashes on an unsupported device, it gracefully aborts and returns the original HEIC file to prevent app bricking.
 
@@ -1047,6 +1052,10 @@ Apache 2.0 — see [LICENSE](LICENSE).
 
 - **[pasteboard](https://pub.dev/packages/pasteboard)** — Extracts pristine raw media bytes and file URLs directly from the underlying system clipboard natively.
 - **[mime](https://pub.dev/packages/mime)** — Performs dynamic deep inspection on clipboard URLs to automatically deduce binary MIME types without HTTP overhead.
+
+**HEIC to JPG Conversion**
+
+- **[flutter_image_compress](https://pub.dev/packages/flutter_image_compress)** — Converts HEIC/HEVC images to JPG format on iOS devices.
 
 **Google Photos Cloud Integration**
 
