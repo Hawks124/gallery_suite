@@ -123,7 +123,9 @@ The Google Photos integration relies on different underlying OAuth2 logic depend
 - 💻 **Web & Desktop Optimization** — Fully supported across Web, Windows, macOS, and Linux via a polymorphic `MediaSource` engine. Features native Drag-and-Drop OS file uploads, intelligent `LayoutBuilder` responsive grid expansion, and `Ctrl+A`/`Cmd+A` keyboard shortcuts.
 - 🔍 **Inline Asset Search** — Instantly filter your entire media library by filename/title with a beautiful iOS-style frosted search bar. Uses lightning-fast Dart-side memory filtering.
 - 🔄 **Pre-Selected Media (Initial Selection)** — Seamlessly re-open the picker with previously selected items already checked by passing a list of `MediaItem`s to `initialSelection`. The grid intelligent auto-maps them by ID.
-- 📋 **Smart Clipboard Integration** — Automatically decodes copied images, file paths, and media URLs from the system clipboard into seamlessly selectable grid assets (Opt-in via `enableSmartClipboard`).
+- 📋 **Smart Clipboard Integration** — Automatically decodes copied images, file paths, and media URLs from the system clipboard into seamlessly selectable grid assets (Opt-in via `enableSmartClipboard`). Works 100% offline for local screenshots!
+- 🦸‍♂️ **"Hero" Animations** — Seamless `Hero` flying transitions between the grid thumbnails and full-screen previews for that Dribbble-level UX feeling!
+- 🪄 **Auto-Conversion HEIC to JPG** (Experimental) — Background converter to natively transform iOS HEIC/HEVC photos to standard JPG before returning the file (using native iOS bridges), avoiding cross-platform rendering crashes.
 - 🖌️ **Bring Your Own Editor (BYOE) Architecture** — Why bloat your app with forced editors? Pass your favorite editor (like `pro_image_editor`) to the `onEditMedia` callback. The picker natively intercepts the edit, displays an elegant Pencil action in the Fullscreen Preview, and flawlessly updates the preview strip to the new edited image.
 - 🌍 **Zero-Dependency Internationalization (Intl)** — Translate 100% of the UI (buttons, search bar, empty states) without installing heavy `intl` packages. Uses a clean `PickerTextDelegate` pattern.
 - 🔒 **Exit Confirmation Prevention** — Built-in `PopScope` protection. If a user tries to swipe back or press the Android back button after spending time selecting/editing photos, a beautiful Glassmorphic dialog prevents accidental data loss.
@@ -671,6 +673,19 @@ final assets = await CustomMediaPicker.show(
 
 > [!NOTE]
 > **Android Setup:** The Smart Clipboard heavily relies on the `Pasteboard` package to extract Raw Bytes. This requires the **FileProvider Configuration** documented in the [Installation & Setup](#-installation--setup) section.
+
+> [!NOTE]
+> **Offline by Default:** The Smart Clipboard requires **NO** internet connection. It perfectly decodes your local iOS/Android screenshots and copied local files totally offline. The only exception is when you copy an external `http` URL (like `https://imgbb.com/photo.jpg`), in which case a light `HTTP GET` probe is made to securely detect the MIME type.
+
+### 🪄 Auto-Conversion HEIC to JPG (Experimental)
+
+High-Efficiency Image formats (HEIC/HEVC) are the default on modern iOS devices. Unfortunately, pushing HEIC files to legacy Android databases, Web SDKs, or standard Server CDNs often results in corrupted renders or crashes.
+
+`gallery_suite` provides a built-in safety net: it intercepts HEIC photos and transparently auto-converts them to universally supported JPGs in the background BEFORE returning them!
+
+Because this utilizes deep native iOS bridges (`flutter_image_compress`), we have gracefully wrapped it in defensive fallbacks.
+> [!WARNING]
+> This feature is proudly **Experimental** and actively looking for community contributions! Native conversion heavily relies on real, physical iOS devices capturing deep hardware-encoded HEIC files to perfectly test. If the native conversion crashes on an unsupported device, it gracefully aborts and returns the original HEIC file to prevent app bricking.
 
 ### 🔒 Exit Confirmation (Accidental Exit Prevention)
 

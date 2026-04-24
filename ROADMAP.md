@@ -5,7 +5,7 @@ This document outlines the planned roadmap and potential future features for the
 ## 🚀 Near-Term (Next Minor Releases)
 
 - [x] 🔄 **Pre-selected Media (`initialSelection`)**: [Priority: 🔥 Critical] Allow developers to pass an initial list of selected `MediaItem`s. Vital for editing an existing selection (like adding a 4th photo to an already constructed post).
-- [ ] 🪄 **Auto-Conversion HEIC to JPG**: [Priority: 🔥 High] Background converter to natively transform iOS HEIC/HEVC photos to standard JPG before returning the file, avoiding cross-platform rendering crashes. (NEXT)
+- [x] 🪄 **Auto-Conversion HEIC to JPG**: [Priority: 🔥 High] Background converter to natively transform iOS HEIC/HEVC photos to standard JPG before returning the file (using `flutter_image_compress`), avoiding cross-platform rendering crashes. *(⚠️ Experimental: Natively implemented using safe defensive fallback, but heavily requires physical iOS device contributions to perfectly test.)*
 - [x] **Camera Integration**: Allow taking photos and recording videos directly from within the picker grid (a live camera tile as the first item).
 - [x] **Localization Support**: Add robust built-in `intl` delegate for standard translations without forcing developers to manually inject text config for every language.
 - [x] **Draggable Selection**: Allow users to swipe-to-select multiple items rapidly without lifting their finger, similar to iOS Photos.

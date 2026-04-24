@@ -45,11 +45,17 @@ class MediaItem {
   // If provided, [file] will always return this instance instead of querying the OS.
   final File? editedFile;
 
+  // A background-converted file (e.g. HEIC to JPG).
+  // If provided, [file] will return this instead of querying the OS, 
+  // but [editedFile] takes ultimate top priority.
+  final File? processedFile;
+
   // Creates a [MediaItem] wrapping a **local** asset.
   const MediaItem({
     required AssetEntity this.asset,
     this.useOriginalFile = false,
     this.editedFile,
+    this.processedFile,
   })  : remoteAsset = null,
         fileAsset = null;
 
@@ -57,6 +63,7 @@ class MediaItem {
   const MediaItem.remote({
     required RemotePickerAsset this.remoteAsset,
     this.editedFile,
+    this.processedFile,
   })  : asset = null,
         fileAsset = null,
         useOriginalFile = false;
@@ -65,6 +72,7 @@ class MediaItem {
   const MediaItem.file({
     required FilePickerAsset this.fileAsset,
     this.editedFile,
+    this.processedFile,
   })  : asset = null,
         remoteAsset = null,
         useOriginalFile = false;
@@ -148,6 +156,8 @@ class MediaItem {
   //
   // Crucial for Web where [file] might be inaccessible or unsupported.
   Future<Uint8List?> get bytes async {
+    if (editedFile != null) return editedFile!.readAsBytes();
+    if (processedFile != null) return processedFile!.readAsBytes();
     if (isFile) return fileAsset!.bytes;
     if (isRemote) {
       return remoteAsset!.googleService?.getMediaBytes(remoteAsset!.fullUrl);
@@ -165,6 +175,7 @@ class MediaItem {
   // NOTE: Crashes on Web due to [path_provider] and [dart:io] limitations.
   Future<File?> get file {
     if (editedFile != null) return Future.value(editedFile);
+    if (processedFile != null) return Future.value(processedFile);
     if (isRemote) return toLocalFile();
     if (isFile) return Future.value(fileAsset!.file);
     return useOriginalFile ? asset!.originFile : asset!.file;

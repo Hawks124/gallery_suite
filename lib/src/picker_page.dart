@@ -15,6 +15,7 @@ import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:file_selector/file_selector.dart';
 
 import '../gallery_suite.dart';
+import 'utils/heic_converter.dart';
 
 /// The main entry point for the custom media picker.
 ///
@@ -145,6 +146,9 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   bool _isClipboardMode = false;
   bool _isClipboardLoading = false;
   List<PickerAsset> _clipboardAssets = [];
+
+  // -- Conversion State -------------------------------------------------------
+  bool _isConverting = false;
 
   /// Initial page loads 80 items; subsequent pages fetch 120 for fewer
   /// round-trips on large libraries.
@@ -525,20 +529,35 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     }
   }
 
-  void _onConfirm() {
+  Future<void> _onConfirm() async {
     if (_selected.isEmpty) {
       Navigator.of(context).pop(null);
       return;
     }
 
     HapticFeedback.lightImpact();
+    
+    setState(() {
+      _isConverting = true;
+    });
+
     final items = <MediaItem>[];
     for (final asset in _selected) {
       if (asset is LocalPickerAsset) {
+        // Native HEIC to JPG conversion safely wrapped
+        File? processedFile;
+        if (widget.config.useOriginalFile) {
+           final f = await asset.originFile;
+           if (f != null) {
+             processedFile = await HeicConverter.convertIfNeeded(f);
+           }
+        }
+        
         items.add(MediaItem(
           asset: asset.entity,
           useOriginalFile: widget.config.useOriginalFile,
           editedFile: _editedFiles[asset.id],
+          processedFile: processedFile,
         ));
       } else if (asset is RemotePickerAsset) {
         items.add(MediaItem.remote(
@@ -552,7 +571,13 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
         ));
       }
     }
-    Navigator.of(context).pop(items);
+    
+    if (mounted) {
+      setState(() {
+        _isConverting = false;
+      });
+      Navigator.of(context).pop(items);
+    }
   }
 
   // -- Google Photos Cloud Methods --------------------------------------------
@@ -1002,7 +1027,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                                 label: widget.config.textDelegate.confirm,
                                 count: _selected.length,
                                 color: widget.config.primaryColor,
-                                onTap: _onConfirm,
+                                onTap: _isConverting ? () {} : _onConfirm,
+                                isLoading: _isConverting,
                               )
                             : SizedBox(
                                 key: const ValueKey('empty'),

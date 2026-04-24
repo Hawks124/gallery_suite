@@ -5,6 +5,7 @@ class SendButton extends StatelessWidget {
   final int? count;
   final Color color;
   final VoidCallback onTap;
+  final bool isLoading;
 
   const SendButton({
     super.key,
@@ -12,6 +13,7 @@ class SendButton extends StatelessWidget {
     this.count,
     required this.color,
     required this.onTap,
+    this.isLoading = false,
   });
 
   @override
@@ -28,16 +30,26 @@ class SendButton extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.1,
+            if (isLoading)
+              const SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            else
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.1,
+                ),
               ),
-            ),
-            if (count != null && count! > 0)
+            if (!isLoading && count != null && count! > 0)
               Container(
                 margin: const EdgeInsets.only(left: 6),
                 width: 20,
