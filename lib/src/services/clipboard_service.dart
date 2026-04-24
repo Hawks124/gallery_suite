@@ -402,42 +402,107 @@ class ClipboardService {
 
   // ── OpenGraph Scraping ──────────────────────────────────────────────────
 
-  /// Extracts the first `og:image` (or `twitter:image`) URL from an HTML body.
+  /// Extracts a media preview URL from an HTML page using OpenGraph, Twitter
+  /// Card, and Schema.org meta tags.
   ///
-  /// Uses a lightweight regex approach to avoid adding a heavy HTML parser
-  /// dependency. Returns `null` if no OpenGraph image meta tag is found.
+  /// Covers ALL known real-world variations:
+  /// - `og:image`, `og:image:secure_url`, `og:image:url`
+  /// - `og:video`, `og:video:secure_url`, `og:video:url`
+  /// - `twitter:image`, `twitter:image:src`
+  /// - Schema.org `itemprop="image"`
+  /// - Both attribute orders (`property` then `content` & vice-versa)
+  /// - HTML entity decoding (`&amp;` → `&`)
+  /// - Protocol-relative URLs (`//cdn.example.com/...` → `https://...`)
+  ///
+  /// Uses lightweight regex to avoid adding an HTML parser dependency.
   String? _extractOgImage(String html) {
-    // Priority: og:image > og:video > twitter:image
-    final patterns = [
-      // <meta property="og:image" content="https://..." />
+    // All meta property/name values we want to extract, in priority order.
+    // The first match wins.
+    const targets = [
+      'og:image:secure_url', // HTTPS preferred variant
+      'og:image:url', // Explicit URL variant
+      'og:image', // Standard OpenGraph image
+      'og:video:secure_url',
+      'og:video:url',
+      'og:video',
+      'twitter:image:src', // Twitter Card explicit variant
+      'twitter:image', // Twitter Card standard
+    ];
+
+    // --- Pass 1: property/name-based meta tags ---
+    // Matches both: <meta property="X" content="Y"/>
+    //           and: <meta content="Y" property="X"/>
+    for (final target in targets) {
+      final escaped = RegExp.escape(target);
+
+      // Order A: property="..." content="..."
+      final patternA = RegExp(
+        '<meta[^>]+(?:property|name)\\s*=\\s*["\']$escaped["\'][^>]+content\\s*=\\s*["\']([^"\']+)["\']',
+        caseSensitive: false,
+      );
+      // Order B: content="..." property="..."
+      final patternB = RegExp(
+        '<meta[^>]+content\\s*=\\s*["\']([^"\']+)["\'][^>]+(?:property|name)\\s*=\\s*["\']$escaped["\']',
+        caseSensitive: false,
+      );
+
+      for (final pattern in [patternA, patternB]) {
+        final match = pattern.firstMatch(html);
+        if (match != null) {
+          final resolved = _resolveOgUrl(match.group(1));
+          if (resolved != null) return resolved;
+        }
+      }
+    }
+
+    // --- Pass 2: Schema.org itemprop="image" ---
+    // e.g. <meta itemprop="image" content="https://..." />
+    final schemaPatterns = [
       RegExp(
-        r'''<meta[^>]+property\s*=\s*["']og:image["'][^>]+content\s*=\s*["']([^"']+)["']''',
+        r'''<meta[^>]+itemprop\s*=\s*["']image["'][^>]+content\s*=\s*["']([^"']+)["']''',
         caseSensitive: false,
       ),
-      // <meta content="https://..." property="og:image" /> (reversed order)
       RegExp(
-        r'''<meta[^>]+content\s*=\s*["']([^"']+)["'][^>]+property\s*=\s*["']og:image["']''',
-        caseSensitive: false,
-      ),
-      // twitter:image fallback
-      RegExp(
-        r'''<meta[^>]+(?:name|property)\s*=\s*["']twitter:image["'][^>]+content\s*=\s*["']([^"']+)["']''',
-        caseSensitive: false,
-      ),
-      RegExp(
-        r'''<meta[^>]+content\s*=\s*["']([^"']+)["'][^>]+(?:name|property)\s*=\s*["']twitter:image["']''',
+        r'''<meta[^>]+content\s*=\s*["']([^"']+)["'][^>]+itemprop\s*=\s*["']image["']''',
         caseSensitive: false,
       ),
     ];
 
-    for (final pattern in patterns) {
+    for (final pattern in schemaPatterns) {
       final match = pattern.firstMatch(html);
       if (match != null) {
-        final url = match.group(1)?.trim();
-        if (url != null && url.startsWith('http')) {
-          return url;
-        }
+        final resolved = _resolveOgUrl(match.group(1));
+        if (resolved != null) return resolved;
       }
+    }
+
+    return null;
+  }
+
+  /// Cleans and resolves a raw URL extracted from an HTML meta tag.
+  ///
+  /// Handles HTML entity decoding (`&amp;` → `&`) and protocol-relative
+  /// URLs (`//cdn.example.com/...` → `https://cdn.example.com/...`).
+  /// Returns `null` if the URL is not a valid HTTP(S) address.
+  String? _resolveOgUrl(String? raw) {
+    if (raw == null || raw.isEmpty) return null;
+
+    // Decode common HTML entities
+    var url = raw
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .trim();
+
+    // Handle protocol-relative URLs
+    if (url.startsWith('//')) {
+      url = 'https:$url';
+    }
+
+    // Only accept absolute HTTP(S) URLs
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
     }
 
     return null;
