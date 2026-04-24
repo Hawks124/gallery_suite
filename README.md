@@ -36,41 +36,48 @@
 
 ## 🤔 Why Gallery Suite?
 
-The official `image_picker` is a fantastic tool that delegates to the operating system's native media browser. This is perfect for basic needs, but it means the UI is entirely controlled by the OS (looking different on every device and rarely matching your app's branding).
+The Flutter ecosystem already has excellent media pickers, and we deeply respect them:
 
-`gallery_suite` takes a different approach: it builds the entire picker _inside_ Flutter. This guarantees a consistent, premium visual experience across all devices and enables rich in-app interactions (like inline video playback and audio previews) before the user even confirms their selection.
+- **`image_picker`** (official) — Delegates to the OS's native media browser. It's simple, reliable, and perfect for basic needs. However, the UI is entirely controlled by the OS, so it looks different on every device and cannot be branded or extended.
+- **`wechat_assets_picker`** — A beautifully crafted, WeChat-inspired picker built by the brilliant team behind `photo_manager`. It offers a polished custom grid with extensive theming on iOS and Android. It is the gold standard for WeChat-style UX.
+- **`insta_assets_picker`** — An elegant Instagram-inspired picker (built on top of `wechat_assets_picker`) that faithfully replicates the Instagram media selection experience with crop previews.
 
-Furthermore, `gallery_suite` is one of the **only major pickers** that ships with a native **Cloud Provider architecture** out of the box. Users can seamlessly browse, zoom, and select their Google Photos directly alongside their local device photos in one beautiful, unified grid, without needing to download them first.
+These are all fantastic tools. However, both `wechat_assets_picker` and `insta_assets_picker` enforce a **predefined design language** — your app's picker will look like WeChat or Instagram, not like _your_ brand. `gallery_suite` takes a **different architectural bet**: it builds an _entirely custom_ picker inside Flutter with an iOS-inspired **Masonry layout** that is **100% brandable to your identity**, and layers unique capabilities on top that no alternative currently offers:
+
+1. **☁️ Native Cloud Providers** — Users can seamlessly browse, zoom, and select their **Google Photos** directly alongside local device assets in one unified grid, without downloading them first. No other major picker ships this out-of-the-box.
+2. **🖥️ True Cross-Platform** — Full support for **Web, Windows, macOS, and Linux** via a polymorphic `MediaSource` engine with native Drag-and-Drop, keyboard shortcuts, and responsive grid expansion.
+3. **🧩 Architecture by Injection** — Zero forced bloatware. Want to crop images? Pass your editor to `onEditMedia`. Need to compress 4K videos? Inject your compressor to `onCompressMedia`. The picker integrates them beautifully without adding a single megabyte to the core package.
+4. **🗜️ Hybrid Smart Compression** — A built-in native image compressor + extensible BYOC hooks for videos, reducing upload bandwidth by up to 80%.
+5. **📋 Smart Clipboard** — Paste images, file paths, and media URLs directly from the OS clipboard into the picker grid.
 
 ### 🚀 Zero Bloatware & Extreme Performance
 
-Unlike other pickers that force you to download massive editor dependencies or bloated video trimmers, `gallery_suite` keeps its core **100% pristine and lightweight**.
-
 - **120fps Ready**: Powered by a custom `ThumbnailDecodeQueue` and LRU memory caching, the grid stays buttery smooth even when rapidly scrolling through 10,000+ assets.
-- **Architecture by Injection**: We provide elegant, decoupled hooks. Want to crop an image or compress a 4K video? Pass your favorite tools to our `onEditMedia` and `onCompressMedia` callbacks. Our UI seamlessly integrates them without adding a single megabyte to the package's core footprint.
+- **Lightweight Core**: No forced editor or compression dependencies bloat your app. Everything is opt-in via elegant callbacks.
 
 **Compared to similar packages:**
 
-| Feature             | `image_picker`    | `wechat_assets_picker` | `gallery_suite`                     |
-| ------------------- | ----------------- | ---------------------- | ----------------------------------- |
-| Platforms Supported | All               | iOS, Android, macOS    | ✅ All (Mobile, Web, Desktop)       |
-| Assets supported    | Image, Video      | Image, Video, Audio    | Image, Video, Audio                 |
-| Picker UI           | Native OS dialog  | WeChat-style grid      | Custom Masonry grid                 |
-| Audio/Video         | System default    | Custom                 | Inline playback (Mini-player)       |
-| Multi-select        | Images only       | Yes                    | Yes (Images & Video & Audio)        |
-| In-app Camera       | No                | Via add-on package     | ✅ Yes (Live tile & Custom UI)      |
-| Swipe-To-Select     | No                | No                     | ✅ Yes (iOS Photos style)           |
-| Inline Search       | No                | No                     | ✅ Yes (Cross-platform Dart filter) |
-| BYOE Image Editing  | No                | No                     | ✅ Yes (Dependency Injection)       |
-| Cloud Providers     | No                | No                     | ✅ Yes (Google & iCloud Built-in)   |
-| UI Feedback         | No                | No                     | ✅ Yes (Cloud Status Badges)        |
-| UI Theming          | System restricted | Custom                 | Fully customizable per-instance     |
-| Smart Clipboard     | No                | No                     | ✅ Yes (URLs, Files, Raw Bytes)     |
-| HEIC Auto-Convert   | No                | No                     | ✅ Yes (Background iOS bridge)      |
-| Hero UI Animations  | No                | No                     | ✅ Yes (Dribbble-level UX)          |
-| Smart Compression   | No                | No                     | ✅ Yes (Built-in + BYOC Hooks)      |
+| Feature             | `image_picker`    | `wechat_assets_picker` | `insta_assets_picker`  | `gallery_suite`                     |
+| ------------------- | ----------------- | ---------------------- | ---------------------- | ----------------------------------- |
+| Platforms Supported | All               | iOS, Android, macOS    | iOS, Android           | ✅ All (Mobile, Web, Desktop)       |
+| Assets supported    | Image, Video      | Image, Video, Audio    | Image, Video           | Image, Video, Audio                 |
+| Picker UI           | Native OS dialog  | WeChat-style grid      | Instagram-style crop   | Custom Masonry grid                 |
+| Branding            | ❌ OS-locked      | ⚠️ WeChat identity     | ⚠️ Instagram identity  | ✅ 100% Your Brand                  |
+| Audio/Video         | System default    | Custom                 | No audio support       | Inline playback (Mini-player)       |
+| Multi-select        | Images only       | Yes                    | Yes                    | Yes (Images & Video & Audio)        |
+| In-app Camera       | No                | Via add-on package     | No                     | ✅ Yes (Live tile & Custom UI)      |
+| Swipe-To-Select     | No                | No                     | No                     | ✅ Yes (iOS Photos style)           |
+| Inline Search       | No                | No                     | No                     | ✅ Yes (Cross-platform Dart filter) |
+| BYOE Image Editing  | No                | No                     | Crop only              | ✅ Yes (Dependency Injection)       |
+| Cloud Providers     | No                | No                     | No                     | ✅ Yes (Google & iCloud Built-in)   |
+| UI Feedback         | No                | No                     | No                     | ✅ Yes (Cloud Status Badges)        |
+| UI Theming          | System restricted | Custom                 | Instagram-fixed        | Fully customizable per-instance     |
+| Smart Clipboard     | No                | No                     | No                     | ✅ Yes (URLs, Files, Raw Bytes)     |
+| HEIC Auto-Convert   | No                | No                     | No                     | ✅ Yes (Background iOS bridge)      |
+| Hero UI Animations  | No                | No                     | No                     | ✅ Yes (Dribbble-level UX)          |
+| Smart Compression   | No                | No                     | No                     | ✅ Yes (Built-in + BYOC Hooks)      |
 
-> **❤️ A note on Open Source:** `gallery_suite` is proudly powered by the incredible `photo_manager` engine (created by the brilliant authors of `wechat_assets_picker`). While their picker perfectly replicates the WeChat experience, `gallery_suite` focuses on an alternative iOS-inspired masonry design with zero-dependency features like BYOE editing and Glassmorphism.
+> **❤️ A note on Open Source:** `gallery_suite` is proudly powered by the incredible `photo_manager` engine (created by the brilliant authors of `wechat_assets_picker`). While their picker and its Instagram extension perfectly replicate iconic social media experiences, `gallery_suite` focuses on giving developers a unique, fully brandable iOS-inspired masonry design with zero-dependency features like BYOE editing, Smart Compression, and Glassmorphism.
 
 ---
 
