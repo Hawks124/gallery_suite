@@ -536,7 +536,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     }
 
     HapticFeedback.lightImpact();
-    
+
     setState(() {
       _isConverting = true;
     });
@@ -547,12 +547,12 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
         // Native HEIC to JPG conversion safely wrapped
         File? processedFile;
         if (widget.config.useOriginalFile) {
-           final f = await asset.originFile;
-           if (f != null) {
-             processedFile = await HeicConverter.convertIfNeeded(f);
-           }
+          final f = await asset.originFile;
+          if (f != null) {
+            processedFile = await HeicConverter.convertIfNeeded(f);
+          }
         }
-        
+
         items.add(MediaItem(
           asset: asset.entity,
           useOriginalFile: widget.config.useOriginalFile,
@@ -571,7 +571,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
         ));
       }
     }
-    
+
     if (mounted) {
       setState(() {
         _isConverting = false;

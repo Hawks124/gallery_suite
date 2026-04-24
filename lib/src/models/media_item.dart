@@ -46,7 +46,7 @@ class MediaItem {
   final File? editedFile;
 
   // A background-converted file (e.g. HEIC to JPG).
-  // If provided, [file] will return this instead of querying the OS, 
+  // If provided, [file] will return this instead of querying the OS,
   // but [editedFile] takes ultimate top priority.
   final File? processedFile;
 
