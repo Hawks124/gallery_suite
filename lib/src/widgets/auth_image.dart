@@ -1,6 +1,6 @@
+import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../services/google_photos_service.dart';
 import '../models/picker_theme.dart';
 
@@ -36,7 +36,7 @@ class AuthImage extends StatelessWidget {
         width: width,
         height: height,
         placeholder: (_, __) => Container(color: theme.elevated),
-        errorWidget: (_, __, ___) => Container(
+        errorBuilder: (_, __, ___) => Container(
           color: theme.elevated,
           child: Icon(Icons.broken_image_rounded,
               color: theme.secondaryText, size: 28),

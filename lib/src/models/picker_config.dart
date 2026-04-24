@@ -141,6 +141,33 @@ class PickerConfig {
   /// Defaults to `false` (opt-in).
   final bool enableSmartClipboard;
 
+  // -- Hybrid Smart Compression -----------------------------------------------
+
+  /// **Native Built-in Compressor**
+  /// 
+  /// Set this to `true` to magically compress large local images using highly 
+  /// optimized native bridges (C/Objective-C/Swift via `flutter_image_compress`). 
+  /// This drastically reduces payload bytes with near zero visual quality loss.
+  /// Disabled by default to prevent unexpected changes to legacy configurations.
+  final bool autoCompressImages;
+
+  /// The target JPEG compression quality (0-100) used when [autoCompressImages] is `true`.
+  /// A value of 85 usually retains extremely high visual fidelity while significantly reducing file size.
+  final int imageCompressionQuality;
+
+  /// **BYOC (Bring Your Own Compressor) Hook**
+  /// 
+  /// Use this callback to intercept the `originalFile` right before the picker confirms.
+  /// This is incredibly powerful for compressing **video files** using external plugins 
+  /// like `video_compress` or applying strict dimension limits.
+  /// 
+  /// If this hook returns a `File`, it perfectly overrides the payload.
+  /// The Picker UI handles the async wait state automatically with a beautiful loading spinner.
+  /// 
+  /// *Note: This hook takes priority over [autoCompressImages].*
+  final Future<File?> Function(
+      BuildContext context, AssetEntity asset, File originalFile)? onCompressMedia;
+
   // Creates a [PickerConfig] with the given options.
   //
   // All parameters are optional - calling `const PickerConfig()` gives you
@@ -165,5 +192,8 @@ class PickerConfig {
     this.googlePhotosConfig = const GooglePhotosConfig(),
     this.initialSelection,
     this.enableSmartClipboard = false,
+    this.autoCompressImages = false,
+    this.imageCompressionQuality = 85,
+    this.onCompressMedia,
   });
 }

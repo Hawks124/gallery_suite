@@ -210,6 +210,29 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         // Defaults to false for speed and OS-level compatibility.
         useOriginalFile: false,
 
+        //  [NEW] Hybrid Smart Compression:
+        // Option 1: Enable the native built-in compressor (images only).
+        // Will use flutter_image_compress native bridges to reduce file size before returning.
+        // GREAT for images. Disabled by default.
+        autoCompressImages: false,
+        imageCompressionQuality: 85, // 0-100, only effective if autoCompressImages is true.
+
+        // Option 2: Use a BYOC (Bring Your Own Compressor) Hook.
+        // This takes STRICT PRIORITY over autoCompressImages.
+        // Use this to inject video_compress, flutter_native_image, etc.
+        // If your function returns null, the picker falls back to autoCompressImages.
+        // onCompressMedia: (context, asset, originalFile) async {
+        //   if (asset.type == AssetType.video) {
+        //     // Example: compress video with the `video_compress` package
+        //     final MediaInfo? info = await VideoCompress.compressVideo(
+        //       originalFile.path,
+        //       quality: VideoQuality.Res640x480Quality,
+        //     );
+        //     return info?.file;
+        //   }
+        //   return null; // Return null to keep original or use autoCompressImages
+        // },
+
         //  Exit Confirmation: Prevent users from losing their selections
         // if they accidentally press the back button or swipe to pop.
         exitConfirmation: const StandardExitConfirmation(

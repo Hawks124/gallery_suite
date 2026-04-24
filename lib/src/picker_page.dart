@@ -5,12 +5,12 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui';
+import 'package:cached_network_image_ce/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:file_selector/file_selector.dart';
 
@@ -544,12 +544,28 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     final items = <MediaItem>[];
     for (final asset in _selected) {
       if (asset is LocalPickerAsset) {
-        // Native HEIC to JPG conversion safely wrapped
         File? processedFile;
-        if (widget.config.useOriginalFile) {
-          final f = await asset.originFile;
-          if (f != null) {
-            processedFile = await HeicConverter.convertIfNeeded(f);
+        final originalFile = widget.config.useOriginalFile ? await asset.originFile : await asset.file;
+        
+        if (originalFile != null) {
+          // Native defense: always rescue HEIC to JPG to avoid downstream crashes
+          File safeFile = await NativeMediaCompressor.convertHeicIfNeeded(originalFile);
+          bool wasHeicConverted = safeFile.path != originalFile.path;
+
+          // Compression Pipeline priority 1: BYOC Hook
+          if (widget.config.onCompressMedia != null) {
+            if (!mounted) return;
+            processedFile = await widget.config.onCompressMedia!(context, asset.entity, safeFile);
+          } 
+          // Compression Pipeline priority 2: Native Built-in
+          else if (widget.config.autoCompressImages && asset.entity.type == AssetType.image) {
+            processedFile = await NativeMediaCompressor.compressImage(
+                safeFile, widget.config.imageCompressionQuality);
+          }
+
+          // If no compression was applied but HEIC was rescued, use rescued file
+          if (processedFile == null && wasHeicConverted) {
+             processedFile = safeFile;
           }
         }
 
@@ -1263,7 +1279,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                                       placeholder: (_, __) => Container(
                                         color: _theme.elevated,
                                       ),
-                                      errorWidget: (_, __, ___) => Container(
+                                      errorBuilder: (_, __, ___) => Container(
                                         color: _theme.elevated,
                                         child: Icon(Icons.broken_image_rounded,
                                             color: _theme.secondaryText,

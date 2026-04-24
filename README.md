@@ -159,7 +159,8 @@ The Google Photos integration relies on different underlying OAuth2 logic depend
   - [🖌️ Bring Your Own Editor (BYOE) Architecture](#️-bring-your-own-editor-byoe-architecture)
   - [📋 Smart Clipboard Integration](#-smart-clipboard-integration)
   - [🪄 Auto-Conversion HEIC to JPG (Experimental)](#-auto-conversion-heic-to-jpg-experimental)
-  - [🔒 Exit Confirmation](#-exit-confirmation-accidental-exit-prevention)
+  - [🗜️ Hybrid Smart Compression (Built-in + BYOC)](#️-hybrid-smart-compression-built-in--byoc)
+  - [🔒 Exit Confirmation (Accidental Exit Prevention)](#-exit-confirmation-accidental-exit-prevention)
   - [🌍 Internationalization (Intl)](#-internationalization-intl)
   - [🔄 Pre-Selected Media (Initial Selection)](#-pre-selected-media-initial-selection)
   - [📸 Getting Original Quality Files](#-getting-original-quality-files)
@@ -692,6 +693,51 @@ Because this utilizes deep native iOS bridges (`flutter_image_compress`), we hav
 > [!WARNING]
 > This feature is proudly **Experimental** and actively looking for community contributions! Native conversion heavily relies on real, physical iOS devices capturing deep hardware-encoded HEIC files to perfectly test. If the native conversion crashes on an unsupported device, it gracefully aborts and returns the original HEIC file to prevent app bricking.
 
+### 🗜️ Hybrid Smart Compression (Built-in + BYOC)
+
+Big visual libraries mean **massive payload sizes**. `gallery_suite` provides a powerful two-tier "Hybrid Smart Compression" architecture to securely compress assets *before* they are sent to your servers.
+
+#### 1. Native Built-in Image Compressor
+We ship a highly optimized native bridge (C/Objective-C/Swift via `flutter_image_compress`) directly inside the package. It is disabled by default to protect legacy configurations.
+
+```dart
+final assets = await CustomMediaPicker.show(
+  context: context,
+  config: const PickerConfig(
+    autoCompressImages: true,
+    imageCompressionQuality: 85, // Retains high fidelity while slashing MBs
+  ),
+);
+```
+
+#### 2. Bring Your Own Compressor (BYOC Hook)
+Need to aggressively compress **heavy video files** or apply custom algorithmic logic? Don't be constrained by built-in plugins! Use the `onCompressMedia` BYOC hook to inject your favorite package (like `video_compress`) silently into the picker's confirmation loop.
+
+The picker beautifully spins its UI while your logic awaits!
+
+```dart
+final assets = await CustomMediaPicker.show(
+  context: context,
+  config: PickerConfig(
+    // 1. Inject your hook!
+    onCompressMedia: (context, asset, originalFile) async {
+      // 2. We only care about compressing videos here!
+      if (asset.type == AssetType.video) {
+         final MediaInfo? info = await VideoCompress.compressVideo(
+           originalFile.path,
+           quality: VideoQuality.Res640x480Quality,
+         );
+         if (info?.file != null) return info!.file!;
+      }
+      return null; // Return null to fallback to original/built-in compression
+    },
+  ),
+);
+```
+
+> [!TIP]
+> **Priority Execution:** The BYOC hook (`onCompressMedia`) takes strict priority over `autoCompressImages`. If your hook returns a valid `File`, it is immediately sent. If it returns `null`, the picker securely falls back to `autoCompressImages` (if enabled) or the original OS payload.
+
 ### 🔒 Exit Confirmation (Accidental Exit Prevention)
 
 Prevent accidental data loss! When users select or edit images, tapping the android back button or swiping to pop can accidentally discard their hard work. You can solve this by providing an `ExitConfirmationConfig`.
@@ -986,6 +1032,9 @@ The entire look and feel is controlled via `PickerConfig`. Here is exactly what 
 | `maxConcurrentDecodes` | `int`                     | `3`                         | Maximum simultaneous thumbnail decodes. Limiting this ensures scrolling remains 60fps+ by preventing thread starvation on large grids.                                                                    |
 | `prefetchEnabled`      | `bool`                    | `true`                      | When `true`, the picker intelligently pre-loads thumbnails for the next 30 items that are about to appear on-screen during scrolling, eliminating pop-in.                                                 |
 | `themeData`            | `PickerThemeData?`        | `null`                      | Provides full control over individual UI colors (background, surface, text, etc.) which take precedence over the defaults resolved from `brightness`.                                                     |
+| `autoCompressImages`   | `bool`                    | `false`                     | When `true`, activates the native built-in image compressor (via `flutter_image_compress`) before returning the file. Great for reducing upload bandwidth.                                                |
+| `imageCompressionQuality` | `int`                  | `85`                        | The JPEG target quality (0–100) used when `autoCompressImages` is `true`. Default 85 retains very high visual fidelity.                                                                                  |
+| `onCompressMedia`      | `Function?`               | `null`                      | Optional BYOC hook called just before the picker returns. Use to inject `video_compress` or any custom algorithm. Return `null` to fallback to `autoCompressImages`. [See docs](#️-hybrid-smart-compression-built-in--byoc) |
 
 ---
 
@@ -1005,7 +1054,7 @@ We use [Semantic Versioning](https://semver.org/). This package is currently evo
 
 | Version    | Status    | Highlights                                                                                                                                                                                                                                                                                                                            |
 | ---------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **v1.0.0** | ✅ Stable | Core engine (Grid, Video, Audio), Live Camera Tile, iOS-style swipe-to-select, Heavy Performance Optimizations (LRU Cache, Decode Queue, Prefetching), BYOE Architecture, Inline Search, Google Photos Cloud Provider with native persistence, auto-refresh tokens, secure sign-out flow, iCloud integration, and Drag & Drop Reorder |
+| **v1.0.0** | ✅ Stable | Core engine (Grid, Video, Audio), Live Camera Tile, iOS-style swipe-to-select, Heavy Performance Optimizations (LRU Cache, Decode Queue, Prefetching), BYOE Architecture, Inline Search, Google Photos Cloud Provider with native persistence, auto-refresh tokens, secure sign-out flow, iCloud integration, and Drag & Drop Reorder. Plus: **Smart Clipboard** integration (URL/File/Bytes), **Hero Flight Animations** (grid ↔ fullscreen), **Experimental HEIC Auto-Conversion** to JPG, and **Hybrid Smart Compression** (native built-in + BYOC hook). |
 
 ---
 
