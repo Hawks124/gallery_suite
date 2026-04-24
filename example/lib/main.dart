@@ -215,7 +215,8 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         // Will use flutter_image_compress native bridges to reduce file size before returning.
         // GREAT for images. Disabled by default.
         autoCompressImages: false,
-        imageCompressionQuality: 85, // 0-100, only effective if autoCompressImages is true.
+        imageCompressionQuality:
+            85, // 0-100, only effective if autoCompressImages is true.
 
         // Option 2: Use a BYOC (Bring Your Own Compressor) Hook.
         // This takes STRICT PRIORITY over autoCompressImages.

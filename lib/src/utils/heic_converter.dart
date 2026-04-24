@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 
-/// Background utility to safely convert iOS HEIC/HEVC photos to JPG and 
+/// Background utility to safely convert iOS HEIC/HEVC photos to JPG and
 /// dynamically compress images natively.
 class NativeMediaCompressor {
   /// Inspects the file and converts it to JPG if it is a HEIC/HEVC file.
@@ -52,7 +52,8 @@ class NativeMediaCompressor {
       final tempDir = await getTemporaryDirectory();
       // Keep the original extension, but inject a timestamp buffer
       final ext = file.path.split('.').last;
-      final targetPath = '${tempDir.path}/compressed_${DateTime.now().millisecondsSinceEpoch}.$ext';
+      final targetPath =
+          '${tempDir.path}/compressed_${DateTime.now().millisecondsSinceEpoch}.$ext';
 
       final xFile = await FlutterImageCompress.compressAndGetFile(
         file.absolute.path,
@@ -64,7 +65,8 @@ class NativeMediaCompressor {
         return File(xFile.path);
       }
     } catch (e) {
-      debugPrint('[NativeMediaCompressor] General native compression failed: $e');
+      debugPrint(
+          '[NativeMediaCompressor] General native compression failed: $e');
     }
 
     return file;

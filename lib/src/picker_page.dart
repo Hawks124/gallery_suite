@@ -545,27 +545,32 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     for (final asset in _selected) {
       if (asset is LocalPickerAsset) {
         File? processedFile;
-        final originalFile = widget.config.useOriginalFile ? await asset.originFile : await asset.file;
-        
+        final originalFile = widget.config.useOriginalFile
+            ? await asset.originFile
+            : await asset.file;
+
         if (originalFile != null) {
           // Native defense: always rescue HEIC to JPG to avoid downstream crashes
-          File safeFile = await NativeMediaCompressor.convertHeicIfNeeded(originalFile);
+          File safeFile =
+              await NativeMediaCompressor.convertHeicIfNeeded(originalFile);
           bool wasHeicConverted = safeFile.path != originalFile.path;
 
           // Compression Pipeline priority 1: BYOC Hook
           if (widget.config.onCompressMedia != null) {
             if (!mounted) return;
-            processedFile = await widget.config.onCompressMedia!(context, asset.entity, safeFile);
-          } 
+            processedFile = await widget.config.onCompressMedia!(
+                context, asset.entity, safeFile);
+          }
           // Compression Pipeline priority 2: Native Built-in
-          else if (widget.config.autoCompressImages && asset.entity.type == AssetType.image) {
+          else if (widget.config.autoCompressImages &&
+              asset.entity.type == AssetType.image) {
             processedFile = await NativeMediaCompressor.compressImage(
                 safeFile, widget.config.imageCompressionQuality);
           }
 
           // If no compression was applied but HEIC was rescued, use rescued file
           if (processedFile == null && wasHeicConverted) {
-             processedFile = safeFile;
+            processedFile = safeFile;
           }
         }
 
