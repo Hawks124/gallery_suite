@@ -159,7 +159,7 @@ class ClipboardService {
                 'User-Agent':
                     'Mozilla/5.0 (Windows NT 10.0; Android 14) AppleWebKit/537.36'
               },
-            ).timeout(const Duration(seconds: 3));
+            ).timeout(const Duration(seconds: 5));
 
             final contentType = response.headers['content-type'] ?? '';
             debugPrint(
@@ -171,6 +171,23 @@ class ClipboardService {
               type = AssetType.video;
             } else if (contentType.startsWith('audio/')) {
               type = AssetType.audio;
+            } else if (contentType.contains('text/html')) {
+              // --- OpenGraph Scraping ---
+              // The user pasted a web page URL (e.g. Freepik, Unsplash, Google Images).
+              // Try to extract the og:image meta tag to get a shareable preview image.
+              final ogImageUrl = _extractOgImage(response.body);
+              if (ogImageUrl != null) {
+                debugPrint(
+                    '📋 [ClipboardService] _tryParseTextUrl -> Found og:image: $ogImageUrl');
+                return RemotePickerAsset(
+                  id: 'clipboard_og_${ogImageUrl.hashCode.toRadixString(36)}',
+                  baseUrl: ogImageUrl,
+                  title: uri.pathSegments.isNotEmpty
+                      ? uri.pathSegments.last
+                      : 'Web Image',
+                  type: AssetType.image,
+                );
+              }
             }
           } catch (e) {
             debugPrint(
@@ -381,5 +398,48 @@ class ClipboardService {
   bool _hasAudioExtension(String url) {
     const exts = ['.mp3', '.wav', '.aac', '.flac', '.ogg', '.m4a'];
     return exts.any((e) => url.contains(e));
+  }
+
+  // ── OpenGraph Scraping ──────────────────────────────────────────────────
+
+  /// Extracts the first `og:image` (or `twitter:image`) URL from an HTML body.
+  ///
+  /// Uses a lightweight regex approach to avoid adding a heavy HTML parser
+  /// dependency. Returns `null` if no OpenGraph image meta tag is found.
+  String? _extractOgImage(String html) {
+    // Priority: og:image > og:video > twitter:image
+    final patterns = [
+      // <meta property="og:image" content="https://..." />
+      RegExp(
+        r'''<meta[^>]+property\s*=\s*["']og:image["'][^>]+content\s*=\s*["']([^"']+)["']''',
+        caseSensitive: false,
+      ),
+      // <meta content="https://..." property="og:image" /> (reversed order)
+      RegExp(
+        r'''<meta[^>]+content\s*=\s*["']([^"']+)["'][^>]+property\s*=\s*["']og:image["']''',
+        caseSensitive: false,
+      ),
+      // twitter:image fallback
+      RegExp(
+        r'''<meta[^>]+(?:name|property)\s*=\s*["']twitter:image["'][^>]+content\s*=\s*["']([^"']+)["']''',
+        caseSensitive: false,
+      ),
+      RegExp(
+        r'''<meta[^>]+content\s*=\s*["']([^"']+)["'][^>]+(?:name|property)\s*=\s*["']twitter:image["']''',
+        caseSensitive: false,
+      ),
+    ];
+
+    for (final pattern in patterns) {
+      final match = pattern.firstMatch(html);
+      if (match != null) {
+        final url = match.group(1)?.trim();
+        if (url != null && url.startsWith('http')) {
+          return url;
+        }
+      }
+    }
+
+    return null;
   }
 }

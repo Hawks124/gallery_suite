@@ -689,10 +689,13 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     setState(() {
       _isClipboardMode = true;
       _isCloudMode = false;
-      _isClipboardLoading = true;
-      _clipboardAssets.clear(); // Clear previous fetch if any
+      // Only show loading spinner if we have NO cached results yet
+      if (_clipboardAssets.isEmpty) {
+        _isClipboardLoading = true;
+      }
     });
 
+    // Always refetch in background (clipboard content may have changed)
     _fetchClipboard();
   }
 
@@ -700,6 +703,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     setState(() {
       _isClipboardMode = false;
       _isClipboardLoading = false;
+      // NOTE: We intentionally do NOT clear _clipboardAssets here
+      // so they are preserved when the user returns to clipboard mode.
     });
   }
 
@@ -712,17 +717,17 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
           '📋 [PickerPage] _fetchClipboard -> got ${assets.length} assets');
       if (!mounted) return;
 
-      setState(() {
-        _clipboardAssets = assets;
-      });
-
-      // Visible feedback for debugging
-      if (mounted && assets.isEmpty) {
+      if (assets.isNotEmpty) {
+        // Replace with fresh results
+        setState(() {
+          _clipboardAssets = assets;
+        });
+      } else if (_clipboardAssets.isEmpty) {
+        // Only show the "no media" snackbar if we have NO cached results either
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                '📋 Clipboard: No media detected. Copy an image or media URL first.'),
-            duration: Duration(seconds: 3),
+          SnackBar(
+            content: Text(widget.config.textDelegate.clipboardEmpty),
+            duration: const Duration(seconds: 3),
           ),
         );
       }
