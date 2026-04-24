@@ -47,7 +47,7 @@ Furthermore, `gallery_suite` is one of the **only major pickers** that ships wit
 Unlike other pickers that force you to download massive editor dependencies or bloated video trimmers, `gallery_suite` keeps its core **100% pristine and lightweight**.
 
 - **120fps Ready**: Powered by a custom `ThumbnailDecodeQueue` and LRU memory caching, the grid stays buttery smooth even when rapidly scrolling through 10,000+ assets.
-- **Architecture by Injection**: We provide elegant, decoupled hooks. Want to crop an image? Pass your favorite editor to our `onEditMedia` callback. Our UI seamlessly integrates it without adding a single megabyte to the package's core footprint.
+- **Architecture by Injection**: We provide elegant, decoupled hooks. Want to crop an image or compress a 4K video? Pass your favorite tools to our `onEditMedia` and `onCompressMedia` callbacks. Our UI seamlessly integrates them without adding a single megabyte to the package's core footprint.
 
 **Compared to similar packages:**
 
@@ -68,6 +68,7 @@ Unlike other pickers that force you to download massive editor dependencies or b
 | Smart Clipboard     | No                | No                     | ✅ Yes (URLs, Files, Raw Bytes)     |
 | HEIC Auto-Convert   | No                | No                     | ✅ Yes (Background iOS bridge)      |
 | Hero UI Animations  | No                | No                     | ✅ Yes (Dribbble-level UX)          |
+| Smart Compression   | No                | No                     | ✅ Yes (Built-in + BYOC Hooks)      |
 
 > **❤️ A note on Open Source:** `gallery_suite` is proudly powered by the incredible `photo_manager` engine (created by the brilliant authors of `wechat_assets_picker`). While their picker perfectly replicates the WeChat experience, `gallery_suite` focuses on an alternative iOS-inspired masonry design with zero-dependency features like BYOE editing and Glassmorphism.
 
@@ -130,6 +131,7 @@ The Google Photos integration relies on different underlying OAuth2 logic depend
 - 🦸‍♂️ **"Hero" Animations** — Seamless `Hero` flying transitions between the grid thumbnails and full-screen previews for that Dribbble-level UX feeling!
 - 🪄 **Auto-Conversion HEIC to JPG** (Experimental) — Background converter to natively transform iOS HEIC/HEVC photos to standard JPG before returning the file (using native iOS bridges), avoiding cross-platform rendering crashes.
 - 🖌️ **Bring Your Own Editor (BYOE) Architecture** — Why bloat your app with forced editors? Pass your favorite editor (like `pro_image_editor`) to the `onEditMedia` callback. The picker natively intercepts the edit, displays an elegant Pencil action in the Fullscreen Preview, and flawlessly updates the preview strip to the new edited image.
+- 🗜️ **Hybrid Smart Compression** — Built-in native JPEG compressor + BYOC (Bring Your Own Compressor) hooks for videos or advanced algorithms. Reduces upload bandwidth by up to 80% without extra code.
 - 🌍 **Zero-Dependency Internationalization (Intl)** — Translate 100% of the UI (buttons, search bar, empty states) without installing heavy `intl` packages. Uses a clean `PickerTextDelegate` pattern.
 - 🔒 **Exit Confirmation Prevention** — Built-in `PopScope` protection. If a user tries to swipe back or press the Android back button after spending time selecting/editing photos, a beautiful Glassmorphic dialog prevents accidental data loss.
 - Fully customizable theming via `PickerConfig.brightness` and `primaryColor`.
@@ -141,34 +143,21 @@ The Google Photos integration relies on different underlying OAuth2 logic depend
 ## 📑 Table of Contents
 
 - [🤔 Why Gallery Suite?](#-why-gallery-suite)
-- [📱 Platform Compatibility & Status (Google Photos)](#-platform-compatibility--status-google-photos)
+- [📱 Platform Compatibility & Status](#-platform-compatibility--status-google-photos)
 - [✨ Features](#-features)
 - [🚀 Quick Start](#-quick-start)
 - [📦 Installation & Setup](#-installation--setup)
-  - [Android Setup](#android-setup)
-  - [iOS Setup](#ios-setup)
 - [💻 Core Usage](#-core-usage)
-  - [📸 Pick Images](#-pick-images)
-  - [🎬 Pick a Video](#-pick-a-video)
-  - [🎵 Pick Audio](#-pick-audio)
 - [🧠 Advanced Capabilities](#-advanced-capabilities)
-  - [☁️ Google Photos Built-in Provider (Premium Cloud Integration)](#️-google-photos-built-in-provider-premium-cloud-integration)
-    - [Authentication & 2026 Compliance (Picker API)](#authentication--2026-compliance-picker-api)
-    - [Quick Start: Global Initialization](#quick-start-global-initialization)
-    - [🛠️ Google Cloud Platform (GCP) Setup Guide](#️-google-cloud-platform-gcp-setup-guide)
+  - [☁️ Google Photos Built-in Provider](#️-google-photos-built-in-provider-premium-cloud-integration)
   - [🖌️ Bring Your Own Editor (BYOE) Architecture](#️-bring-your-own-editor-byoe-architecture)
   - [📋 Smart Clipboard Integration](#-smart-clipboard-integration)
-  - [🪄 Auto-Conversion HEIC to JPG (Experimental)](#-auto-conversion-heic-to-jpg-experimental)
+  - [🪄 Auto-Conversion HEIC to JPG](#-auto-conversion-heic-to-jpg-experimental)
   - [🗜️ Hybrid Smart Compression (Built-in + BYOC)](#️-hybrid-smart-compression-built-in--byoc)
-  - [🔒 Exit Confirmation (Accidental Exit Prevention)](#-exit-confirmation-accidental-exit-prevention)
+  - [🔒 Exit Confirmation](#-exit-confirmation-accidental-exit-prevention)
   - [🌍 Internationalization (Intl)](#-internationalization-intl)
   - [🔄 Pre-Selected Media (Initial Selection)](#-pre-selected-media-initial-selection)
-  - [📸 Getting Original Quality Files](#-getting-original-quality-files)
-  - [🚫 Disabling the Live Camera Tile](#-disabling-the-live-camera-tile)
-  - [👆 Disabling Swipe-To-Select](#-disabling-swipe-to-select)
-  - [📤 Handling Selected Media (Upload Example)](#-handling-selected-media-upload-example)
   - [🎨 UI Theming & Customization](#-ui-theming--customization)
-    - [PickerThemeData Tokens](#pickerthemedata-tokens)
 - [⚙️ PickerConfig API](#️-pickerconfig-api)
 - [⚡ Performance Notes](#-performance-notes)
 - [🚀 Version History & Roadmap](#-version-history--roadmap)
@@ -418,23 +407,24 @@ import 'package:photo_manager/photo_manager.dart';
 ### 📸 Pick Images
 
 ```dart
-// Full-featured: Camera tile + Swipe-to-select + Multi-select + Google Photos
 final assets = await CustomMediaPicker.show(
   context: context,
   config: PickerConfig(
     requestType: RequestType.image,
     maxSelection: 10,
-    showCameraTile: true,        // Live camera feed at index 0
-    enableSwipeToSelect: true,   // iOS-style drag to select
-    primaryColor: Colors.deepPurple,
-    googlePhotosConfig: const GooglePhotosConfig(enabled: true), // Enable Cloud by default!
-    textDelegate: const EnglishPickerTextDelegate(), // Customize labels
+    enableSmartClipboard: true,  // 📋 Scan URLs/Files from OS Clipboard
+    autoCompressImages: true,    // 🗜️ Native background JPEG compression
+    showCameraTile: true,        // 📸 In-grid live camera shortcut
+    enableSwipeToSelect: true,   // 👆 iOS-style multi-select drag
     onEditMedia: (context, asset, file) async {
-       // Launch your favorite editor (e.g., pro_image_editor)
-       // return await MyEditor.open(file);
-       // See example in the example folder
+       // 🖌️ Inject your custom editor! (pro_image_editor etc)
+       return null; 
+    },
+    onCompressMedia: (context, asset, file) async {
+       // 🎬 Inject custom video compressor! (video_compress etc)
        return null;
     },
+    googlePhotosConfig: const GooglePhotosConfig(enabled: true),
   ),
 );
 ```

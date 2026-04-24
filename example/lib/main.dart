@@ -300,6 +300,20 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         // when requestType is set to video.
         showCameraTile: true,
 
+        //  [NEW] Hybrid Smart Compression:
+        // Use the BYOC hook to inject video compression (e.g. video_compress).
+        // Since built-in compression only handles images, this is the way for videos.
+        // onCompressMedia: (context, asset, file) async {
+        //   if (asset.type == AssetType.video) {
+        //      final MediaInfo? info = await VideoCompress.compressVideo(
+        //        file.path,
+        //        quality: VideoQuality.Res640x480Quality,
+        //      );
+        //      return info?.file;
+        //   }
+        //   return null;
+        // },
+
         primaryColor: const Color(0xFFE11D48),
         brightness: Theme.of(context).brightness,
         enableSmartClipboard: true,
