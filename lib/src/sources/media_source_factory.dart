@@ -1,7 +1,7 @@
 // Factory that resolves the correct [MediaSource] for the current platform.
 
-import '../services/platform_stub.dart'
-    if (dart.library.io) '../services/platform_io.dart';
+import '../utils/platform_stub.dart'
+    if (dart.library.io) '../utils/platform_io.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'media_source.dart';

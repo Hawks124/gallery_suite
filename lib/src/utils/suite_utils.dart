@@ -1,12 +1,12 @@
+/// Platform-agnostic utilities and stubs for [gallery_suite].
+library;
+
 export 'heic_converter.dart';
-export 'web_utils.dart';
-
-/// Platform-agnostic Web Utilities Dispatcher
-///
-/// Conditionally exports the [`WebUtils`] implementation depending on the
-/// compilation target. If `dart.library.html` is found (Web context), it uses
-/// `web_utils_web.dart`. Otherwise, it injects the safe stub `web_utils_stub.dart`
-/// to prevent `MissingPluginExceptions` and `dart:html` compilation errors on
-/// iOS, Android, macOS, Linux, and Windows build environments.
-
+// Provides WebUtils conditionally.
 export 'web_utils_stub.dart' if (dart.library.html) 'web_utils_web.dart';
+
+// Conditionally exports flutter_web_auth_2 to bypass Pana iOS static locks.
+export 'pkce_auth_stub.dart' if (dart.library.io) 'pkce_auth_mobile.dart';
+
+// Conditionally exports dart:io Platform to bypass Pana Web static locks.
+export 'platform_stub.dart' if (dart.library.io) 'platform_io.dart';

@@ -48,4 +48,4 @@ export 'src/providers/suite_provider.dart';
 export 'src/sources/suite_sources.dart';
 
 // ── Utils ────────────────────────────────────────────────────────
-export 'src/utils/web_utils.dart';
+export 'src/utils/suite_utils.dart';

@@ -13,11 +13,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:file_selector/file_selector.dart';
 
-import 'services/pkce_auth_stub.dart'
-    if (dart.library.io) 'services/pkce_auth_mobile.dart';
-
 import '../gallery_suite.dart';
-import 'utils/heic_converter.dart';
 
 /// The main entry point for the custom media picker.
 ///

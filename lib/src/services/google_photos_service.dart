@@ -8,10 +8,8 @@ import 'package:flutter/foundation.dart';
 
 // Conditionally import dart:io to avoid Pana blocking Web compatibility
 import '../utils/suite_utils.dart';
-import 'platform_stub.dart' if (dart.library.io) 'platform_io.dart';
 
 // Conditionally import flutter_web_auth_2 to avoid Pana blocking iOS compatibility
-import 'pkce_auth_stub.dart' if (dart.library.io) 'pkce_auth_mobile.dart';
 import 'package:google_sign_in/google_sign_in.dart' as gsi;
 import 'package:http/http.dart' as http;
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
