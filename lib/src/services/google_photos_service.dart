@@ -10,6 +10,8 @@ import 'package:flutter/foundation.dart';
 import '../utils/suite_utils.dart';
 
 // Conditionally import flutter_web_auth_2 to avoid Pana blocking iOS compatibility
+import 'package:app_links/app_links.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:google_sign_in/google_sign_in.dart' as gsi;
 import 'package:http/http.dart' as http;
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
@@ -263,12 +265,26 @@ class GooglePhotosService {
       });
 
       debugPrint('[GooglePhotosService] OAuth Redirect URI used: $redirectUri');
-      debugPrint('[GooglePhotosService] Opening OAuth URL via Custom Tabs...');
+      debugPrint('[GooglePhotosService] Opening OAuth URL via url_launcher...');
 
-      final result = await authenticate(
-        url: authUri.toString(),
-        callbackUrlScheme: _redirectScheme!,
-      );
+      final appLinks = AppLinks();
+      final completer = Completer<String>();
+      final sub = appLinks.uriLinkStream.listen((Uri uri) {
+        if (uri.scheme == _redirectScheme) {
+          if (!completer.isCompleted) completer.complete(uri.toString());
+        }
+      });
+
+      // Launch the browser
+      final launched = await launchUrl(authUri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        sub.cancel();
+        return false;
+      }
+
+      // Wait for the deep link callback (timeout after 5 minutes)
+      final result = await completer.future.timeout(const Duration(minutes: 5));
+      await sub.cancel();
 
       final code = Uri.parse(result).queryParameters['code'];
       if (code == null || code.isEmpty) {

@@ -83,17 +83,36 @@ These are all fantastic tools. However, both `wechat_assets_picker` and `insta_a
 
 ---
 
-## 📱 Platform Compatibility & Status (Google Photos)
+## 📱 Platform Support
 
-The Google Photos integration relies on different underlying OAuth2 logic depending on platform constraints (like Android's Credential Manager limits vs Web's FedCM updates):
+`gallery_suite` is built to run across the entire Flutter ecosystem. Below is the honest runtime feature matrix:
 
-| Platform            | Status             | Engine Used                 | Notes                                                                                                                                   |
-| :------------------ | :----------------- | :-------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------- |
-| **Android**         | ✅ Fully Supported | `flutter_web_auth_2` (PKCE) | Uses Chrome Custom Tabs to bypass Android 14 Credential Manager scope restrictions.                                                     |
-| **iOS**             | ✅ Fully Supported | `google_sign_in`            | Uses standard AppAuth native implementation. No known issues with inline video playback.                                                |
-| **Web**             | ✅ Fully Supported | `google_sign_in_web`        | Successfully patched for strict browser CORS & FedCM. Utilizes custom raw HTTP bridging for `<video>` tags.                             |
-| **macOS**           | ⚠️ Experimental    | `google_sign_in_macos`      | Theoretical support; requires enabling macOS support in GCP and linking the macOS Google Sign-In backend.                               |
-| **Windows / Linux** | ⚠️ Experimental    | `flutter_web_auth_2` (PKCE) | Uses local-loopback OAuth servers. You must ensure your redirect URI is mapped to `http://localhost:<port>` rather than custom schemes. |
+| Feature | Android | iOS | macOS | Windows | Linux | Web |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| 📷 Media Grid & Picker | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ |
+| 🎬 Video / Audio Playback | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 📸 Live Camera Tile | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| ☁️ Google Photos Integration | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | ✅ |
+| 🖱️ Drag & Drop (Files) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 📋 Smart Clipboard | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ |
+| 🗜️ HEIC Auto-Convert | ✅ | ✅ | ✅ | ➖ | ➖ | ➖ |
+| 🗜️ Smart Compression | ✅ | ✅ | ✅ | ➖ | ➖ | ✅ |
+| ♿ A11y (TalkBack/VoiceOver) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+> **✅** = Full support · **⚠️** = Partial / requires extra config · **➖** = Not applicable on this platform
+
+> [!NOTE]
+> The [pub.dev](https://pub.dev/packages/gallery_suite) platform badge shows **Android + iOS** because Pana (the pub.dev scoring tool) performs a strict *static import analysis*. It propagates a platform block from a dependency's manifest even when the feature is fully guarded at runtime. For example, the `camera` package's own manifest does not list macOS — even though `camera_macos` works perfectly. This is a known Pana limitation, not a limitation of `gallery_suite` itself.
+
+### Google Photos OAuth2 Compatibility
+
+| Platform | Status | Engine | Notes |
+| :--- | :--- | :--- | :--- |
+| **Android** | ✅ Full | `url_launcher` + `app_links` PKCE | Deep-link callback via `app_links`. |
+| **iOS** | ✅ Full | `google_sign_in` | Standard AppAuth native flow. |
+| **Web** | ✅ Full | `google_sign_in_web` | FedCM + custom HTTP bridging. |
+| **macOS** | ⚠️ Experimental | `google_sign_in_macos` | Enable macOS in your GCP dashboard. |
+| **Windows / Linux** | ⚠️ Experimental | `url_launcher` + `app_links` | Map redirect URI to `http://localhost:<port>`. |
 
 ---
 
@@ -1110,7 +1129,7 @@ Apache 2.0 — see [LICENSE](LICENSE).
 
 - **[file_selector](https://pub.dev/packages/file_selector)** — The robust abstraction bridging our UI to native OS Drag-and-Drop and File Explorer dialogs for Windows, Linux, and Web architectures.
 
-- **[desktop_drop](https://pub.dev/packages/desktop_drop)** — The robust abstraction bridging our UI to native OS Drag-and-Drop and File Explorer dialogs for Windows, Linux, and Web architectures.
+- **[super_drag_and_drop](https://pub.dev/packages/super_drag_and_drop)** — The fully cross-platform (6/6 OS) drag-and-drop abstraction powering our native file-drop experience on Windows, macOS, Linux, iOS, Android and Web.
 
 **Smart Clipboard System**
 
@@ -1124,7 +1143,8 @@ Apache 2.0 — see [LICENSE](LICENSE).
 **Google Photos Cloud Integration**
 
 - **[google_sign_in](https://pub.dev/packages/google_sign_in)** — Provides lightweight Google authentication for non-PKCE flows and user profile resolution.
-- **[flutter_web_auth_2](https://pub.dev/packages/flutter_web_auth_2)** — Powers the secure PKCE OAuth2 flow via Chrome Custom Tabs on Android, enabling our compliant Google Photos integration.
+- **[url_launcher](https://pub.dev/packages/url_launcher)** — Opens Google's consent page in the native browser to initiate the secure PKCE OAuth2 flow.
+- **[app_links](https://pub.dev/packages/app_links)** — Intercepts the deep-link callback from the browser and routes it back to the app to complete token exchange.
 - **[googleapis_auth](https://pub.dev/packages/googleapis_auth)** — Manages authenticated HTTP clients for the Google Picker API token lifecycle.
 - **[extension_google_sign_in_as_googleapis_auth](https://pub.dev/packages/extension_google_sign_in_as_googleapis_auth)** — Bridges `google_sign_in` with `googleapis_auth` for seamless authorized API calls.
 - **[cached_network_image](https://pub.dev/packages/cached_network_image)** — Caches and renders remote Google Photos thumbnails in the cloud grid efficiently.

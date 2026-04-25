@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'dart:ui';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:desktop_drop/desktop_drop.dart';
+import 'package:super_drag_and_drop/super_drag_and_drop.dart';
 import '../models/picker_theme.dart';
 
 /// An overlay widget that wraps the entire picker screen and listens for
@@ -34,12 +35,43 @@ class _DragAndDropOverlayState extends State<DragAndDropOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    return DropTarget(
-      onDragEntered: (_) => setState(() => _isDragging = true),
-      onDragExited: (_) => setState(() => _isDragging = false),
-      onDragDone: (details) {
+    return DropRegion(
+      formats: Formats.standardFormats,
+      onDropOver: (event) {
+        if (!_isDragging) setState(() => _isDragging = true);
+        return DropOperation.copy;
+      },
+      onDropEnter: (event) {
+        setState(() => _isDragging = true);
+      },
+      onDropLeave: (event) {
         setState(() => _isDragging = false);
-        widget.onDropped(details.files);
+      },
+      onPerformDrop: (event) async {
+        setState(() => _isDragging = false);
+        final List<XFile> files = [];
+
+        for (final item in event.session.items) {
+          final reader = item.dataReader;
+          if (reader == null) continue;
+
+          if (reader.canProvide(Formats.fileUri)) {
+            final completer = Completer<XFile?>();
+            reader.getValue<Uri>(Formats.fileUri, (uri) {
+              if (uri != null) {
+                completer.complete(XFile(uri.toFilePath()));
+              } else {
+                completer.complete(null);
+              }
+            });
+            final xfile = await completer.future;
+            if (xfile != null) files.add(xfile);
+          }
+        }
+        
+        if (files.isNotEmpty) {
+          widget.onDropped(files);
+        }
       },
       child: Stack(
         children: [

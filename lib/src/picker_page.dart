@@ -12,6 +12,8 @@ import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:file_selector/file_selector.dart';
+import 'package:app_links/app_links.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../gallery_suite.dart';
 
@@ -650,12 +652,23 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       if (pickedUrl != null && sessionId != null) {
         // Launch Google Photos Picker UI
         try {
-          await authenticate(
-            url: pickedUrl,
-            callbackUrlScheme: _googleService.redirectScheme,
-          ).timeout(const Duration(seconds: 60));
+          final appLinks = AppLinks();
+          final completer = Completer<String>();
+          final sub = appLinks.uriLinkStream.listen((Uri uri) {
+            if (uri.scheme == _googleService.redirectScheme) {
+              if (!completer.isCompleted) completer.complete(uri.toString());
+            }
+          });
+
+          final launched = await launchUrl(
+              Uri.parse(pickedUrl), mode: LaunchMode.externalApplication);
+          
+          if (launched) {
+            await completer.future.timeout(const Duration(seconds: 60));
+          }
+          await sub.cancel();
         } catch (e) {
-          debugPrint('WebAuth2 flow ended or timed out: $e');
+          debugPrint('OAuth flow ended or timed out: $e');
         }
 
         // Fetch what the user actually picked in the session
