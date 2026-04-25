@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'dart:async';
 import 'package:video_player/video_player.dart';
 import 'video_preview_sheet.dart';
@@ -203,6 +204,12 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
       image: widget.asset.type == AssetType.image,
       button: true,
       excludeSemantics: true, // Prevents reading child textual badges ("00:45")
+      customSemanticsActions: {
+        if (widget.onLongPress != null)
+          CustomSemanticsAction(
+                  label: widget.textDelegate.semanticPreviewAction):
+              widget.onLongPress!,
+      },
       child: RepaintBoundary(
         child: GestureDetector(
           onTapDown: (_) => setState(() => _isPressed = true),

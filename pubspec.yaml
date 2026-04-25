@@ -10,8 +10,15 @@ topics:
   - image
   - video
   - audio
-  - gallery
   - media
+  - gallery
+  - camera
+  - photo
+  - image-picker
+  - media-picker
+  - cloud-picker
+  - google-photos
+  - masonry
 
 environment:
   sdk: ">=3.0.0 <4.0.0"

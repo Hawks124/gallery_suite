@@ -51,6 +51,15 @@ Welcome to the first stable release of `gallery_suite`! This package provides a 
 
 ### 💎 Premium Capabilities
 
+#### 🗜️ Hybrid Smart Compression (Built-in + BYOC)
+
+- **Upload Bandwidth Saver**: Integrated an intelligent core compression engine for JPEG images, automatically reducing payload size for remote server uploads by up to 80% with minimal quality loss.
+- **Bring Your Own Compressor (BYOC)**: Introduced a powerful `onCompressMedia` hook in `PickerConfig`. Seamlessly inject your own advanced video compressors (e.g., `video_compress`) and the picker natively tracks their progress, overriding the default behavior securely.
+
+#### 🪄 Auto-Conversion HEIC to JPG (Experimental)
+
+- **Cross-Platform Bridge**: Solves the nightmare of HEIC format crashes on web/Android by natively intercepting iOS HEIC photos and transparently converting them to standard JPG locally using native platform bridges before returning them to your application layer.
+
 #### 🌍 Zero-Dependency Internationalization (Intl)
 
 - **Text Delegate Pattern**: Complete translation support without adding heavy `intl` package dependencies or ARB files.

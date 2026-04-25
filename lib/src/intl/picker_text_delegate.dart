@@ -63,6 +63,7 @@ abstract class PickerTextDelegate {
   final String semanticImageUnselected;
   final String semanticImageSelectedFormat;
   final String semanticVideoFormat;
+  final String semanticPreviewAction;
 
   const PickerTextDelegate({
     required this.confirm,
@@ -103,10 +104,11 @@ abstract class PickerTextDelegate {
     required this.semanticImageUnselected,
     required this.semanticImageSelectedFormat,
     required this.semanticVideoFormat,
+    required this.semanticPreviewAction,
   });
 
   // -- Accessibility (A11y) Helpers ----------------------------------------
-  
+
   /// Helper to format the semantic announcement for a selected image.
   String semanticImageSelected(int index) =>
       semanticImageSelectedFormat.replaceAll('%d', index.toString());

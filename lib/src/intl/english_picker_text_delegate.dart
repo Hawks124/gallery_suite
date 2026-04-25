@@ -48,5 +48,6 @@ class EnglishPickerTextDelegate extends PickerTextDelegate {
     super.semanticImageUnselected = 'Gallery photo. Double tap to select.',
     super.semanticImageSelectedFormat = 'Selected photo, number %d.',
     super.semanticVideoFormat = 'Gallery video, duration %s.',
+    super.semanticPreviewAction = 'Preview fullscreen',
   });
 }

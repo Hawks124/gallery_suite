@@ -158,7 +158,8 @@ class ClipboardService {
               headers: {
                 'User-Agent':
                     'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept':
+                    'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                 'Accept-Language': 'en-US,en;q=0.5',
               },
             ).timeout(const Duration(seconds: 5));
@@ -480,10 +481,18 @@ class ClipboardService {
 
     // --- Pass 3: Apple Touch Icon (Often a high-quality logo/fallback) ---
     final iconPatterns = [
-      RegExp(r'''<link[^>]+rel\s*=\s*["']apple-touch-icon["'][^>]+href\s*=\s*["']([^"']+)["']''', caseSensitive: false),
-      RegExp(r'''<link[^>]+href\s*=\s*["']([^"']+)["'][^>]+rel\s*=\s*["']apple-touch-icon["']''', caseSensitive: false),
-      RegExp(r'''<link[^>]+rel\s*=\s*["']icon["'][^>]+href\s*=\s*["']([^"']+)["']''', caseSensitive: false),
-      RegExp(r'''<link[^>]+href\s*=\s*["']([^"']+)["'][^>]+rel\s*=\s*["']icon["']''', caseSensitive: false),
+      RegExp(
+          r'''<link[^>]+rel\s*=\s*["']apple-touch-icon["'][^>]+href\s*=\s*["']([^"']+)["']''',
+          caseSensitive: false),
+      RegExp(
+          r'''<link[^>]+href\s*=\s*["']([^"']+)["'][^>]+rel\s*=\s*["']apple-touch-icon["']''',
+          caseSensitive: false),
+      RegExp(
+          r'''<link[^>]+rel\s*=\s*["']icon["'][^>]+href\s*=\s*["']([^"']+)["']''',
+          caseSensitive: false),
+      RegExp(
+          r'''<link[^>]+href\s*=\s*["']([^"']+)["'][^>]+rel\s*=\s*["']icon["']''',
+          caseSensitive: false),
     ];
     for (final pattern in iconPatterns) {
       final match = pattern.firstMatch(html);
@@ -494,7 +503,8 @@ class ClipboardService {
     }
 
     // --- Pass 4: First generic <img src="..."> ---
-    final imgPattern = RegExp(r'''<img[^>]+src\s*=\s*["'](http[^"']+)["']''', caseSensitive: false);
+    final imgPattern = RegExp(r'''<img[^>]+src\s*=\s*["'](http[^"']+)["']''',
+        caseSensitive: false);
     var match = imgPattern.firstMatch(html);
     if (match != null) {
       final resolved = _resolveOgUrl(match.group(1));
@@ -502,7 +512,9 @@ class ClipboardService {
     }
 
     // --- Pass 5: Bruteforce ANY absolute image URL in the raw HTML ---
-    final rawUrlPattern = RegExp(r'''https?:\/\/[^\s"'<>{}]+?\.(?:jpg|jpeg|png|webp)''', caseSensitive: false);
+    final rawUrlPattern = RegExp(
+        r'''https?:\/\/[^\s"'<>{}]+?\.(?:jpg|jpeg|png|webp)''',
+        caseSensitive: false);
     match = rawUrlPattern.firstMatch(html);
     if (match != null) {
       final resolved = _resolveOgUrl(match.group(0));
