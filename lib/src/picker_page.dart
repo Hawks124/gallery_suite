@@ -107,7 +107,7 @@ class _MediaPickerPage extends StatefulWidget {
 }
 
 class _MediaPickerPageState extends State<_MediaPickerPage>
-    with SingleTickerProviderStateMixin {
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   final MediaSource _source = MediaSourceFactory.activeSource;
   final ScrollController _scrollController = ScrollController();
 
@@ -163,6 +163,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
     // Map any passed initial selection into the internal state.
     if (widget.config.initialSelection != null) {
@@ -231,6 +232,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _searchDebounce?.cancel();
     _searchCtrl.dispose();
     _searchFocus.dispose();
@@ -242,6 +244,15 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       ClipboardService.instance.dispose();
     }
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (_isClipboardMode) {
+        _fetchClipboard();
+      }
+    }
   }
 
   void _onSearchChanged(String query) {
@@ -718,9 +729,12 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       if (!mounted) return;
 
       if (assets.isNotEmpty) {
-        // Replace with fresh results
+        // Prepend new results while avoiding exact duplicates
         setState(() {
-          _clipboardAssets = assets;
+          for (final latest in assets) {
+            _clipboardAssets.removeWhere((a) => a.id == latest.id);
+          }
+          _clipboardAssets = [...assets, ..._clipboardAssets];
         });
       } else if (_clipboardAssets.isEmpty) {
         // Only show the "no media" snackbar if we have NO cached results either

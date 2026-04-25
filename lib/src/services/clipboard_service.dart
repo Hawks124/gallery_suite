@@ -476,6 +476,29 @@ class ClipboardService {
       }
     }
 
+    // --- Pass 3: Apple Touch Icon (Often a high-quality logo/fallback) ---
+    final iconPatterns = [
+      RegExp(r'''<link[^>]+rel\s*=\s*["']apple-touch-icon["'][^>]+href\s*=\s*["']([^"']+)["']''', caseSensitive: false),
+      RegExp(r'''<link[^>]+href\s*=\s*["']([^"']+)["'][^>]+rel\s*=\s*["']apple-touch-icon["']''', caseSensitive: false),
+      RegExp(r'''<link[^>]+rel\s*=\s*["']icon["'][^>]+href\s*=\s*["']([^"']+)["']''', caseSensitive: false),
+      RegExp(r'''<link[^>]+href\s*=\s*["']([^"']+)["'][^>]+rel\s*=\s*["']icon["']''', caseSensitive: false),
+    ];
+    for (final pattern in iconPatterns) {
+      final match = pattern.firstMatch(html);
+      if (match != null) {
+        final resolved = _resolveOgUrl(match.group(1));
+        if (resolved != null) return resolved;
+      }
+    }
+
+    // --- Pass 4: First generic <img src="..."> ---
+    final imgPattern = RegExp(r'''<img[^>]+src\s*=\s*["'](http[^"']+)["']''', caseSensitive: false);
+    final match = imgPattern.firstMatch(html);
+    if (match != null) {
+      final resolved = _resolveOgUrl(match.group(1));
+      if (resolved != null) return resolved;
+    }
+
     return null;
   }
 
