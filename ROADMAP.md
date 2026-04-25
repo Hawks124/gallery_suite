@@ -9,7 +9,7 @@ This document outlines the planned roadmap and potential future features for the
 - [x] **Camera Integration**: Allow taking photos and recording videos directly from within the picker grid (a live camera tile as the first item).
 - [x] **Localization Support**: Add robust built-in `intl` delegate for standard translations without forcing developers to manually inject text config for every language.
 - [x] **Draggable Selection**: Allow users to swipe-to-select multiple items rapidly without lifting their finger, similar to iOS Photos.
-- [ ] **Custom Video Trimmer**: A lightweight, integrated video trimming UI immediately after selecting a video(Canceled).
+- [ ] **Custom Video Trimmer**: A lightweight, integrated video trimming UI immediately after selecting a video[(Canceled)].
 
 ## ✨ Upcoming Premium UX Ideas (To Discuss)
 
@@ -18,8 +18,8 @@ This document outlines the planned roadmap and potential future features for the
 - [x] 🦸‍♂️ **"Hero" Animations**: [Priority: 🌟 Medium] Implement seamless `Hero` flying transitions between the grid thumbnails and full-screen previews (Dribbble-level UX).
 - [x] 🗜️ **Smart Compression Hooks**: [Priority: 📈 Medium] Add `onCompressMedia` callback or native ultra-light fast bridge for client-side raw video/photo compression. (Now using Hybrid built-in & BYOC approach)
 - [x] **Drag & Drop Reordering**: Allow users to drag-and-drop images in the bottom preview strip to change their selection order before sending.
-- [ ] **GIF & Sticker Panel**: A dedicated tab to search and select GIFs (via Giphy/Tenor integration) without leaving the picker.
-- [ ] **Document/File Support**: Expand the UI to support picking PDFs and Documents with the same beautiful, glassmorphic design(Canceled).
+- [ ] **GIF & Sticker Panel**: A dedicated tab to search and select GIFs (via Giphy/Tenor integration) without leaving the picker. [Currently on next release]
+- [ ] **Document/File Support**: Expand the UI to support picking PDFs and Documents with the same beautiful, glassmorphic design [(Canceled)].
 
 - [x] **Image Cropper & Editor Integration**: Native hooks to crop, rotate, and add basic filters to images before confirming the selection(by Injection).
 - [x] **Performance Optimizations**: Advanced caching strategies for massively large photo libraries (10,000+ assets) to achieve 120fps scrolling on ProMotion displays.
