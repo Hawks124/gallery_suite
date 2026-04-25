@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import '../utils/web_utils.dart';
+import '../utils/suite_utils.dart';
 import '../intl/picker_text_delegate.dart';
 import '../models/picker_theme.dart';
 

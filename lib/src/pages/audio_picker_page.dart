@@ -407,7 +407,11 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (kIsWeb ||
-                          (!kIsWeb && (Platform.isWindows || Platform.isLinux)))
+                          (!kIsWeb &&
+                              (defaultTargetPlatform ==
+                                      TargetPlatform.windows ||
+                                  defaultTargetPlatform ==
+                                      TargetPlatform.linux)))
                         IconButton(
                           onPressed: () async {
                             if (_source is FileSelectorMediaSource) {
@@ -612,8 +616,10 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
         (_isSearching && _searchQuery.isNotEmpty) ? _searchResults : _assets;
 
     if (!_isSearching && _assets.isEmpty) {
-      final bool isWebOrDesktop =
-          kIsWeb || (!kIsWeb && (Platform.isWindows || Platform.isLinux));
+      final bool isWebOrDesktop = kIsWeb ||
+          (!kIsWeb &&
+              (defaultTargetPlatform == TargetPlatform.windows ||
+                  defaultTargetPlatform == TargetPlatform.linux));
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

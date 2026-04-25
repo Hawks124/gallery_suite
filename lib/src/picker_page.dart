@@ -11,8 +11,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:file_selector/file_selector.dart';
+
+import 'services/pkce_auth_stub.dart'
+    if (dart.library.io) 'services/pkce_auth_mobile.dart';
 
 import '../gallery_suite.dart';
 import 'utils/heic_converter.dart';
@@ -188,8 +190,10 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     // Apply performance config to the shared native decode queue (if applicable).
     // The FileSelectorMediaSource handles its own loading.
     // photo_manager is unavailable on Web/Desktop — skip native decode queue.
-    final isDesktopOrWeb =
-        kIsWeb || (!kIsWeb && (Platform.isWindows || Platform.isLinux));
+    final isDesktopOrWeb = kIsWeb ||
+        (!kIsWeb &&
+            (defaultTargetPlatform == TargetPlatform.windows ||
+                defaultTargetPlatform == TargetPlatform.linux));
     if (!isDesktopOrWeb) {
       MediaService.instance.decodeQueue = ThumbnailDecodeQueue(
         maxConcurrent: widget.config.maxConcurrentDecodes,
@@ -415,8 +419,10 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
   Future<void> _onCameraCaptured(File file) async {
     // On Web/Desktop, PhotoManager.editor is unavailable — return file as FilePickerAsset
-    final isDesktopOrWeb =
-        kIsWeb || (!kIsWeb && (Platform.isWindows || Platform.isLinux));
+    final isDesktopOrWeb = kIsWeb ||
+        (!kIsWeb &&
+            (defaultTargetPlatform == TargetPlatform.windows ||
+                defaultTargetPlatform == TargetPlatform.linux));
     if (isDesktopOrWeb) {
       final bytes = await file.readAsBytes();
       final title = 'Captured_${DateTime.now().millisecondsSinceEpoch}.jpg';
@@ -648,7 +654,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       if (pickedUrl != null && sessionId != null) {
         // Launch Google Photos Picker UI
         try {
-          await FlutterWebAuth2.authenticate(
+          await authenticate(
             url: pickedUrl,
             callbackUrlScheme: _googleService.redirectScheme,
           ).timeout(const Duration(seconds: 60));
@@ -1706,8 +1712,10 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
     // Determine if the camera tile should be shown
     // Hide camera tile on Web/Desktop (WebRTC flash/torch causes crashes, no native integration)
-    final isDesktopOrWeb =
-        kIsWeb || (!kIsWeb && (Platform.isWindows || Platform.isLinux));
+    final isDesktopOrWeb = kIsWeb ||
+        (!kIsWeb &&
+            (defaultTargetPlatform == TargetPlatform.windows ||
+                defaultTargetPlatform == TargetPlatform.linux));
     final showCamera =
         !isDesktopOrWeb && !_isSearching && widget.config.showCameraTile;
     final cameraOffset = showCamera ? 1 : 0;
