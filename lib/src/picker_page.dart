@@ -1422,6 +1422,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
             aspectRatio: aspectRatio,
             child: MediaThumbnailWidget(
               asset: asset,
+              textDelegate: widget.config.textDelegate,
               isSelected: isSelected,
               selectionNumber: selIdx >= 0 ? selIdx + 1 : null,
               primaryColor: widget.config.primaryColor,
@@ -1785,6 +1786,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                   child: MediaThumbnailWidget(
                     key: ValueKey(asset.id),
                     asset: asset,
+                    textDelegate: widget.config.textDelegate,
                     isSelected: isSelected,
                     selectionNumber: isSelected ? selIdx + 1 : null,
                     primaryColor: widget.config.primaryColor,

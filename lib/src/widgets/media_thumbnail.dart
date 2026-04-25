@@ -24,6 +24,7 @@ class MediaThumbnailWidget extends StatefulWidget {
   final VoidCallback? onLongPress;
   final GooglePhotosService? googleService;
   final PickerTheme theme;
+  final PickerTextDelegate textDelegate;
 
   const MediaThumbnailWidget({
     super.key,
@@ -33,6 +34,7 @@ class MediaThumbnailWidget extends StatefulWidget {
     required this.isDark,
     required this.onTap,
     required this.theme,
+    required this.textDelegate,
     this.googleService,
     this.showPlayOverlay = false,
     this.selectionNumber,
@@ -181,27 +183,48 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
 
   @override
   Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: GestureDetector(
-        onTapDown: (_) => setState(() => _isPressed = true),
-        onTapUp: (_) => setState(() => _isPressed = false),
-        onTapCancel: () => setState(() => _isPressed = false),
-        onTap: widget.onTap,
-        onLongPress: widget.onLongPress,
-        child: AnimatedScale(
-          scale: _isPressed ? 0.92 : (widget.isSelected ? 0.96 : 1.0),
-          duration: const Duration(milliseconds: 140),
-          curve: Curves.easeOutBack,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              _buildImage(),
-              if (widget.asset.type == AssetType.video) _buildVideoBadge(),
-              if (!_isLocallyAvailable && widget.asset is LocalPickerAsset)
-                _buildCloudBadge(),
-              if (widget.showPlayOverlay) _buildCenterPlayOverlay(),
-              _buildSelectionOverlay(),
-            ],
+    // Generate semantic label natively translated
+    final String semanticLabel;
+    if (widget.asset.type == AssetType.video) {
+      final d = widget.asset.duration;
+      final mm = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+      final ss = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+      semanticLabel = widget.textDelegate.semanticVideo('$mm:$ss');
+    } else {
+      semanticLabel = widget.isSelected
+          ? widget.textDelegate
+              .semanticImageSelected(widget.selectionNumber ?? 0)
+          : widget.textDelegate.semanticImageUnselected;
+    }
+
+    return Semantics(
+      label: semanticLabel,
+      selected: widget.isSelected,
+      image: widget.asset.type == AssetType.image,
+      button: true,
+      excludeSemantics: true, // Prevents reading child textual badges ("00:45")
+      child: RepaintBoundary(
+        child: GestureDetector(
+          onTapDown: (_) => setState(() => _isPressed = true),
+          onTapUp: (_) => setState(() => _isPressed = false),
+          onTapCancel: () => setState(() => _isPressed = false),
+          onTap: widget.onTap,
+          onLongPress: widget.onLongPress,
+          child: AnimatedScale(
+            scale: _isPressed ? 0.92 : (widget.isSelected ? 0.96 : 1.0),
+            duration: const Duration(milliseconds: 140),
+            curve: Curves.easeOutBack,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                _buildImage(),
+                if (widget.asset.type == AssetType.video) _buildVideoBadge(),
+                if (!_isLocallyAvailable && widget.asset is LocalPickerAsset)
+                  _buildCloudBadge(),
+                if (widget.showPlayOverlay) _buildCenterPlayOverlay(),
+                _buildSelectionOverlay(),
+              ],
+            ),
           ),
         ),
       ),

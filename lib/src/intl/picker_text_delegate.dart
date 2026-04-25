@@ -59,6 +59,11 @@ abstract class PickerTextDelegate {
   /// Shown while the clipboard content is being read / fetched.
   final String clipboardLoading;
 
+  // -- Accessibility (A11y) ------------------------------------------------
+  final String semanticImageUnselected;
+  final String semanticImageSelectedFormat;
+  final String semanticVideoFormat;
+
   const PickerTextDelegate({
     required this.confirm,
     required this.cancel,
@@ -95,5 +100,18 @@ abstract class PickerTextDelegate {
     required this.clipboardSubtitle,
     required this.clipboardEmpty,
     required this.clipboardLoading,
+    required this.semanticImageUnselected,
+    required this.semanticImageSelectedFormat,
+    required this.semanticVideoFormat,
   });
+
+  // -- Accessibility (A11y) Helpers ----------------------------------------
+  
+  /// Helper to format the semantic announcement for a selected image.
+  String semanticImageSelected(int index) =>
+      semanticImageSelectedFormat.replaceAll('%d', index.toString());
+
+  /// Helper to format the semantic announcement for a video tile.
+  String semanticVideo(String duration) =>
+      semanticVideoFormat.replaceAll('%s', duration);
 }

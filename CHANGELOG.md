@@ -57,9 +57,17 @@ Welcome to the first stable release of `gallery_suite`! This package provides a 
 - **Built-in Languages**: Ships with `EnglishPickerTextDelegate` and `FrenchPickerTextDelegate` out-of-the-box.
 - **Micro-Overrides**: Easily override single words natively via `FrenchPickerTextDelegate(confirm: 'Envoyer')`.
 
+#### ♿ Accessibility (A11y) & Enterprise Readiness
+
+- **Native Semantics**: The picker UI and Masonry grid are now natively annotated with `Semantics` tags.
+- **VoiceOver & TalkBack Ready**: Screen readers will natively announce whether an item is an image or a video, its duration, and its exact selection order.
+- **i18n Compatible**: A11y string templates are woven deeply into the `PickerTextDelegate`, meaning screen readers will talk to the user in their localized language.
+
 #### 📋 Smart Clipboard Integration
 
 - **Seamless Media Paste**: Natively parses the system clipboard for raw image bytes (e.g., screenshots), local file paths, or remote media URLs (with automatic MIME detection).
+- **Anti-Bot URL Scraping (New)**: Upgraded the URL scraper with 5 fallback passes to reliably extract OpenGraph images, Schema tags, and raw fallback URLs (bypassing Google Search JSON blocks and Freepik 403s with proper iOS User-Agent strings).
+- **App Lifecycle Resume (New)**: Smart Clipboard now seamlessly hooks into `WidgetsBindingObserver` to automatically refresh copied assets the moment the user resumes the app from the background, retaining historical items without dropping data.
 - **Isolated Pseudo-Album**: Displays pasted multi-media assets beautifully inside the masonry grid as a virtual "Clipboard" album, exactly like Google Photos or local storage.
 - **Opt-In & Pure Dart**: Completely optional (`enableSmartClipboard: true`) and zero-bloat. Raw bytes are securely flushed to temporary files to prevent OOM errors and memory leaks.
 - **Cross-Picker Support**: The Smart Clipboard is natively accessible not only in the Image Picker's Album Sheet but also directly inside the Audio Picker's AppBar via an intelligent trailing icon.

@@ -47,5 +47,8 @@ class FrenchPickerTextDelegate extends PickerTextDelegate {
     super.clipboardSubtitle = 'Coller depuis le presse-papier',
     super.clipboardEmpty = 'Aucun média trouvé dans le presse-papier.',
     super.clipboardLoading = 'Lecture du presse-papier…',
+    super.semanticImageUnselected = 'Photo de la galerie. Appuyez deux fois pour sélectionner.',
+    super.semanticImageSelectedFormat = 'Photo sélectionnée, numéro %d.',
+    super.semanticVideoFormat = 'Vidéo de la galerie, durée %s.',
   });
 }
