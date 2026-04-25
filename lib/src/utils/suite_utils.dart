@@ -1,7 +1,7 @@
 /// Platform-agnostic utilities and stubs for [gallery_suite].
 library;
 
-export 'heic_converter.dart';
+export 'heic_converter_stub.dart' if (dart.library.io) 'heic_converter.dart';
 // Provides WebUtils conditionally.
 export 'web_utils_stub.dart' if (dart.library.html) 'web_utils_web.dart';
 
