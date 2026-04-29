@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:file_selector/file_selector.dart';
 
 import '../../gallery_suite.dart';
 
@@ -169,6 +170,29 @@ class PickerConfig {
           BuildContext context, AssetEntity asset, File originalFile)?
       onCompressMedia;
 
+  /// **BYOD (Bring Your Own Drop) Hook**
+  ///
+  /// Use this optional wrapper to wrap the core picker UI with your favorite
+  /// Desktop Drag and Drop package (like `desktop_drop`).
+  ///
+  /// When a user drags a file into the window, the Picker automatically parses
+  /// the dropped [XFile]s, decodes their metadata, and adds them to the top of
+  /// the media grid as selectable [FilePickerAsset]s — without closing the picker.
+  ///
+  /// The `onFilesDropped` callback accepts a [List<XFile>], which maps perfectly
+  /// to the output of `desktop_drop`'s `DropTarget.onDragDone`.
+  ///
+  /// ```dart
+  /// dropRegionBuilder: (context, child, onFilesDropped) {
+  ///   return DropTarget(
+  ///     onDragDone: (details) => onFilesDropped(details.files),
+  ///     child: child,
+  ///   );
+  /// }
+  /// ```
+  final Widget Function(BuildContext context, Widget child,
+      ValueChanged<List<XFile>> onFilesDropped)? dropRegionBuilder;
+
   // Creates a [PickerConfig] with the given options.
   //
   // All parameters are optional - calling `const PickerConfig()` gives you
@@ -196,5 +220,6 @@ class PickerConfig {
     this.autoCompressImages = false,
     this.imageCompressionQuality = 85,
     this.onCompressMedia,
+    this.dropRegionBuilder,
   });
 }

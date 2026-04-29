@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:file_selector/file_selector.dart';
+
 import 'package:app_links/app_links.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -660,9 +661,9 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
             }
           });
 
-          final launched = await launchUrl(
-              Uri.parse(pickedUrl), mode: LaunchMode.externalApplication);
-          
+          final launched = await launchUrl(Uri.parse(pickedUrl),
+              mode: LaunchMode.inAppBrowserView, webOnlyWindowName: '_self');
+
           if (launched) {
             await completer.future.timeout(const Duration(seconds: 60));
           }
@@ -831,67 +832,6 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     });
   }
 
-  Future<void> _handleDroppedFiles(List<XFile> files) async {
-    if (files.isEmpty || !_source.supportsFileAddition || _isCloudMode) return;
-
-    final newAssets = <FilePickerAsset>[];
-    for (final file in files) {
-      // Prevent duplicates
-      if (_assets.any((a) => a is FilePickerAsset && a.filePath == file.path)) {
-        continue;
-      }
-
-      Uint8List? bytes;
-      int width = 0;
-      int height = 0;
-
-      try {
-        final ext = file.name.split('.').last.toLowerCase();
-        final isVideoOrAudio = {
-          'mp4',
-          'mov',
-          'avi',
-          'mkv',
-          'webm',
-          '3gp',
-          'mp3',
-          'wav',
-          'aac',
-          'flac',
-          'ogg',
-          'm4a'
-        }.contains(ext);
-
-        // On Web, do not read huge video/audio blobs eagerly to avoid RAM issues
-        if (!isVideoOrAudio) {
-          bytes = await file.readAsBytes();
-          if (bytes.isNotEmpty) {
-            final image = await decodeImageFromList(bytes);
-            width = image.width;
-            height = image.height;
-            image.dispose();
-          }
-        }
-      } catch (e) {
-        debugPrint('Error decoding dropped file specs: $e');
-      }
-
-      newAssets.add(FilePickerAsset(
-        filePath: file.path,
-        title: file.name,
-        bytes: bytes,
-        width: width,
-        height: height,
-      ));
-    }
-
-    if (newAssets.isNotEmpty) {
-      setState(() {
-        _assets.insertAll(0, newAssets);
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final hasChanges = _selected.isNotEmpty || _editedFiles.isNotEmpty;
@@ -926,11 +866,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
             child: Scaffold(
               backgroundColor: _theme.background,
               appBar: _buildAppBar(),
-              body: DragAndDropOverlay(
-                theme: _theme,
-                primaryColor: widget.config.primaryColor,
-                label: 'Drop files to add',
-                onDropped: _handleDroppedFiles,
+              body: _buildBodyWithDropRegion(
                 child: Stack(
                   children: [
                     _buildBody(),
@@ -958,6 +894,80 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
         ),
       ),
     );
+  }
+
+  Widget _buildBodyWithDropRegion({required Widget child}) {
+    if (widget.config.dropRegionBuilder != null) {
+      return widget.config.dropRegionBuilder!(
+        context,
+        child,
+        (List<XFile> files) async {
+          if (files.isEmpty ||
+              !_source.supportsFileAddition ||
+              _isCloudMode ||
+              !mounted) return;
+
+          final newAssets = <FilePickerAsset>[];
+          for (final file in files) {
+            // Prevent duplicates
+            if (_assets
+                .any((a) => a is FilePickerAsset && a.filePath == file.path)) {
+              continue;
+            }
+
+            Uint8List? bytes;
+            int width = 0;
+            int height = 0;
+            final fileName = file.path.split(RegExp(r'[\\/]')).last;
+
+            try {
+              final ext = fileName.split('.').last.toLowerCase();
+              final isVideoOrAudio = {
+                'mp4',
+                'mov',
+                'avi',
+                'mkv',
+                'webm',
+                '3gp',
+                'mp3',
+                'wav',
+                'aac',
+                'flac',
+                'ogg',
+                'm4a'
+              }.contains(ext);
+
+              if (!isVideoOrAudio) {
+                bytes = await file.readAsBytes();
+                if (bytes.isNotEmpty) {
+                  final image = await decodeImageFromList(bytes);
+                  width = image.width;
+                  height = image.height;
+                  image.dispose();
+                }
+              }
+            } catch (e) {
+              debugPrint('Error decoding dropped file specs: $e');
+            }
+
+            newAssets.add(FilePickerAsset(
+              filePath: file.path,
+              title: fileName,
+              bytes: bytes,
+              width: width,
+              height: height,
+            ));
+          }
+
+          if (newAssets.isNotEmpty && mounted) {
+            setState(() {
+              _assets.insertAll(0, newAssets);
+            });
+          }
+        },
+      );
+    }
+    return child;
   }
 
   void _handleSelectAll() {

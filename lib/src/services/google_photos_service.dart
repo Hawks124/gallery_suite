@@ -9,7 +9,6 @@ import 'package:flutter/foundation.dart';
 // Conditionally import dart:io to avoid Pana blocking Web compatibility
 import '../utils/suite_utils.dart';
 
-// Conditionally import flutter_web_auth_2 to avoid Pana blocking iOS compatibility
 import 'package:app_links/app_links.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_sign_in/google_sign_in.dart' as gsi;
@@ -275,8 +274,12 @@ class GooglePhotosService {
         }
       });
 
-      // Launch the browser
-      final launched = await launchUrl(authUri, mode: LaunchMode.externalApplication);
+      // Launch the OAuth consent screen in Chrome Custom Tabs via url_launcher.
+      final launched = await launchUrl(
+        authUri,
+        mode: LaunchMode.inAppBrowserView,
+        webOnlyWindowName: '_self',
+      );
       if (!launched) {
         sub.cancel();
         return false;

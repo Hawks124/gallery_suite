@@ -110,7 +110,64 @@ Once your application is ready to be published on the stores, you need to change
 > `gallery_suite` fully mitigates this by adopting the modern **Picker API** flow (`photospicker.mediaitems.readonly`). Because the Picker API forces the user to manually select which photos they are sharing via a Google-hosted secure window, it complies with the latest privacy guidelines and completely bypasses the need for the Tier-2 audit. 
 > 
 > **Standard Verification is still needed for Production (Over 100 users):**
-> You must still record a short demo video showing your app's OAuth login flow and submit it to the Google Trust & Safety team. However, they will approve it quickly because you are using the compliant Picker API.
+> You must still submit your app to the Google Trust & Safety team. The good news: because you use the compliant Picker API, their review is typically straightforward and fast.
+
+#### What Google Requires for Verification
+
+Before submitting, prepare the following:
+
+1. **A working public homepage** and **Privacy Policy URL** (both must be live on a verified domain). Your privacy policy must explicitly describe that you access the user's Google Photos only after they manually select them via a Google-hosted picker.
+2. **A demo video** (unlisted YouTube or Google Drive link). The video must clearly show:
+   - The user tapping your "Connect Google Photos" button.
+   - The Google OAuth consent screen appearing, showing your app name and the `photospicker.mediaitems.readonly` scope.
+   - The user granting permission and successfully selecting photos.
+3. **Scope justification text** explaining that your app uses `photospicker.mediaitems.readonly` to allow users to select photos from their Google Photos library directly within the app's media picker UI.
+
+> [!IMPORTANT]
+> Google reviewers look at the **entire app**, not just the Google Photos feature. Ensure your app has a clear purpose, proper branding, and no policy violations unrelated to this feature. Submitting an incomplete or test-looking app is the most common rejection reason.
+
+---
+
+### 🤖 Step 8: Native App Integration (PKCE Redirects)
+
+Because the Google Photos flow uses modern PKCE OAuth security, your app must be natively configured to "catch" the browser's success redirect (via the `app_links` package).
+
+#### For Android
+In your `android/app/src/main/AndroidManifest.xml`, find your `<activity android:name=".MainActivity">` and inject this `<intent-filter>` inside it. 
+
+*Note: The `android:scheme` MUST exactly match the `redirectScheme` you passed into `GooglePhotosService.instance.init()` (which defaults to `gallerysuite` if omitted).*
+
+```xml
+<intent-filter android:autoVerify="true">
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <!-- REQUIRED: Must match your GCP Android Client ID scheme -->
+    <!-- Format: com.googleusercontent.apps.<YOUR_CLIENT_ID_PREFIX> -->
+    <data android:scheme="${oauth_scheme}" />
+</intent-filter>
+```
+
+Then pass your reversed Client ID to your `android/app/build.gradle.kts`:
+
+```kotlin
+android {
+    defaultConfig {
+        // Your reversed Client ID — this is the ONLY valid format for Google OAuth.
+        // Example: com.googleusercontent.apps.1234-abcdefg
+        manifestPlaceholders["oauth_scheme"] = "com.googleusercontent.apps.YOUR_ANDROID_CLIENT_ID_PREFIX"
+    }
+}
+```
+
+> **Why can't I use a custom word like `gallerysuite`?**
+> Google's OAuth endpoint validates that the redirect URI scheme matches a credential registered in your GCP project. Android Native credentials auto-register the scheme `com.googleusercontent.apps.XXXX`. Custom words like `gallerysuite` are not registered, so Google returns a redirect mismatch error and the login fails.
+
+#### For macOS / Windows / Linux (Desktop)
+Ensure your `redirectScheme` corresponds to a local loopback IP block if you are using Desktop GCP clients:
+```dart
+redirectScheme: 'http://localhost:8080', // Example for desktop loopbacks
+```
 
 ---
 

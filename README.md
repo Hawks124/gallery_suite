@@ -1,8 +1,13 @@
-<p align="center">
+<!-- <p align="center">
   <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/example/assets/branding_banner.png" alt="Gallery Suite Branding Banner" width="100%" />
-</p>
-
-<h1 align="center">gallery_suite</h1>
+</p> -->
+<h1 align="center">
+  <a href="https://your-docs-website.com">
+    <img src="assets/images/Gallery%20Suite.svg" height="80" alt="Gallery Suite Logo">
+    <br/>
+    Gallery Suite
+  </a>
+</h1>
 
 <p align="center">
   <a href="https://github.com/Hawks124/gallery_suite/actions/workflows/ci.yml"><img src="https://github.com/Hawks124/gallery_suite/actions/workflows/ci.yml/badge.svg" alt="CI/CD Status"></a>
@@ -36,13 +41,16 @@
 
 ## 🤔 Why Gallery Suite?
 
+> [!IMPORTANT]
+> **Looking for Architecture Specs?** While this README covers all immediate features, we highly recommend visiting our **[Official Documentation Hub](#)** for profound tutorials, GCP Setup workflows, and deep BYO injection guides (Bring Your Own Drop, Editor, Compressor).
+
 The Flutter ecosystem already has excellent media pickers, and we deeply respect them:
 
 - **`image_picker`** (official) — Delegates to the OS's native media browser. It's simple, reliable, and perfect for basic needs. However, the UI is entirely controlled by the OS, so it looks different on every device and cannot be branded or extended.
 - **`wechat_assets_picker`** — A beautifully crafted, WeChat-inspired picker built by the brilliant team behind `photo_manager`. It offers a polished custom grid with extensive theming on iOS and Android. It is the gold standard for WeChat-style UX.
 - **`insta_assets_picker`** — An elegant Instagram-inspired picker (built on top of `wechat_assets_picker`) that faithfully replicates the Instagram media selection experience with crop previews.
 
-These are all fantastic tools. However, both `wechat_assets_picker` and `insta_assets_picker` enforce a **predefined design language** — your app's picker will look like WeChat or Instagram, not like _your_ brand. `gallery_suite` takes a **different architectural bet**: it builds an _entirely custom_ picker inside Flutter with an iOS-inspired **Masonry layout** that is **100% brandable to your identity**, and layers unique capabilities on top that no alternative currently offers:
+These are all fantastic tools. However, both `wechat_assets_picker` and `insta_assets_picker` enforce a **predefined design language** — your app's picker will look like WeChat or Instagram, not like _your_ brand. `gallery_suite` takes a **different architectural bet**: it builds an _entirely custom_ picker inside Flutter with an **Masonry layout** that is **100% brandable to your identity**, and layers unique capabilities on top that no alternative currently offers:
 
 1. **☁️ Native Cloud Providers** — Users can seamlessly browse, zoom, and select their **Google Photos** directly alongside local device assets in one unified grid, without downloading them first. No other major picker ships this out-of-the-box.
 2. **🖥️ True Cross-Platform** — Full support for **Web, Windows, macOS, and Linux** via a polymorphic `MediaSource` engine with native Drag-and-Drop, keyboard shortcuts, and responsive grid expansion.
@@ -79,7 +87,7 @@ These are all fantastic tools. However, both `wechat_assets_picker` and `insta_a
 | Smart Compression   | No                | No                     | No                    | ✅ Yes (Built-in + BYOC Hooks)      |
 | A11y & Enterprise   | No                | No                     | No                    | ✅ Yes (VoiceOver & TalkBack)       |
 
-> **❤️ A note on Open Source:** `gallery_suite` is proudly powered by the incredible `photo_manager` engine (created by the brilliant authors of `wechat_assets_picker`). While their picker and its Instagram extension perfectly replicate iconic social media experiences, `gallery_suite` focuses on giving developers a unique, fully brandable iOS-inspired masonry design with zero-dependency features like BYOE editing, Smart Compression, and Glassmorphism.
+> **❤️ A note on Open Source:** `gallery_suite` is proudly powered by the incredible `photo_manager` engine (created by the brilliant authors of `wechat_assets_picker`). While their picker and its Instagram extension perfectly replicate iconic social media experiences, `gallery_suite` focuses on giving developers a unique, fully brandable masonry design with zero-dependency features like BYOE editing, Smart Compression, and Glassmorphism.
 
 ---
 
@@ -87,32 +95,32 @@ These are all fantastic tools. However, both `wechat_assets_picker` and `insta_a
 
 `gallery_suite` is built to run across the entire Flutter ecosystem. Below is the honest runtime feature matrix:
 
-| Feature | Android | iOS | macOS | Windows | Linux | Web |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| 📷 Media Grid & Picker | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ |
-| 🎬 Video / Audio Playback | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 📸 Live Camera Tile | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| ☁️ Google Photos Integration | ✅ | ✅ | ⚠️ | ⚠️ | ⚠️ | ✅ |
-| 🖱️ Drag & Drop (Files) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 📋 Smart Clipboard | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ |
-| 🗜️ HEIC Auto-Convert | ✅ | ✅ | ✅ | ➖ | ➖ | ➖ |
-| 🗜️ Smart Compression | ✅ | ✅ | ✅ | ➖ | ➖ | ✅ |
-| ♿ A11y (TalkBack/VoiceOver) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Feature                      | Android | iOS | macOS | Windows | Linux | Web |
+| :--------------------------- | :-----: | :-: | :---: | :-----: | :---: | :-: |
+| 📷 Media Grid & Picker       |   ✅    | ✅  |  ✅   |   ✅    |  ✅   | ⚠️  |
+| 🎬 Video / Audio Playback    |   ✅    | ✅  |  ✅   |   ✅    |  ✅   | ✅  |
+| 📸 Live Camera Tile          |   ✅    | ✅  |  ✅   |   ✅    |  ✅   | ✅  |
+| ☁️ Google Photos Integration |   ✅    | ✅  |  ⚠️   |   ⚠️    |  ⚠️   | ✅  |
+| 🖱️ Drag & Drop (Files)       |   ✅    | ✅  |  ✅   |   ✅    |  ✅   | ✅  |
+| 📋 Smart Clipboard           |   ✅    | ✅  |  ✅   |   ✅    |  ✅   | ⚠️  |
+| 🗜️ HEIC Auto-Convert         |   ✅    | ✅  |  ✅   |   ➖    |  ➖   | ➖  |
+| 🗜️ Smart Compression         |   ✅    | ✅  |  ✅   |   ➖    |  ➖   | ✅  |
+| ♿ A11y (TalkBack/VoiceOver) |   ✅    | ✅  |  ✅   |   ✅    |  ✅   | ✅  |
 
 > **✅** = Full support · **⚠️** = Partial / requires extra config · **➖** = Not applicable on this platform
 
 > [!NOTE]
-> The [pub.dev](https://pub.dev/packages/gallery_suite) platform badge shows **Android + iOS** because Pana (the pub.dev scoring tool) performs a strict *static import analysis*. It propagates a platform block from a dependency's manifest even when the feature is fully guarded at runtime. For example, the `camera` package's own manifest does not list macOS — even though `camera_macos` works perfectly. This is a known Pana limitation, not a limitation of `gallery_suite` itself.
+> The [pub.dev](https://pub.dev/packages/gallery_suite) platform badge shows **Android + iOS** because Pana (the pub.dev scoring tool) performs a strict _static import analysis_. It propagates a platform block from a dependency's manifest even when the feature is fully guarded at runtime. For example, the `camera` package's own manifest does not list macOS — even though `camera_macos` works perfectly. This is a known Pana limitation, not a limitation of `gallery_suite` itself.
 
 ### Google Photos OAuth2 Compatibility
 
-| Platform | Status | Engine | Notes |
-| :--- | :--- | :--- | :--- |
-| **Android** | ✅ Full | `url_launcher` + `app_links` PKCE | Deep-link callback via `app_links`. |
-| **iOS** | ✅ Full | `google_sign_in` | Standard AppAuth native flow. |
-| **Web** | ✅ Full | `google_sign_in_web` | FedCM + custom HTTP bridging. |
-| **macOS** | ⚠️ Experimental | `google_sign_in_macos` | Enable macOS in your GCP dashboard. |
-| **Windows / Linux** | ⚠️ Experimental | `url_launcher` + `app_links` | Map redirect URI to `http://localhost:<port>`. |
+| Platform            | Status          | Engine                            | Notes                                          |
+| :------------------ | :-------------- | :-------------------------------- | :--------------------------------------------- |
+| **Android**         | ✅ Full         | `url_launcher` + `app_links` PKCE | Deep-link callback via `app_links`.            |
+| **iOS**             | ✅ Full         | `google_sign_in`                  | Standard AppAuth native flow.                  |
+| **Web**             | ✅ Full         | `google_sign_in_web`              | FedCM + custom HTTP bridging.                  |
+| **macOS**           | ⚠️ Experimental | `google_sign_in_macos`            | Enable macOS in your GCP dashboard.            |
+| **Windows / Linux** | ⚠️ Experimental | `url_launcher` + `app_links`      | Map redirect URI to `http://localhost:<port>`. |
 
 ---
 
@@ -152,7 +160,7 @@ These are all fantastic tools. However, both `wechat_assets_picker` and `insta_a
 
 **All Pickers**
 
-- 💻 **Web & Desktop Optimization** — Fully supported across Web, Windows, macOS, and Linux via a polymorphic `MediaSource` engine. Features native Drag-and-Drop OS file uploads, intelligent `LayoutBuilder` responsive grid expansion, and `Ctrl+A`/`Cmd+A` keyboard shortcuts.
+- 💻 **Web & Desktop Optimization** — Fully supported across Web, Windows, macOS, and Linux via a polymorphic `MediaSource` engine. Features a clean **BYOD (Bring Your Own Drop)** hook to inject your favorite D&D package, intelligent `LayoutBuilder` responsive grid expansion, and `Ctrl+A`/`Cmd+A` keyboard shortcuts.
 - 🔍 **Inline Asset Search** — Instantly filter your entire media library by filename/title with a beautiful iOS-style frosted search bar. Uses lightning-fast Dart-side memory filtering.
 - 🔄 **Pre-Selected Media (Initial Selection)** — Seamlessly re-open the picker with previously selected items already checked by passing a list of `MediaItem`s to `initialSelection`. The grid intelligent auto-maps them by ID.
 - 📋 **Smart Clipboard Integration** — Automatically decodes copied images, file paths, and media URLs from the system clipboard into seamlessly selectable grid assets (Opt-in via `enableSmartClipboard`). Works 100% offline for local screenshots!
@@ -179,6 +187,7 @@ These are all fantastic tools. However, both `wechat_assets_picker` and `insta_a
 - [💻 Core Usage](#-core-usage)
 - [🧠 Advanced Capabilities](#-advanced-capabilities)
   - [☁️ Google Photos Built-in Provider](#️-google-photos-built-in-provider-premium-cloud-integration)
+  - [🖱️ Bring Your Own Drop (BYOD) Architecture](#️-bring-your-own-drop-byod-architecture)
   - [🖌️ Bring Your Own Editor (BYOE) Architecture](#️-bring-your-own-editor-byoe-architecture)
   - [📋 Smart Clipboard Integration](#-smart-clipboard-integration)
   - [🪄 Auto-Conversion HEIC to JPG](#-auto-conversion-heic-to-jpg-experimental)
@@ -269,20 +278,27 @@ Inside `android/app/src/main/AndroidManifest.xml` `<manifest>` block:
     tools:replace="android:maxSdkVersion" />
 ```
 
-#### 🔐 Google Photos Picker Redirect Handler (Required for Google Photos Picker)
+#### 🔐 PKCE OAuth Redirect Handler (Required for Google Photos Picker)
 
-You must add the following activity to your `AndroidManifest.xml` file (Note: This is required for the Google Photos picker to work):
+Because `gallery_suite` uses the modern, secure PKCE flow, you must add an `<intent-filter>` to catch the Google browser redirect.
+
+In your `android/app/src/main/AndroidManifest.xml`, locate your `<activity android:name=".MainActivity">` and inject the filter **inside** the activity:
 
 ```xml
 <application ...>
-    <!-- Google Photos Picker Redirect Handler (Required) -->
-    <activity
-        android:name="com.linusu.flutter_web_auth_2.CallbackActivity"
-        android:exported="true">
-        <intent-filter android:label="flutter_web_auth_2_callback">
+    <activity android:name=".MainActivity" ...>
+        <!-- Existing Flutter Main Intent -->
+        <intent-filter> ... </intent-filter>
+
+        <!-- Google Photos PKCE OAuth Redirect Handler (REQUIRED) -->
+        <intent-filter android:autoVerify="true">
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.DEFAULT" />
             <category android:name="android.intent.category.BROWSABLE" />
+            <!-- Option 1: Hardcoded scheme -->
+            <!-- <data android:scheme="gallerysuite" /> -->
+
+            <!-- Option 2: Dynamic build.gradle variable (Recommended) -->
             <data android:scheme="${oauth_scheme}" />
         </intent-filter>
     </activity>
@@ -421,7 +437,7 @@ Zero native configuration required! However, if you are using the **Google Photo
 ### Windows & Linux Setup
 
 No advanced setup layer is required for local file picking. `gallery_suite` seamlessly integrates the OS native Explorer/Nautilus dialogs.
-If using Google Photos on Desktop, ensure you register an OAuth 2.0 Client ID for **Desktop/Web** on Google Cloud Console and handle the local loopback server generated by `flutter_web_auth_2`.
+If using Google Photos on Desktop, ensure you register an OAuth 2.0 Client ID for **Desktop/Web** on Google Cloud Console.
 
 ---
 
@@ -609,7 +625,40 @@ We have prepared a dedicated **[Comprehensive GCP Setup Guide](https://github.co
 2. Generate your PKCE OAuth Client IDs.
 3. Understand the differences between the modern **Picker API** (free & immediate) and the legacy **Library API** (requires expensive CASA Tier-2 Verification).
 
+> [!TIP]
+> **Complete Integration Guides:** For comprehensive guides on architecting advanced Drag & Drop, Canvas Editing, and Compression injection, visit our **[Official BYO Guides](#)**.
+
+### 🖱️ Bring Your Own Drop (BYOD) Architecture
+
+> [!TIP]
+> **Using `desktop_drop` or `super_drag_and_drop`?** We wrote deep integration tutorials for these exact packages. Read the **[BYOD Implementation Guide on our Official Hub](https://your-docs-website.com/docs/architectures/byod)**.
+
+To keep the `gallery_suite` package incredibly lightweight and prevent aggressive C++/Rust compilation logs during your installs, we purposefully removed heavy internal drag-and-drop dependencies. Instead, we use a clean **Dependency Injection** pattern!
+
+If your app targets macOS, Windows, Linux, or Web and you want users to be able to drag files from their computer directly into the picker, simply wrap the UI using the `dropRegionBuilder` hook in your config alongside your favorite lightweight package (like `desktop_drop`):
+
+```dart
+final assets = await CustomMediaPicker.show(
+  context: context,
+  config: PickerConfig(
+    // Inject Drag and Drop dynamically!
+    dropRegionBuilder: (context, child, onFilesDropped) {
+      return DropTarget(
+        onDragDone: (details) {
+          // XFile from desktop_drop matches our API directly — no conversion needed!
+          onFilesDropped(details.files);
+        },
+        child: child, // The core picker UI
+      );
+    },
+  ),
+);
+```
+
 ### 🖌️ Bring Your Own Editor (BYOE) Architecture
+
+> [!TIP]
+> **Using `pro_image_editor` or `image_editor_plus`?** We have built dedicated guides showing exactly how to wire them flawlessly. Read the **[BYOE Implementation Guide on our Official Hub](https://your-docs-website.com/docs/architectures/byoe)**.
 
 Why force your users to download a bloated media picker that comes packed with heavy image editing dependencies they don't even use?
 
@@ -732,6 +781,9 @@ final assets = await CustomMediaPicker.show(
 ```
 
 #### 2. Bring Your Own Compressor (BYOC Hook)
+
+> [!TIP]
+> **Using `video_compress` or `flutter_image_compress`?** See our step-by-step performance wiring tutorial. Read the **[BYOC Implementation Guide on our Official Hub](https://your-docs-website.com/docs/architectures/byoc)**.
 
 Need to aggressively compress **heavy video files** or apply custom algorithmic logic? Don't be constrained by built-in plugins! Use the `onCompressMedia` BYOC hook to inject your favorite package (like `video_compress`) silently into the picker's confirmation loop.
 
@@ -991,6 +1043,10 @@ print(assets.first.isVideo);        // bool
 print(assets.first.aspectRatio);    // double
 ```
 
+> [!TIP]
+> **Need help uploading to standard backends?**
+> We've written a dedicated **[Uploading Architecture Guide](https://your-docs-website.com/docs/architectures/uploading)** filled with copy-pasteable production snippets for Firebase/Firestore, Supabase, and custom REST API endpoints using standard, up-to-date syntax.
+
 ### 🎨 UI Theming & Customization
 
 `gallery_suite` is built to seamlessly blend into your app's existing design system. You can easily switch between Light and Dark modes, or enforce a specific brand color.
@@ -1057,6 +1113,9 @@ The entire look and feel is controlled via `PickerConfig`. Here is exactly what 
 | `initialSelection`        | `List<MediaItem>?`        | `null`                      | An optional list of previously selected media items. The picker dynamically maps them to the grid assets by ID to restore a prior selection state. [See docs](#-pre-selected-media-initial-selection)                      |
 | `enableSmartClipboard`    | `bool`                    | `false`                     | An optional flag to enable the Smart Clipboard integration. Appends a clipboard icon to scan system-level URLs, media paths, or raw copied bytes into the grid. [See docs](#-smart-clipboard-integration)                  |
 | `onEditMedia`             | `Function?`               | `null`                      | Optional callback to launch a custom external image editor (e.g. `pro_image_editor`) directly from the Fullscreen Preview. [See docs](#️-bring-your-own-editor-byoe-architecture)                                           |
+| `dropRegionBuilder`       | `Widget Function?`        | `null`                      | Optional BYOD wrapper builder. Wrap the picker with `desktop_drop` or any D&D package to natively accept dropped files and populate the grid. [See docs](#️-bring-your-own-drop-byod-architecture)                          |
+| `confirmText`             | `String` _(Deprecated)_   | `'Select'`                  | ⚠️ Deprecated. Use `textDelegate.confirm` instead. Legacy shortcut for the confirm button label.                                                                                                                           |
+| `cancelText`              | `String` _(Deprecated)_   | `'Cancel'`                  | ⚠️ Deprecated. Use `textDelegate.cancel` instead. Legacy shortcut for the dismiss button label.                                                                                                                            |
 | `googlePhotosConfig`      | `GooglePhotosConfig`      | `default`                   | Configuration for the built-in Google Photos cloud provider (enabled/disabled and other cloud-specific options).                                                                                                           |
 | `exitConfirmation`        | `ExitConfirmationConfig?` | `null`                      | An optional configuration that prevents accidental closing of the picker when users have selected media.                                                                                                                   |
 | `showCameraTile`          | `bool`                    | `true`                      | When `true`, renders a live `camera` feed at index `0`. Supports both photo and video depending on `requestType`. Tap to open a full-screen Dribbble-inspired UI.                                                          |
@@ -1128,8 +1187,6 @@ Apache 2.0 — see [LICENSE](LICENSE).
 **Desktop & Web Ecosystem**
 
 - **[file_selector](https://pub.dev/packages/file_selector)** — The robust abstraction bridging our UI to native OS Drag-and-Drop and File Explorer dialogs for Windows, Linux, and Web architectures.
-
-- **[super_drag_and_drop](https://pub.dev/packages/super_drag_and_drop)** — The fully cross-platform (6/6 OS) drag-and-drop abstraction powering our native file-drop experience on Windows, macOS, Linux, iOS, Android and Web.
 
 **Smart Clipboard System**
 

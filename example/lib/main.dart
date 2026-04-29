@@ -149,6 +149,9 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
 
         //  Bring Your Own Editor (BYOE): Add a custom image editor
         // without adding bloatware to the internal package!
+        // Docs: https://<your-domain>/docs/architectures/byoe
+        // Playground: https://<your-domain>/playground
+        // Top alternatives: `image_cropper` or `pro_image_editor`
         // Tapping the Edit pencil in the Fullscreen Preview triggers this callback.
         // onEditMedia: (ctx, asset, file) async {
         //   if (asset.type != AssetType.image) return null;
@@ -172,6 +175,21 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         //   ));
         //   return completer.isCompleted ? completer.future : null;
         // },
+
+        //  Bring Your Own Drop (BYOD): Wrap the picker with your favorite
+        // Desktop Drag-and-Drop package to accept dropped files magically!
+        // Docs: https://<your-domain>/docs/architectures/byod
+        // Playground: https://<your-domain>/playground
+        // Top alternatives: `desktop_drop` or `super_drag_and_drop`
+        // dropRegionBuilder: (context, child, onFilesDropped) {
+        //   return DropTarget( // from desktop_drop package
+        //     onDragDone: (details) {
+        //         onFilesDropped(details.files);
+        //     },
+        //     child: child,
+        //   );
+        // },
+
         // Set to `false` if you prefer classic tap-only selection.
         // enableSwipeToSelect: false,
 
@@ -220,7 +238,9 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
 
         // Option 2: Use a BYOC (Bring Your Own Compressor) Hook.
         // This takes STRICT PRIORITY over autoCompressImages.
-        // Use this to inject video_compress, flutter_native_image, etc.
+        // Docs: https://<your-domain>/docs/architectures/byoc
+        // Playground: https://<your-domain>/playground
+        // Top alternatives: `video_compress` or `light_compressor`
         // If your function returns null, the picker falls back to autoCompressImages.
         // onCompressMedia: (context, asset, originalFile) async {
         //   if (asset.type == AssetType.video) {

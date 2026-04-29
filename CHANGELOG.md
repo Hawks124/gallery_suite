@@ -11,7 +11,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 Welcome to the first stable release of `gallery_suite`! This package provides a premium, fully customized in-app media picker experience.
 
 - **Pure Dart & Multi-Platform**: Platform-agnostic architecture natively supporting iOS, Android, macOS, Web, Windows, and Linux. ✅
-- **Desktop First-Class Experience**: Drag & Drop uploading via `desktop_drop`, intelligent LayoutBuilder responsive grids, and `Ctrl+A`/`Cmd+A` keyboard shortcuts. ✅
+- **Desktop First-Class Experience**: Intelligent LayoutBuilder responsive grids, `Ctrl+A`/`Cmd+A` keyboard shortcuts, and a clean BYOD (Bring Your Own Drop) native injection hook. ✅
 - **Google Photos Built-in Provider**: Natively browse, select, and organize Google Photos assets directly within the grid. ✅
 - **Native iCloud Integration**: Transparent support for iCloud photo libraries with zero configuration required. ✅
 - **Glassmorphic Cloud Indicators**: Visual feedback badges for iCloud and remote assets to ensure a responsive user experience. ✅
