@@ -65,6 +65,11 @@ abstract class PickerTextDelegate {
   final String semanticVideoFormat;
   final String semanticPreviewAction;
 
+  // -- Camera Standalone ---------------------------------------------------
+  final String cameraActionEdit;
+  final String cameraActionDelete;
+  final String cameraVideoHint;
+
   const PickerTextDelegate({
     required this.confirm,
     required this.cancel,
@@ -105,6 +110,9 @@ abstract class PickerTextDelegate {
     required this.semanticImageSelectedFormat,
     required this.semanticVideoFormat,
     required this.semanticPreviewAction,
+    required this.cameraActionEdit,
+    required this.cameraActionDelete,
+    required this.cameraVideoHint,
   });
 
   // -- Accessibility (A11y) Helpers ----------------------------------------

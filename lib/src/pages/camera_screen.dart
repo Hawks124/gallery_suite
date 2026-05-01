@@ -21,10 +21,14 @@ class CameraScreen extends StatefulWidget {
   // The primary accent color for UI elements (capture button ring, etc.).
   final Color primaryColor;
 
+  // The standalone configuration for multi-capture mode.
+  final CameraPickerConfig? standaloneConfig;
+
   const CameraScreen({
     super.key,
     required this.captureMode,
     required this.primaryColor,
+    this.standaloneConfig,
   });
 
   @override
@@ -41,6 +45,11 @@ class _CameraScreenState extends State<CameraScreen>
   bool _isRecording = false;
   bool _hasFlash = true;
   FlashMode _flashMode = FlashMode.auto;
+  bool _showVideoHint = false;
+
+  // Standalone Multi-capture state
+  final List<XFile> _capturedFiles = [];
+  bool get _isStandalone => widget.standaloneConfig != null;
 
   // Animation controllers
   late AnimationController _captureAnimCtrl;
@@ -59,6 +68,14 @@ class _CameraScreenState extends State<CameraScreen>
       duration: const Duration(milliseconds: 400),
     );
     _initializeCamera();
+
+    // Show a brief "long press to record" hint when video is enabled
+    if (_isStandalone && widget.standaloneConfig!.enableVideo) {
+      _showVideoHint = true;
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) setState(() => _showVideoHint = false);
+      });
+    }
   }
 
   @override
@@ -194,8 +211,22 @@ class _CameraScreenState extends State<CameraScreen>
 
     try {
       final xFile = await _controller!.takePicture();
+      HapticFeedback.lightImpact();
       if (mounted) {
-        Navigator.of(context).pop(File(xFile.path));
+        if (_isStandalone) {
+          setState(() {
+            _capturedFiles.add(xFile);
+            _isCapturing = false;
+          });
+          // Dismiss the video hint on first interaction
+          if (_showVideoHint) setState(() => _showVideoHint = false);
+          // If maxSelection is 1, return immediately.
+          if (widget.standaloneConfig!.maxSelection == 1) {
+            _onConfirmStandalone();
+          }
+        } else {
+          Navigator.of(context).pop(File(xFile.path));
+        }
       }
     } catch (e) {
       debugPrint('Capture error: $e');
@@ -212,7 +243,17 @@ class _CameraScreenState extends State<CameraScreen>
         final xFile = await _controller!.stopVideoRecording();
         HapticFeedback.heavyImpact();
         if (mounted) {
-          Navigator.of(context).pop(File(xFile.path));
+          if (_isStandalone) {
+            // Add the video and navigate to the preview for user review
+            setState(() {
+              _capturedFiles.clear();
+              _capturedFiles.add(xFile);
+              _isRecording = false;
+            });
+            _openCapturePreview(0);
+          } else {
+            Navigator.of(context).pop(File(xFile.path));
+          }
         }
       } catch (e) {
         debugPrint('Stop recording error: $e');
@@ -334,8 +375,23 @@ class _CameraScreenState extends State<CameraScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Empty spacer or placeholder for symmetry
-                const SizedBox(width: 52),
+                // If standalone and we have captures, show the "Send" button instead of flip
+                if (_isStandalone && _capturedFiles.isNotEmpty)
+                  GestureDetector(
+                    onTap: _onConfirmStandalone,
+                    child: Container(
+                      width: 52,
+                      height: 52,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ),
+                      child: const Icon(Icons.send_rounded,
+                          color: Colors.black, size: 22),
+                    ),
+                  )
+                else
+                  const SizedBox(width: 52),
 
                 // Grand Capture button
                 _buildPremiumCaptureButton(),
@@ -419,16 +475,174 @@ class _CameraScreenState extends State<CameraScreen>
               ),
             ),
           ),
+
+        // Standalone Capture Strip (Rafale Thumbs)
+        if (_isStandalone &&
+            _capturedFiles.isNotEmpty &&
+            widget.standaloneConfig!.maxSelection > 1)
+          Positioned(
+            bottom: MediaQuery.paddingOf(context).bottom + 124,
+            left: 0,
+            right: 0,
+            child: SizedBox(
+              height: 68,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                itemCount: _capturedFiles.length,
+                itemBuilder: (context, index) {
+                  final xFile = _capturedFiles[index];
+                  return _buildCaptureStripItem(xFile, index);
+                },
+              ),
+            ),
+          ),
+
+        // Long-press video hint (first entrance only)
+        if (_showVideoHint)
+          Positioned(
+            bottom: MediaQuery.paddingOf(context).bottom + 132,
+            left: 0,
+            right: 0,
+            child: AnimatedOpacity(
+              opacity: _showVideoHint ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 600),
+              curve: Curves.easeOutCubic,
+              child: Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          width: 0.5,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.touch_app_rounded,
+                              color: Colors.white70, size: 16),
+                          const SizedBox(width: 8),
+                          Text(
+                            widget
+                                .standaloneConfig!.textDelegate.cameraVideoHint,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
 
+  Widget _buildCaptureStripItem(XFile xFile, int index) {
+    return GestureDetector(
+      onTap: () => _openCapturePreview(index),
+      child: Container(
+        width: 48,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.white, width: 2),
+          image: DecorationImage(
+            image: FileImage(File(xFile.path)),
+            fit: BoxFit.cover,
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openCapturePreview(int initialIndex) async {
+    final result = await Navigator.of(context).push<List<XFile>>(
+      PageRouteBuilder(
+        pageBuilder: (ctx, animation, secondary) => CapturePreviewScreen(
+          capturedFiles: _capturedFiles,
+          initialIndex: initialIndex,
+          config: widget.standaloneConfig!,
+        ),
+        transitionsBuilder: (ctx, animation, secondary, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _capturedFiles.clear();
+        _capturedFiles.addAll(result);
+      });
+      // If user clicked "Done" with items, we should probably confirm the session natively.
+      // But the Preview screen can also return the modified list just to continue shooting.
+    }
+  }
+
+  Future<void> _onConfirmStandalone() async {
+    if (_capturedFiles.isEmpty) return;
+
+    // Map XFiles to MediaItems
+    final mediaItems = _capturedFiles.map((xFile) {
+      return MediaItem.fromXFile(xFile);
+    }).toList();
+
+    Navigator.of(context).pop(mediaItems);
+  }
+
   Widget _buildPremiumCaptureButton() {
-    final isVideo = widget.captureMode == CameraCaptureMode.video;
-    final buttonColor = isVideo ? const Color(0xFFE11D48) : Colors.white;
+    final isVideoMode = widget.captureMode == CameraCaptureMode.video ||
+        (_isStandalone && widget.standaloneConfig!.enableVideo);
 
     return GestureDetector(
-      onTap: isVideo ? _toggleVideoRecording : _capturePhoto,
+      onTap: () {
+        if (_showVideoHint) setState(() => _showVideoHint = false);
+        if (_isStandalone &&
+            _capturedFiles.length >= widget.standaloneConfig!.maxSelection) {
+          HapticFeedback.heavyImpact();
+          return;
+        }
+        _capturePhoto();
+      },
+      onLongPress: isVideoMode
+          ? () {
+              if (_showVideoHint) setState(() => _showVideoHint = false);
+              if (_isStandalone &&
+                  _capturedFiles.length >=
+                      widget.standaloneConfig!.maxSelection) {
+                return;
+              }
+              _toggleVideoRecording();
+            }
+          : null,
+      onLongPressUp: isVideoMode
+          ? () {
+              if (_isRecording) _toggleVideoRecording();
+            }
+          : null,
       child: ScaleTransition(
         scale: Tween(begin: 1.0, end: 0.85).animate(CurvedAnimation(
           parent: _captureAnimCtrl,
@@ -446,7 +660,7 @@ class _CameraScreenState extends State<CameraScreen>
             ),
             boxShadow: [
               BoxShadow(
-                color: buttonColor.withValues(alpha: 0.2),
+                color: Colors.white.withValues(alpha: 0.15),
                 blurRadius: 24,
                 spreadRadius: 4,
               ),
@@ -463,17 +677,11 @@ class _CameraScreenState extends State<CameraScreen>
             decoration: BoxDecoration(
               shape: _isRecording ? BoxShape.rectangle : BoxShape.circle,
               borderRadius: _isRecording ? BorderRadius.circular(12) : null,
-              color: isVideo
-                  ? (_isRecording
-                      ? buttonColor.withValues(alpha: 0.8)
-                      : buttonColor)
+              color: _isRecording
+                  ? const Color(0xFFE11D48).withValues(alpha: 0.8)
                   : Colors.white,
             ),
             margin: EdgeInsets.all(_isRecording ? 18 : 2),
-            child: isVideo && !_isRecording
-                ? const Icon(Icons.videocam_rounded,
-                    color: Colors.white, size: 28)
-                : null,
           ),
         ),
       ),

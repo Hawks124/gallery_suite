@@ -93,6 +93,45 @@ class CustomMediaPicker {
       ),
     );
   }
+
+  /// Opens the standalone multi-capture camera.
+  ///
+  /// - [context] - the [BuildContext] used to push the route.
+  /// - [config] - optional [CameraPickerConfig]; defaults to an image/video camera with
+  ///   up to 5 items selectable.
+  ///
+  /// Returns `null` if the user cancels, or a non-empty [List<MediaItem>]
+  /// with the captured assets.
+  static Future<List<MediaItem>?> camera({
+    required BuildContext context,
+    CameraPickerConfig config = const CameraPickerConfig(),
+  }) async {
+    return await Navigator.of(context).push<List<MediaItem>?>(
+      PageRouteBuilder(
+        fullscreenDialog: true,
+        transitionDuration: const Duration(milliseconds: 320),
+        reverseTransitionDuration: const Duration(milliseconds: 260),
+        pageBuilder: (ctx, animation, _) => CameraScreen(
+          // Currently, CameraScreen supports photo or video via captureMode.
+          // Since standalone supports both via Gestures (Tap=Photo, Hold=Video), we pass photo as base.
+          captureMode: CameraCaptureMode.photo,
+          primaryColor: config.primaryColor,
+          standaloneConfig: config,
+        ),
+        transitionsBuilder: (ctx, animation, _, child) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 1),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+            ),
+            child: child,
+          );
+        },
+      ),
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -905,7 +944,9 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
           if (files.isEmpty ||
               !_source.supportsFileAddition ||
               _isCloudMode ||
-              !mounted) return;
+              !mounted) {
+            return;
+          }
 
           final newAssets = <FilePickerAsset>[];
           for (final file in files) {

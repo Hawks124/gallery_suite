@@ -52,5 +52,8 @@ class FrenchPickerTextDelegate extends PickerTextDelegate {
     super.semanticImageSelectedFormat = 'Photo sélectionnée, numéro %d.',
     super.semanticVideoFormat = 'Vidéo de la galerie, durée %s.',
     super.semanticPreviewAction = 'Ouvrir l\'aperçu',
+    super.cameraActionEdit = 'Éditer',
+    super.cameraActionDelete = 'Supprimer',
+    super.cameraVideoHint = 'Appui long pour enregistrer une vidéo',
   });
 }

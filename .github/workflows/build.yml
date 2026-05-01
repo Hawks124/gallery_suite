@@ -2,27 +2,35 @@ name: build
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   check:
+    name: Format & Publish Check
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: "stable"
           cache: true
-          
+
       - name: Install Dependencies
         run: flutter pub get
-        
+
       - name: Check Formatting
-        run: dart format --output=none --set-exit-if-changed .
-        
-      - name: Dart Pub Publish Check (Dry-run)
+        run: |
+          dart format .
+          if ! git diff --exit-code; then
+            echo "Formatting issues detected. Run 'dart format .' locally and commit the result."
+            git diff --stat
+            exit 1
+          fi
+
+      - name: Dart Pub Publish Check (dry-run)
         run: dart pub publish --dry-run

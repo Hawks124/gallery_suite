@@ -49,5 +49,8 @@ class EnglishPickerTextDelegate extends PickerTextDelegate {
     super.semanticImageSelectedFormat = 'Selected photo, number %d.',
     super.semanticVideoFormat = 'Gallery video, duration %s.',
     super.semanticPreviewAction = 'Preview fullscreen',
+    super.cameraActionEdit = 'Edit',
+    super.cameraActionDelete = 'Delete',
+    super.cameraVideoHint = 'Long press to record video',
   });
 }

@@ -304,6 +304,53 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
     }
   }
 
+  // -- STANDALONE CAMERA ----------------------------------------------------
+  // Bypass the gallery completely and open a dedicated multi-capture camera session!
+  // Includes its own custom config: `CameraPickerConfig`.
+  Future<void> _pickStandaloneCamera() async {
+    final assets = await CustomMediaPicker.camera(
+      context: context,
+      config: CameraPickerConfig(
+        maxSelection: 10,
+        enableVideo: true,
+        primaryColor: const Color(0xFF10B981), // Emerald
+        brightness: Theme.of(context).brightness,
+
+        // You can inject an editor exactly like in the Image Picker
+        // onEditMedia: (ctx, asset, file) async { ... }
+
+        exitConfirmation: const StandardExitConfirmation(
+          title: 'Discard photo session?',
+          content:
+              'If you go back now, all the captures you just took will be lost.',
+          confirmText: 'Discard',
+          cancelText: 'Keep capturing',
+        ),
+      ),
+    );
+
+    if (assets == null || assets.isEmpty || !mounted) return;
+
+    final items = <PickedMedia>[];
+    for (final asset in assets) {
+      final f = await asset.file;
+      if (f != null) {
+        items.add(PickedMedia(
+          file: f,
+          title: asset.title ?? f.path.split(RegExp(r'[\\/]')).last,
+        ));
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _pickedImages
+          ..clear()
+          ..addAll(items);
+      });
+    }
+  }
+
   // -- VIDEO PICKER --------------------------------------------------------
   // The video picker displays the same masonry grid but with duration badges.
   // Tapping a tile opens an inline bottom-sheet video player so the user can
@@ -466,7 +513,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                   const SizedBox(height: 8),
                   // Short feature highlights
                   Text(
-                    'Camera   Swipe-to-Select   Masonry Grid   Inline Playback',
+                    'Standalone Camera   Masonry Grid   Swipe-to-Select   Inline Playback',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -487,10 +534,10 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 _buildActionCard(
-                  title: 'Photos & Camera',
+                  title: 'Masonry Gallery',
                   subtitle:
-                      'Live Camera   Masonry Grid   Swipe-to-Select   Multi-select',
-                  icon: Icons.camera_enhance_rounded,
+                      'All Media   Live Camera Tile   Swipe-to-Select   Cloud Provider',
+                  icon: Icons.photo_library_rounded,
                   color: const Color(0xFF4F46E5),
                   gradientColors: [
                     const Color(0xFF4F46E5),
@@ -500,6 +547,20 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                   isDark: isDark,
                   child:
                       _pickedImages.isNotEmpty ? _buildImagesPreview() : null,
+                ),
+                const SizedBox(height: 16),
+                _buildActionCard(
+                  title: 'Standalone Camera',
+                  subtitle: 'Multi-Capture   Session Strip   Video Toggle',
+                  icon: Icons.camera_alt_rounded,
+                  color: const Color(0xFF10B981),
+                  gradientColors: [
+                    const Color(0xFF10B981),
+                    const Color(0xFF34D399),
+                  ],
+                  onTap: _pickStandaloneCamera,
+                  isDark: isDark,
+                  child: null, // Captures update the image strip above
                 ),
                 const SizedBox(height: 16),
                 _buildActionCard(

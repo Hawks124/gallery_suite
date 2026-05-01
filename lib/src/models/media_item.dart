@@ -90,6 +90,23 @@ class MediaItem {
     throw UnsupportedError('Unsupported asset type: ${asset.runtimeType}');
   }
 
+  // Convenience factory to bridge `XFile` from `camera` into our unified `MediaItem`.
+  factory MediaItem.fromXFile(dynamic xFile, {File? editedFile}) {
+    // We create a phantom FilePickerAsset since they represent raw local bytes without gallery integration.
+    final file = File(xFile.path);
+
+    // Fallback dimension guessing (Camera captures are usually very large)
+    return MediaItem.file(
+      fileAsset: FilePickerAsset(
+        filePath: file.path,
+        title: xFile.name,
+        width: 1920,
+        height: 1080,
+      ),
+      editedFile: editedFile,
+    );
+  }
+
   // `true` if this item originates from a remote cloud source.
   bool get isRemote => remoteAsset != null;
 

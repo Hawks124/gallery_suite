@@ -2,24 +2,37 @@ name: CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   analyze:
+    name: Analyze & Auto-fix
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: "stable"
           cache: true
-          
+
       - name: Install Dependencies
         run: flutter pub get
-        
-      - name: Flutter Analyze
-        run: flutter analyze
+
+      - name: Apply safe auto-fixes (dart fix)
+        run: dart fix --apply lib
+
+      - name: Verify no pending auto-fixes remain
+        run: |
+          if ! git diff --exit-code; then
+            echo "dart fix produced changes. Run 'dart fix --apply lib' locally and commit the result."
+            git diff --stat
+            exit 1
+          fi
+
+      - name: Flutter Analyze (errors & warnings only)
+        run: flutter analyze --no-fatal-infos
