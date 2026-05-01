@@ -14,7 +14,6 @@
   <a href="https://github.com/Hawks124/gallery_suite/actions/workflows/build.yml"><img src="https://github.com/Hawks124/gallery_suite/actions/workflows/build.yml/badge.svg" alt="Build Status"></a>
   <a href="https://pub.dev/packages/gallery_suite"><img src="https://img.shields.io/pub/v/gallery_suite.svg" alt="pub.dev"></a>
   <a href="https://pub.dev/packages/gallery_suite/score"><img src="https://img.shields.io/pub/points/gallery_suite?color=blue&label=pub%20points" alt="pub points"></a>
-  <a href="https://pub.dev/packages/gallery_suite/score"><img src="https://img.shields.io/pub/popularity/gallery_suite?logo=flutter&label=popularity" alt="pub popularity"></a>
   <a href="https://pub.dev/packages/gallery_suite"><img src="https://img.shields.io/pub/likes/gallery_suite?logo=flutter" alt="likes"></a>
   <a href="https://pub.dev/packages/gallery_suite"><img src="https://img.shields.io/badge/sdk-%3E%3D3.3.0-blue?logo=dart" alt="Dart SDK"></a>
   <a href="https://github.com/Hawks124/gallery_suite/stargazers"><img src="https://img.shields.io/github/stars/Hawks124/gallery_suite?style=social" alt="stars"></a>

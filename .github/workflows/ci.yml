@@ -28,9 +28,9 @@ jobs:
 
       - name: Verify no pending auto-fixes remain
         run: |
-          if ! git diff --exit-code; then
+          if ! git diff --exit-code lib/; then
             echo "dart fix produced changes. Run 'dart fix --apply lib' locally and commit the result."
-            git diff --stat
+            git diff --stat lib/
             exit 1
           fi
 

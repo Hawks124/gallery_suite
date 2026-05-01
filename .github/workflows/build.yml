@@ -26,9 +26,9 @@ jobs:
       - name: Check Formatting
         run: |
           dart format .
-          if ! git diff --exit-code; then
+          if ! git diff --exit-code '*.dart'; then
             echo "Formatting issues detected. Run 'dart format .' locally and commit the result."
-            git diff --stat
+            git diff --stat '*.dart'
             exit 1
           fi
 
