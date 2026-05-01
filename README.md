@@ -22,7 +22,7 @@
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.10%2B-blue.svg" alt="Flutter"></a>
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web%20%7C%20macOS%20%7C%20Windows%20%7C%20Linux-lightgrey.svg" alt="Platform"></a>
   <a href="https://pub.dev/packages/flutter_lints"><img src="https://img.shields.io/badge/style-flutter__lints-blue" alt="Style"></a>
-  <a href="https://www.contributor-covenant.org"><img src="https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg" alt="Contributor Covenant"></a>
+  <a href="https://www.contributor-covenant.org"><img src="https://img.shields.io/badge/Contributor%20Covenant-3.0-4baaaa.svg" alt="Contributor Covenant"></a>
   <a href="https://github.com/Hawks124/gallery_suite/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
 </p>
 
