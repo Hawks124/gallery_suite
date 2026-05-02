@@ -13,6 +13,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -23,14 +25,24 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      - name: Apply safe auto-fixes (dart fix)
-        run: dart fix --apply lib
-
-      - name: Verify no pending auto-fixes remain
+      - name: Auto-fix & Commit
+        if: github.event_name == 'push'
         run: |
+          dart fix --apply lib
           if ! git diff --exit-code lib/; then
-            echo "dart fix produced changes. Run 'dart fix --apply lib' locally and commit the result."
-            git diff --stat lib/
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "fix: auto-apply dart fixes [ci skip]"
+            git push
+          fi
+
+      - name: Verify no pending fixes (PR only)
+        if: github.event_name == 'pull_request'
+        run: |
+          dart fix --apply lib
+          if ! git diff --exit-code lib/; then
+            echo "⚠️ Pending dart fixes. Run 'dart fix --apply lib' locally."
             exit 1
           fi
 

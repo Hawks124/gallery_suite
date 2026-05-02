@@ -13,6 +13,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -23,12 +25,24 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      - name: Check Formatting
+      - name: Auto-format & Commit
+        if: github.event_name == 'push'
         run: |
           dart format .
           if ! git diff --exit-code '*.dart'; then
-            echo "Formatting issues detected. Run 'dart format .' locally and commit the result."
-            git diff --stat '*.dart'
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "style: auto-format Dart files [ci skip]"
+            git push
+          fi
+
+      - name: Verify Formatting (PR only)
+        if: github.event_name == 'pull_request'
+        run: |
+          dart format .
+          if ! git diff --exit-code '*.dart'; then
+            echo "⚠️ Formatting issues detected. Run 'dart format .' locally."
             exit 1
           fi
 
