@@ -303,7 +303,7 @@ class _CameraScreenState extends State<CameraScreen>
         const StandardExitConfirmation();
 
     final shouldPop = await confirmation.show(context, widget.primaryColor);
-    
+
     if (shouldPop == true && mounted) {
       Navigator.of(context).pop<List<MediaItem>?>(null);
     }
@@ -503,8 +503,12 @@ class _CameraScreenState extends State<CameraScreen>
                           const SizedBox(width: 6),
                           Text(
                             () {
-                              final m = (_recordingSeconds ~/ 60).toString().padLeft(2, '0');
-                              final s = (_recordingSeconds % 60).toString().padLeft(2, '0');
+                              final m = (_recordingSeconds ~/ 60)
+                                  .toString()
+                                  .padLeft(2, '0');
+                              final s = (_recordingSeconds % 60)
+                                  .toString()
+                                  .padLeft(2, '0');
                               return '$m:$s';
                             }(),
                             style: const TextStyle(
@@ -602,7 +606,8 @@ class _CameraScreenState extends State<CameraScreen>
   }
 
   Widget _buildCaptureStripItem(XFile xFile, int index) {
-    final isVideo = xFile.path.toLowerCase().endsWith('.mp4') || xFile.path.toLowerCase().endsWith('.mov');
+    final isVideo = xFile.path.toLowerCase().endsWith('.mp4') ||
+        xFile.path.toLowerCase().endsWith('.mov');
     return GestureDetector(
       onTap: () => _openCapturePreview(index),
       child: Container(
@@ -635,7 +640,8 @@ class _CameraScreenState extends State<CameraScreen>
                     color: Colors.black.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 14),
+                  child: const Icon(Icons.play_arrow_rounded,
+                      color: Colors.white, size: 14),
                 ),
               )
             : null,
@@ -685,13 +691,15 @@ class _CameraScreenState extends State<CameraScreen>
     return GestureDetector(
       onTap: () {
         if (_showVideoHint) setState(() => _showVideoHint = false);
-        
-        final hasVideo = _capturedFiles.any((f) => f.path.toLowerCase().endsWith('.mp4') || f.path.toLowerCase().endsWith('.mov'));
+
+        final hasVideo = _capturedFiles.any((f) =>
+            f.path.toLowerCase().endsWith('.mp4') ||
+            f.path.toLowerCase().endsWith('.mov'));
         if (_isStandalone && hasVideo) {
           HapticFeedback.heavyImpact();
           return; // Cannot take photo if a video is already captured
         }
-        
+
         if (_isStandalone &&
             _capturedFiles.length >= widget.standaloneConfig!.maxSelection) {
           HapticFeedback.heavyImpact();
@@ -702,8 +710,11 @@ class _CameraScreenState extends State<CameraScreen>
       onLongPress: isVideoMode
           ? () {
               if (_showVideoHint) setState(() => _showVideoHint = false);
-              
-              final hasPhoto = _capturedFiles.isNotEmpty && !_capturedFiles.any((f) => f.path.toLowerCase().endsWith('.mp4') || f.path.toLowerCase().endsWith('.mov'));
+
+              final hasPhoto = _capturedFiles.isNotEmpty &&
+                  !_capturedFiles.any((f) =>
+                      f.path.toLowerCase().endsWith('.mp4') ||
+                      f.path.toLowerCase().endsWith('.mov'));
               if (_isStandalone && hasPhoto) {
                 HapticFeedback.heavyImpact();
                 return; // Cannot record video if photos were already taken

@@ -103,8 +103,7 @@ class ClipboardService {
 
       return assets;
     } catch (e, stackTrace) {
-      debugPrint(
-          '[ClipboardService] fetchAssets FATAL ERROR: $e\n$stackTrace');
+      debugPrint('[ClipboardService] fetchAssets FATAL ERROR: $e\n$stackTrace');
       return [];
     } finally {
       _isFetching = false;
@@ -123,8 +122,7 @@ class ClipboardService {
 
       final uri = Uri.tryParse(text);
       if (uri == null || !uri.hasScheme) {
-        debugPrint(
-            '[ClipboardService] _tryParseTextUrl -> Invalid URI scheme');
+        debugPrint('[ClipboardService] _tryParseTextUrl -> Invalid URI scheme');
         return null;
       }
 
