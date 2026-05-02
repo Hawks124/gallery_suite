@@ -65,9 +65,9 @@ class ClipboardService {
   ///
   /// Each step short-circuits: if a URL is found, files and bytes are skipped.
   Future<List<PickerAsset>> fetchAssets() async {
-    debugPrint('📋 [ClipboardService] ---- FETCH ASSETS STARTED ----');
+    debugPrint('[ClipboardService] ---- FETCH ASSETS STARTED ----');
     if (_isFetching) {
-      debugPrint('📋 [ClipboardService] Fetch already in progress. Aborting.');
+      debugPrint('[ClipboardService] Fetch already in progress. Aborting.');
       return [];
     }
     _isFetching = true;
@@ -75,36 +75,36 @@ class ClipboardService {
     try {
       final assets = <PickerAsset>[];
 
-      debugPrint('📋 [ClipboardService] Step 1: Checking Pasteboard.image');
+      debugPrint('[ClipboardService] Step 1: Checking Pasteboard.image');
       final imageAsset = await _tryParseImageBytes();
       if (imageAsset != null) {
-        debugPrint('📋 [ClipboardService] Found ImageBytes! Returning.');
+        debugPrint('[ClipboardService] Found ImageBytes! Returning.');
         assets.add(imageAsset);
         return assets;
       }
 
-      debugPrint('📋 [ClipboardService] Step 2: Checking Pasteboard.files()');
+      debugPrint('[ClipboardService] Step 2: Checking Pasteboard.files()');
       final fileAssets = await _tryParseFiles();
       if (fileAssets.isNotEmpty) {
         debugPrint(
-            '📋 [ClipboardService] Found ${fileAssets.length} Files! Returning.');
+            '[ClipboardService] Found ${fileAssets.length} Files! Returning.');
         assets.addAll(fileAssets);
         return assets;
       }
 
-      debugPrint('📋 [ClipboardService] Step 3: Checking Clipboard.kTextPlain');
+      debugPrint('[ClipboardService] Step 3: Checking Clipboard.kTextPlain');
       final urlAsset = await _tryParseTextUrl();
       if (urlAsset != null) {
-        debugPrint('📋 [ClipboardService] Found Text URL! Returning.');
+        debugPrint('[ClipboardService] Found Text URL! Returning.');
         assets.add(urlAsset);
       } else {
-        debugPrint('📋 [ClipboardService] Found NO ASSETS in all 3 steps.');
+        debugPrint('[ClipboardService] Found NO ASSETS in all 3 steps.');
       }
 
       return assets;
     } catch (e, stackTrace) {
       debugPrint(
-          '📋 [ClipboardService] fetchAssets FATAL ERROR: $e\n$stackTrace');
+          '[ClipboardService] fetchAssets FATAL ERROR: $e\n$stackTrace');
       return [];
     } finally {
       _isFetching = false;
@@ -118,19 +118,19 @@ class ClipboardService {
       final data = await Clipboard.getData(Clipboard.kTextPlain);
       final text = data?.text?.trim();
       debugPrint(
-          '📋 [ClipboardService] _tryParseTextUrl -> Clipboard text: "$text"');
+          '[ClipboardService] _tryParseTextUrl -> Clipboard text: "$text"');
       if (text == null || text.isEmpty) return null;
 
       final uri = Uri.tryParse(text);
       if (uri == null || !uri.hasScheme) {
         debugPrint(
-            '📋 [ClipboardService] _tryParseTextUrl -> Invalid URI scheme');
+            '[ClipboardService] _tryParseTextUrl -> Invalid URI scheme');
         return null;
       }
 
       final mimeType = lookupMimeType(uri.path) ?? '';
       debugPrint(
-          '📋 [ClipboardService] _tryParseTextUrl -> URL mimeType: $mimeType');
+          '[ClipboardService] _tryParseTextUrl -> URL mimeType: $mimeType');
       AssetType? type;
 
       if (mimeType.startsWith('image/')) {
@@ -152,7 +152,7 @@ class ClipboardService {
         } else {
           try {
             debugPrint(
-                '📋 [ClipboardService] _tryParseTextUrl -> Executing HTTP GET fallback...');
+                '[ClipboardService] _tryParseTextUrl -> Executing HTTP GET fallback...');
             final response = await http.get(
               uri,
               headers: {
@@ -166,7 +166,7 @@ class ClipboardService {
 
             final contentType = response.headers['content-type'] ?? '';
             debugPrint(
-                '📋 [ClipboardService] _tryParseTextUrl -> HTTP GET contentType = $contentType');
+                '[ClipboardService] _tryParseTextUrl -> HTTP GET contentType = $contentType');
 
             if (contentType.startsWith('image/')) {
               type = AssetType.image;
@@ -181,7 +181,7 @@ class ClipboardService {
               final ogImageUrl = _extractOgImage(response.body);
               if (ogImageUrl != null) {
                 debugPrint(
-                    '📋 [ClipboardService] _tryParseTextUrl -> Found og:image: $ogImageUrl');
+                    '[ClipboardService] _tryParseTextUrl -> Found og:image: $ogImageUrl');
                 return RemotePickerAsset(
                   id: 'clipboard_og_${ogImageUrl.hashCode.toRadixString(36)}',
                   baseUrl: ogImageUrl,
@@ -194,13 +194,13 @@ class ClipboardService {
             }
           } catch (e) {
             debugPrint(
-                '📋 [ClipboardService] _tryParseTextUrl -> HTTP GET error: $e');
+                '[ClipboardService] _tryParseTextUrl -> HTTP GET error: $e');
           }
         }
       }
 
       debugPrint(
-          '📋 [ClipboardService] _tryParseTextUrl -> Computed AssetType: $type');
+          '[ClipboardService] _tryParseTextUrl -> Computed AssetType: $type');
       if (type == null) return null;
 
       return RemotePickerAsset(
@@ -211,7 +211,7 @@ class ClipboardService {
         type: type,
       );
     } catch (e) {
-      debugPrint('📋 [ClipboardService] _tryParseTextUrl error: $e');
+      debugPrint('[ClipboardService] _tryParseTextUrl error: $e');
       return null;
     }
   }
@@ -223,7 +223,7 @@ class ClipboardService {
     try {
       final paths = await Pasteboard.files();
       debugPrint(
-          '📋 [ClipboardService] _tryParseFiles -> Pasteboard.files() returned: $paths');
+          '[ClipboardService] _tryParseFiles -> Pasteboard.files() returned: $paths');
       if (paths.isEmpty) return [];
 
       final assets = <FilePickerAsset>[];
@@ -231,25 +231,25 @@ class ClipboardService {
       for (var path in paths) {
         if (path.startsWith('content://')) {
           debugPrint(
-              '📋 [ClipboardService] _tryParseFiles -> Detected Android Content URI: $path');
+              '[ClipboardService] _tryParseFiles -> Detected Android Content URI: $path');
           try {
             final id = path.split('/').last;
             debugPrint(
-                '📋 [ClipboardService] _tryParseFiles -> Extracting ID: $id');
+                '[ClipboardService] _tryParseFiles -> Extracting ID: $id');
             final entity = await AssetEntity.fromId(id);
             final resolvedFile = await entity?.file;
             if (resolvedFile != null && resolvedFile.existsSync()) {
               debugPrint(
-                  '📋 [ClipboardService] _tryParseFiles -> Successfully mapped URI to real file: ${resolvedFile.path}');
+                  '[ClipboardService] _tryParseFiles -> Successfully mapped URI to real file: ${resolvedFile.path}');
               path = resolvedFile.path;
             } else {
               debugPrint(
-                  '📋 [ClipboardService] _tryParseFiles -> FAILED to resolve Content URI via photo_manager.');
+                  '[ClipboardService] _tryParseFiles -> FAILED to resolve Content URI via photo_manager.');
               continue; // Unable to resolve the secure URI
             }
           } catch (e) {
             debugPrint(
-                '📋 [ClipboardService] _tryParseFiles -> exception resolving URI: $e');
+                '[ClipboardService] _tryParseFiles -> exception resolving URI: $e');
             continue;
           }
         }
@@ -257,7 +257,7 @@ class ClipboardService {
         final file = io.File(path);
         if (!file.existsSync()) {
           debugPrint(
-              '📋 [ClipboardService] _tryParseFiles -> File does not exist locally: $path');
+              '[ClipboardService] _tryParseFiles -> File does not exist locally: $path');
           continue;
         }
 
@@ -272,7 +272,7 @@ class ClipboardService {
             !_hasVideoExtension(path.toLowerCase()) &&
             !_hasAudioExtension(path.toLowerCase())) {
           debugPrint(
-              '📋 [ClipboardService] _tryParseFiles -> File is not a media file type: $path');
+              '[ClipboardService] _tryParseFiles -> File is not a media file type: $path');
           continue;
         }
 
@@ -292,7 +292,7 @@ class ClipboardService {
             }
           } catch (e) {
             debugPrint(
-                '📋 [ClipboardService] _tryParseFiles -> Exception reading bytes: $e');
+                '[ClipboardService] _tryParseFiles -> Exception reading bytes: $e');
           }
         }
 
@@ -307,7 +307,7 @@ class ClipboardService {
 
       return assets;
     } catch (e) {
-      debugPrint('📋 [ClipboardService] _tryParseFiles error: $e');
+      debugPrint('[ClipboardService] _tryParseFiles error: $e');
       return [];
     }
   }
@@ -318,17 +318,17 @@ class ClipboardService {
     if (kIsWeb) return null;
     try {
       debugPrint(
-          '📋 [ClipboardService] _tryParseImageBytes -> Calling Pasteboard.image...');
+          '[ClipboardService] _tryParseImageBytes -> Calling Pasteboard.image...');
       final Uint8List? imageBytes = await Pasteboard.image;
 
       if (imageBytes == null) {
         debugPrint(
-            '📋 [ClipboardService] _tryParseImageBytes -> Pasteboard.image returned NULL.');
+            '[ClipboardService] _tryParseImageBytes -> Pasteboard.image returned NULL.');
         return null;
       }
       if (imageBytes.isEmpty) {
         debugPrint(
-            '📋 [ClipboardService] _tryParseImageBytes -> Pasteboard.image returned EMPTY bytes.');
+            '[ClipboardService] _tryParseImageBytes -> Pasteboard.image returned EMPTY bytes.');
         return null;
       }
 

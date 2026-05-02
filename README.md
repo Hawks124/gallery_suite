@@ -1,10 +1,10 @@
-<!-- <p align="center">
+<p align="center">
   <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/example/assets/branding_banner.png" alt="Gallery Suite Branding Banner" width="100%" />
-</p> -->
+</p>
 <h1 align="center">
   <a href="https://your-docs-website.com">
-    <img src="assets/images/Gallery%20Suite.svg" height="80" alt="Gallery Suite Logo">
-    <br/>
+    <!-- <img src="assets/images/Gallery%20Suite.svg" height="80" alt="Gallery Suite Logo">
+    <br/> -->
     Gallery Suite
   </a>
 </h1>

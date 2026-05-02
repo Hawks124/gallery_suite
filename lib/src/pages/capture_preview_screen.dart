@@ -132,11 +132,23 @@ class _CapturePreviewScreenState extends State<CapturePreviewScreen> {
                     onPressed: () => Navigator.of(context).pop(_currentFiles),
                   ),
                   const Spacer(),
-                  Text(
-                    '${_currentIndex + 1} / ${_currentFiles.length}',
-                    style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
+                  if (_currentFiles.length > 1)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(_currentFiles.length, (i) {
+                        return Container(
+                          width: 8,
+                          height: 8,
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _currentIndex == i
+                                ? Colors.white
+                                : Colors.white.withValues(alpha: 0.3),
+                          ),
+                        );
+                      }),
+                    ),
                   const SizedBox(width: 24),
                 ],
               ),
@@ -174,7 +186,16 @@ class _CapturePreviewScreenState extends State<CapturePreviewScreen> {
                     label: Text(widget.config.textDelegate.cameraActionDelete,
                         style: const TextStyle(color: Colors.white)),
                   ),
-                  if (widget.config.onEditMedia != null)
+                  if (widget.config.onEditMedia != null &&
+                      !(_currentFiles.isNotEmpty &&
+                          (_currentFiles[_currentIndex]
+                                  .path
+                                  .toLowerCase()
+                                  .endsWith('.mp4') ||
+                              _currentFiles[_currentIndex]
+                                  .path
+                                  .toLowerCase()
+                                  .endsWith('.mov'))))
                     TextButton.icon(
                       onPressed: _onEdit,
                       icon:
@@ -279,7 +300,7 @@ class _VideoPreviewItemState extends State<_VideoPreviewItem> {
         : 0.0;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(16),
@@ -288,75 +309,50 @@ class _VideoPreviewItemState extends State<_VideoPreviewItem> {
           width: 0.5,
         ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          GestureDetector(
-            onTap: _togglePlay,
-            child: Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: widget.primaryColor.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                value.isPlaying
-                    ? Icons.pause_rounded
-                    : Icons.play_arrow_rounded,
-                color: widget.primaryColor,
-                size: 20,
-              ),
+          SliderTheme(
+            data: SliderThemeData(
+              trackHeight: 3,
+              thumbShape: const RoundSliderThumbShape(
+                  enabledThumbRadius: 6, elevation: 2),
+              activeTrackColor: widget.primaryColor,
+              inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
+              thumbColor: widget.primaryColor,
+              overlayShape: SliderComponentShape.noOverlay,
+            ),
+            child: Slider(
+              value: progress.toDouble(),
+              onChanged: (v) {
+                final ms = (v * total.inMilliseconds).round();
+                ctrl.seekTo(Duration(milliseconds: ms));
+              },
             ),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                SliderTheme(
-                  data: SliderThemeData(
-                    trackHeight: 3,
-                    thumbShape: const RoundSliderThumbShape(
-                        enabledThumbRadius: 6, elevation: 2),
-                    activeTrackColor: widget.primaryColor,
-                    inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
-                    thumbColor: widget.primaryColor,
-                    overlayShape: SliderComponentShape.noOverlay,
-                  ),
-                  child: Slider(
-                    value: progress.toDouble(),
-                    onChanged: (v) {
-                      final ms = (v * total.inMilliseconds).round();
-                      ctrl.seekTo(Duration(milliseconds: ms));
-                    },
+                Text(
+                  _fmt(pos),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
-                const SizedBox(height: 4),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _fmt(pos),
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
-                      ),
-                      Text(
-                        _fmt(total),
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
-                      ),
-                    ],
+                Text(
+                  _fmt(total),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
               ],

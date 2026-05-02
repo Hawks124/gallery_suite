@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 import 'package:camera/camera.dart';
@@ -47,6 +48,10 @@ class _CameraScreenState extends State<CameraScreen>
   FlashMode _flashMode = FlashMode.auto;
   bool _showVideoHint = false;
 
+  // Recording timer state
+  Timer? _recordingTimer;
+  int _recordingSeconds = 0;
+
   // Standalone Multi-capture state
   final List<XFile> _capturedFiles = [];
   bool get _isStandalone => widget.standaloneConfig != null;
@@ -81,6 +86,7 @@ class _CameraScreenState extends State<CameraScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _recordingTimer?.cancel();
     _controller
         ?.dispose()
         .catchError((e) => debugPrint('Screen dispose error: $e'));
@@ -238,17 +244,19 @@ class _CameraScreenState extends State<CameraScreen>
     if (_controller == null || !_controller!.value.isInitialized) return;
 
     if (_isRecording) {
-      // Stop recording
+      // Stop recording – cancel timer
+      _recordingTimer?.cancel();
+      _recordingTimer = null;
       try {
         final xFile = await _controller!.stopVideoRecording();
         HapticFeedback.heavyImpact();
         if (mounted) {
           if (_isStandalone) {
-            // Add the video and navigate to the preview for user review
             setState(() {
               _capturedFiles.clear();
               _capturedFiles.add(xFile);
               _isRecording = false;
+              _recordingSeconds = 0;
             });
             _openCapturePreview(0);
           } else {
@@ -257,19 +265,47 @@ class _CameraScreenState extends State<CameraScreen>
         }
       } catch (e) {
         debugPrint('Stop recording error: $e');
-        setState(() => _isRecording = false);
+        setState(() {
+          _isRecording = false;
+          _recordingSeconds = 0;
+        });
       }
     } else {
-      // Start recording
-      setState(() => _isRecording = true);
+      // Start recording – start timer
+      setState(() {
+        _isRecording = true;
+        _recordingSeconds = 0;
+      });
       HapticFeedback.mediumImpact();
+      _recordingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (mounted) setState(() => _recordingSeconds++);
+      });
 
       try {
         await _controller!.startVideoRecording();
       } catch (e) {
         debugPrint('Start recording error: $e');
-        setState(() => _isRecording = false);
+        _recordingTimer?.cancel();
+        setState(() {
+          _isRecording = false;
+          _recordingSeconds = 0;
+        });
       }
+    }
+  }
+
+  Future<void> _onWillPop() async {
+    if (!_isStandalone || _capturedFiles.isEmpty) {
+      if (mounted) Navigator.of(context).pop<List<MediaItem>?>(null);
+      return;
+    }
+    final confirmation = widget.standaloneConfig?.exitConfirmation ??
+        const StandardExitConfirmation();
+
+    final shouldPop = await confirmation.show(context, widget.primaryColor);
+    
+    if (shouldPop == true && mounted) {
+      Navigator.of(context).pop<List<MediaItem>?>(null);
     }
   }
 
@@ -277,13 +313,20 @@ class _CameraScreenState extends State<CameraScreen>
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: _isInitialized
-            ? _buildCameraView()
-            : const Center(
-                child: CircularProgressIndicator(color: Colors.white38),
-              ),
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, result) {
+          if (didPop) return;
+          _onWillPop();
+        },
+        child: Scaffold(
+          backgroundColor: Colors.black,
+          body: _isInitialized
+              ? _buildCameraView()
+              : const Center(
+                  child: CircularProgressIndicator(color: Colors.white38),
+                ),
+        ),
       ),
     );
   }
@@ -336,7 +379,7 @@ class _CameraScreenState extends State<CameraScreen>
                 children: [
                   _buildGlassButton(
                     icon: Icons.close_rounded,
-                    onTap: () => Navigator.of(context).pop(null),
+                    onTap: () => _onWillPop(),
                   ),
                   if (_hasFlash)
                     _buildGlassButton(
@@ -452,19 +495,24 @@ class _CameraScreenState extends State<CameraScreen>
                           width: 1,
                         ),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.fiber_manual_record,
+                          const Icon(Icons.fiber_manual_record,
                               color: Colors.redAccent, size: 14),
-                          SizedBox(width: 6),
+                          const SizedBox(width: 6),
                           Text(
-                            'REC',
-                            style: TextStyle(
+                            () {
+                              final m = (_recordingSeconds ~/ 60).toString().padLeft(2, '0');
+                              final s = (_recordingSeconds % 60).toString().padLeft(2, '0');
+                              return '$m:$s';
+                            }(),
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 1.5,
+                              fontFeatures: [FontFeature.tabularFigures()],
                             ),
                           ),
                         ],
@@ -554,6 +602,7 @@ class _CameraScreenState extends State<CameraScreen>
   }
 
   Widget _buildCaptureStripItem(XFile xFile, int index) {
+    final isVideo = xFile.path.toLowerCase().endsWith('.mp4') || xFile.path.toLowerCase().endsWith('.mov');
     return GestureDetector(
       onTap: () => _openCapturePreview(index),
       child: Container(
@@ -562,10 +611,13 @@ class _CameraScreenState extends State<CameraScreen>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.white, width: 2),
-          image: DecorationImage(
-            image: FileImage(File(xFile.path)),
-            fit: BoxFit.cover,
-          ),
+          color: isVideo ? const Color(0xFF222222) : null,
+          image: isVideo
+              ? null
+              : DecorationImage(
+                  image: FileImage(File(xFile.path)),
+                  fit: BoxFit.cover,
+                ),
           boxShadow: const [
             BoxShadow(
               color: Colors.black26,
@@ -574,6 +626,19 @@ class _CameraScreenState extends State<CameraScreen>
             )
           ],
         ),
+        child: isVideo
+            ? Center(
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 14),
+                ),
+              )
+            : null,
       ),
     );
   }
@@ -620,6 +685,13 @@ class _CameraScreenState extends State<CameraScreen>
     return GestureDetector(
       onTap: () {
         if (_showVideoHint) setState(() => _showVideoHint = false);
+        
+        final hasVideo = _capturedFiles.any((f) => f.path.toLowerCase().endsWith('.mp4') || f.path.toLowerCase().endsWith('.mov'));
+        if (_isStandalone && hasVideo) {
+          HapticFeedback.heavyImpact();
+          return; // Cannot take photo if a video is already captured
+        }
+        
         if (_isStandalone &&
             _capturedFiles.length >= widget.standaloneConfig!.maxSelection) {
           HapticFeedback.heavyImpact();
@@ -630,6 +702,13 @@ class _CameraScreenState extends State<CameraScreen>
       onLongPress: isVideoMode
           ? () {
               if (_showVideoHint) setState(() => _showVideoHint = false);
+              
+              final hasPhoto = _capturedFiles.isNotEmpty && !_capturedFiles.any((f) => f.path.toLowerCase().endsWith('.mp4') || f.path.toLowerCase().endsWith('.mov'));
+              if (_isStandalone && hasPhoto) {
+                HapticFeedback.heavyImpact();
+                return; // Cannot record video if photos were already taken
+              }
+
               if (_isStandalone &&
                   _capturedFiles.length >=
                       widget.standaloneConfig!.maxSelection) {

@@ -1,7 +1,7 @@
 name: gallery_suite
 description: >-
   Ultimate Flutter media picker featuring a built-in Google Photos provider and BYOE architecture. Includes 120fps masonry grid, swipe-to-select, camera, and inline audio/video.
-version: 1.0.0
+version: 1.0.0-dev.1
 homepage: https://github.com/Hawks124/gallery_suite
 repository: https://github.com/Hawks124/gallery_suite
 issue_tracker: https://github.com/Hawks124/gallery_suite/issues
@@ -12,6 +12,7 @@ topics:
   - audio
   - media
   - gallery
+  - assets
   - camera
   - photo
   - image-picker

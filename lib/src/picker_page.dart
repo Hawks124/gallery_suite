@@ -1214,12 +1214,12 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     return ValueListenableBuilder<List<RemotePickerAsset>>(
         valueListenable: _googleProvider.importedAssets,
         builder: (context, cloudAssets, _) {
-          // Show loading spinner on first fetch
+          // Loading spinner on first fetch
           if (cloudAssets.isEmpty && _isCloudLoading) {
             return const Center(child: CircularProgressIndicator.adaptive());
           }
 
-          // Show empty state with Import Button
+          // Empty state with Import Button
           if (cloudAssets.isEmpty && !_isCloudLoading) {
             return Container(
               color: _theme.background,

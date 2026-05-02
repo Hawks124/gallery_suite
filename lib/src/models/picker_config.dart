@@ -51,7 +51,7 @@ class PickerConfig {
   final Brightness? brightness;
 
   // Label for the send / confirm button that appears in the AppBar once
-  // at least one asset is selected. Defaults to `'S lectionner'`.
+  // at least one asset is selected. Defaults to `'Sélectionner'`.
   @Deprecated(
       'Use textDelegate.confirm instead. This field will be removed in v2.0.0.')
   final String confirmText;
@@ -203,7 +203,8 @@ class PickerConfig {
     this.showCameraTile = true,
     this.enableSwipeToSelect = true,
     this.useOriginalFile = false,
-    this.primaryColor = const Color(0xFF007AFF),
+    this.primaryColor = const Color(0xFF04395E),
+    // this.primaryColor = const Color(0xFF007AFF),
     this.brightness,
     this.confirmText = 'Select',
     this.cancelText = 'Cancel',
