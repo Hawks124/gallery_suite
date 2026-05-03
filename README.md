@@ -15,7 +15,7 @@
   <a href="https://pub.dev/packages/gallery_suite"><img src="https://img.shields.io/pub/v/gallery_suite.svg" alt="pub.dev"></a>
   <a href="https://pub.dev/packages/gallery_suite/score"><img src="https://img.shields.io/pub/points/gallery_suite?color=blue&label=pub%20points" alt="pub points"></a>
   <a href="https://pub.dev/packages/gallery_suite"><img src="https://img.shields.io/pub/likes/gallery_suite?logo=flutter" alt="likes"></a>
-  <a href="https://pub.dev/packages/gallery_suite"><img src="https://img.shields.io/badge/sdk-%3E%3D3.3.0-blue?logo=dart" alt="Dart SDK"></a>
+  <!-- <a href="https://pub.dev/packages/gallery_suite"><img src="https://img.shields.io/badge/sdk-%3E%3D3.3.0-blue?logo=dart" alt="Dart SDK"></a> -->
   <a href="https://github.com/Hawks124/gallery_suite/stargazers"><img src="https://img.shields.io/github/stars/Hawks124/gallery_suite?style=social" alt="stars"></a>
   <a href="https://pub.dev/publishers/RiRi"><img src="https://img.shields.io/pub/publisher/gallery_suite.svg" alt="publisher"></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
@@ -68,27 +68,28 @@ These are all fantastic tools. However, both `wechat_assets_picker` and `insta_a
 
 **Compared to similar packages:**
 
-| Feature             | `image_picker`    | `wechat_assets_picker` | `insta_assets_picker` | `gallery_suite`                     |
-| ------------------- | ----------------- | ---------------------- | --------------------- | ----------------------------------- |
-| Platforms Supported | All               | iOS, Android, macOS    | iOS, Android          | ✅ All (Mobile, Web, Desktop)       |
-| Assets supported    | Image, Video      | Image, Video, Audio    | Image, Video          | Image, Video, Audio                 |
-| Picker UI           | Native OS dialog  | WeChat-style grid      | Instagram-style crop  | Custom Masonry grid                 |
-| Branding            | ❌ OS-locked      | ⚠️ WeChat identity     | ⚠️ Instagram identity | ✅ 100% Your Brand                  |
-| Audio/Video         | System default    | Custom                 | No audio support      | Inline playback (Mini-player)       |
-| Multi-select        | Images only       | Yes                    | Yes                   | Yes (Images & Video & Audio)        |
-| In-app Camera       | No                | Via add-on package     | No                    | ✅ Yes (Live tile & Custom UI)      |
-| Standalone Camera   | No                | No                     | No                    | ✅ Yes (Multi-capture & Session)    |
-| Swipe-To-Select     | No                | No                     | No                    | ✅ Yes (iOS Photos style)           |
-| Inline Search       | No                | No                     | No                    | ✅ Yes (Cross-platform Dart filter) |
-| BYOE Image Editing  | No                | No                     | Crop only             | ✅ Yes (Dependency Injection)       |
-| Cloud Providers     | No                | No                     | No                    | ✅ Yes (Google & iCloud Built-in)   |
-| UI Feedback         | No                | No                     | No                    | ✅ Yes (Cloud Status Badges)        |
-| UI Theming          | System restricted | Custom                 | Instagram-fixed       | Fully customizable per-instance     |
-| Smart Clipboard     | No                | No                     | No                    | Yes (URLs, Files, Raw Bytes)        |
-| HEIC Auto-Convert   | No                | No                     | No                    | Yes (Background iOS bridge)         |
-| Hero UI Animations  | No                | No                     | No                    | Yes (Premium UX)                    |
-| Smart Compression   | No                | No                     | No                    | Yes (Built-in + BYOC Hooks)         |
-| A11y & Enterprise   | No                | No                     | No                    | Yes (VoiceOver & TalkBack)          |
+| Feature             | `image_picker`    | `wechat_assets_picker` | `insta_assets_picker` | `gallery_suite`                            |
+| ------------------- | ----------------- | ---------------------- | --------------------- | ------------------------------------------ |
+| Platforms Supported | All               | iOS, Android, macOS    | iOS, Android          | ✅ All (Mobile, Web, Desktop)              |
+| Assets supported    | Image, Video      | Image, Video, Audio    | Image, Video          | Image, Video, Audio                        |
+| Picker UI           | Native OS dialog  | WeChat-style grid      | Instagram-style crop  | Custom Masonry grid                        |
+| Branding            | ❌ OS-locked      | ⚠️ WeChat identity     | ⚠️ Instagram identity | ✅ 100% Your Brand                         |
+| Audio/Video         | System default    | Custom                 | No audio support      | Inline playback (Mini-player)              |
+| Multi-select        | Images only       | Yes                    | Yes                   | Yes (Images & Video & Audio)               |
+| In-app Camera       | No                | Via add-on package     | No                    | ✅ Yes (Live tile & Custom UI)             |
+| Standalone Camera   | No                | No                     | No                    | ✅ Yes (Multi-capture & Session)           |
+| Swipe-To-Select     | No                | No                     | No                    | ✅ Yes (iOS Photos style)                  |
+| Inline Search       | No                | No                     | No                    | ✅ Yes (Cross-platform Dart filter)        |
+| BYOE Image Editing  | No                | No                     | Crop only             | ✅ Yes (Dependency Injection)              |
+| Cloud Providers     | No                | No                     | No                    | ✅ Yes (Google & iCloud Built-in)          |
+| UI Feedback         | No                | No                     | No                    | ✅ Yes (Cloud Status Badges)               |
+| UI Theming          | System restricted | Custom                 | Instagram-fixed       | Fully customizable per-instance            |
+| Grid Layouts        | System            | Custom                 | Custom                | ✅ Yes (Masonry, Quilted, Staggered, BYOG) |
+| Smart Clipboard     | No                | No                     | No                    | Yes (URLs, Files, Raw Bytes)               |
+| HEIC Auto-Convert   | No                | No                     | No                    | Yes (Background iOS bridge)                |
+| Hero UI Animations  | No                | No                     | No                    | Yes (Premium UX)                           |
+| Smart Compression   | No                | No                     | No                    | Yes (Built-in + BYOC Hooks)                |
+| A11y & Enterprise   | No                | No                     | No                    | Yes (VoiceOver & TalkBack)                 |
 
 > **A note on Open Source:** `gallery_suite` is proudly powered by the incredible `photo_manager` engine (created by the brilliant authors of `wechat_assets_picker`). While their picker and its Instagram extension perfectly replicate iconic social media experiences, `gallery_suite` focuses on giving developers a unique, fully brandable masonry design with zero-dependency features like Standalone Camera, BYOE editing, Smart Compression, and Glassmorphism.
 
@@ -134,7 +135,7 @@ These are all fantastic tools. However, both `wechat_assets_picker` and `insta_a
 - **Built-in Native Camera** — live preview tile directly in the grid at position 0. Full custom `CameraScreen` with flash, flip, and recording support. Can be disabled via `showCameraTile: false`.
 - **iOS-style Swipe-To-Select** — long press and drag your finger to rapidly select multiple images in one fluid motion. Includes intelligent auto-scrolling near screen edges. Can be disabled via `enableSwipeToSelect: false`.
 - **Drag & Drop Reordering** — Long-press any selected image in the bottom preview strip to drag and drop it! This instantly updates the final order of selection and automatically re-syncs the numeric grid badges. Features a beautiful glassmorphic scale/shadow animation while dragging.
-- Masonry grid — photos display at their natural proportions, no forced square crops.
+- **Dynamic Grid Layouts** — Not just masonry! Switch instantly between `masonry`, `aligned`, `quilted`, `staggered` (scrollable interlocking), or even inject your totally custom UI via **BYOG** (Bring Your Own Grid).
 - Multi-select with numbered badges showing order of selection.
 - Horizontal preview strip at the bottom with selected items.
 - Album switcher sheet (slide-up, drag to expand).
@@ -201,6 +202,7 @@ These are all fantastic tools. However, both `wechat_assets_picker` and `insta_a
   - [Standalone Multi-Capture Camera](#standalone-multi-capture-camera)
 - [Advanced Capabilities](#advanced-capabilities)
   - [Google Photos Built-in Provider](#google-photos-built-in-provider-premium-cloud-integration)
+  - [Dynamic Grid & BYOG](#dynamic-grid--byog-bring-your-own-grid)
   - [Bring Your Own Drop (BYOD) Architecture](#bring-your-own-drop-byod-architecture)
   - [Bring Your Own Editor (BYOE) Architecture](#bring-your-own-editor-byoe-architecture)
   - [Smart Clipboard Integration](#smart-clipboard-integration)
@@ -663,6 +665,45 @@ We have prepared a dedicated **[Comprehensive GCP Setup Guide](https://github.co
 
 > [!TIP]
 > **Complete Integration Guides:** For comprehensive guides on architecting advanced Drag & Drop, Canvas Editing, and Compression injection, visit our **[Official BYO Guides](#)**.
+
+### Dynamic Grid & BYOG (Bring Your Own Grid)
+
+> [!TIP]
+> **Building a complex custom timeline layout?** We wrote a dedicated BYOG tutorial showing how to bind the picker's architecture to `PageView` or custom Slivers. Read the **[BYOG Implementation Guide on our Official Hub](https://your-docs-website.com/docs/architectures/byog)**.
+
+`gallery_suite` doesn't just offer a standard masonry grid. It comes with a hyper-optimized **Dynamic Layout Engine** that allows you to instantly switch the visual presentation of all your media (Local, Cloud, and Clipboard!) by simply passing a `PickerGridLayout` enum to your config.
+
+Every predefined layout is fully scrollable and aggressively paginates out-of-the-box.
+
+```dart
+final assets = await CustomMediaPicker.show(
+  context: context,
+  config: PickerConfig(
+    // 1. Instantly switch the grid layout!
+    // Options: masonry (default), aligned, quilted, staggered, byog.
+    gridLayout: PickerGridLayout.quilted,
+
+    // 2. Bring Your Own Grid (BYOG)
+    // If you pass `PickerGridLayout.byog`, you MUST provide a `customGridBuilder`.
+    // The engine gives you the `ScrollController`, total `ItemCount`, and an intelligent
+    // `itemBuilder` that automatically wraps your custom UI with the native Selection overlays,
+    // Google Photos downloading bridges, and Hero animations!
+    customGridBuilder: (ctx, scrollController, itemCount, itemBuilder) {
+      return ListView.builder(
+        controller: scrollController,
+        itemCount: itemCount, // Automatically handles +1 for camera/skeleton tiles
+        itemBuilder: (ctx, index) {
+           // Return your custom UI wrapper, but inject our smart itemBuilder inside!
+           return Padding(
+             padding: const EdgeInsets.all(8.0),
+             child: itemBuilder(ctx, index),
+           );
+        },
+      );
+    },
+  ),
+);
+```
 
 ### Bring Your Own Drop (BYOD) Architecture
 
@@ -1141,31 +1182,33 @@ For maximum design flexibility, you can override any of these specific tokens:
 
 The entire look and feel for the main gallery is controlled via `PickerConfig`. Here is exactly what you can configure:
 
-| Parameter                 | Type                      | Default                     | Description                                                                                                                                                                                                               |
-| ------------------------- | ------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `requestType`             | `RequestType`             | `RequestType.image`         | The specific gallery to open (`image`, `video`, or `audio`).                                                                                                                                                              |
-| `maxSelection`            | `int`                     | `10`                        | The maximum number of assets the user can select. Used in Images and Audio. Video is currently single-select.                                                                                                             |
-| `primaryColor`            | `Color`                   | `Color(0xFF007AFF)`         | The global accent color for checkmarks, badges, seek-bars, and confirm buttons.                                                                                                                                           |
-| `brightness`              | `Brightness?`             | `null`                      | Force a specific theme (`Brightness.dark` or `light`). If `null`, it automatically follows the system `Theme.of(context)`.                                                                                                |
-| `textDelegate`            | `PickerTextDelegate`      | `EnglishPickerTextDelegate` | Handles 100% of the localized strings (buttons, search, empty states) with zero external dependencies.                                                                                                                    |
-| `initialSelection`        | `List<MediaItem>?`        | `null`                      | An optional list of previously selected media items. The picker dynamically maps them to the grid assets by ID to restore a prior selection state. [See docs](#-pre-selected-media-initial-selection)                     |
-| `enableSmartClipboard`    | `bool`                    | `false`                     | An optional flag to enable the Smart Clipboard integration. Appends a clipboard icon to scan system-level URLs, media paths, or raw copied bytes into the grid. [See docs](#-smart-clipboard-integration)                 |
-| `onEditMedia`             | `Function?`               | `null`                      | Optional callback to launch a custom external image editor (e.g. `pro_image_editor`) directly from the Fullscreen Preview. [See docs](-bring-your-own-editor-byoe-architecture)                                           |
-| `dropRegionBuilder`       | `Widget Function?`        | `null`                      | Optional BYOD wrapper builder. Wrap the picker with `desktop_drop` or any D&D package to natively accept dropped files and populate the grid. [See docs](-bring-your-own-drop-byod-architecture)                          |
-| `confirmText`             | `String` _(Deprecated)_   | `'Select'`                  | Deprecated. Use `textDelegate.confirm` instead. Legacy shortcut for the confirm button label.                                                                                                                             |
-| `cancelText`              | `String` _(Deprecated)_   | `'Cancel'`                  | Deprecated. Use `textDelegate.cancel` instead. Legacy shortcut for the dismiss button label.                                                                                                                              |
-| `googlePhotosConfig`      | `GooglePhotosConfig`      | `default`                   | Configuration for the built-in Google Photos cloud provider (enabled/disabled and other cloud-specific options).                                                                                                          |
-| `exitConfirmation`        | `ExitConfirmationConfig?` | `null`                      | An optional configuration that prevents accidental closing of the picker when users have selected media.                                                                                                                  |
-| `showCameraTile`          | `bool`                    | `true`                      | When `true`, renders a live `camera` feed at index `0`. Supports both photo and video depending on `requestType`. Tap to open a full-screen Dribbble-inspired UI.                                                         |
-| `enableSwipeToSelect`     | `bool`                    | `true`                      | When `true`, allows the user to long-press and drag their finger across the masonry grid to rapidly select items (iOS Photos style). Includes edge auto-scroll.                                                           |
-| `useOriginalFile`         | `bool`                    | `false`                     | When `true`, fetches the absolute pristine original file rather than a system-optimized/compressed format from iOS or Android cache.                                                                                      |
-| `thumbnailCacheSize`      | `int`                     | `200`                       | Maximum number of thumbnails kept in the LRU memory cache. A value of 200 ensures buttery scrolling over 2–3 screens of content.                                                                                          |
-| `maxConcurrentDecodes`    | `int`                     | `3`                         | Maximum simultaneous thumbnail decodes. Limiting this ensures scrolling remains 60fps+ by preventing thread starvation on large grids.                                                                                    |
-| `prefetchEnabled`         | `bool`                    | `true`                      | When `true`, the picker intelligently pre-loads thumbnails for the next 30 items that are about to appear on-screen during scrolling, eliminating pop-in.                                                                 |
-| `themeData`               | `PickerThemeData?`        | `null`                      | Provides full control over individual UI colors (background, surface, text, etc.) which take precedence over the defaults resolved from `brightness`.                                                                     |
-| `autoCompressImages`      | `bool`                    | `false`                     | When `true`, activates the native built-in image compressor (via `flutter_image_compress`) before returning the file. Great for reducing upload bandwidth.                                                                |
-| `imageCompressionQuality` | `int`                     | `85`                        | The JPEG target quality (0–100) used when `autoCompressImages` is `true`. Default 85 retains very high visual fidelity.                                                                                                   |
-| `onCompressMedia`         | `Function?`               | `null`                      | Optional BYOC hook called just before the picker returns. Use to inject `video_compress` or any custom algorithm. Return `null` to fallback to `autoCompressImages`. [See docs](-hybrid-smart-compression-built-in--byoc) |
+| Parameter                 | Type                      | Default                     | Description                                                                                                                                                                                                                          |
+| ------------------------- | ------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `requestType`             | `RequestType`             | `RequestType.image`         | The specific gallery to open (`image`, `video`, or `audio`).                                                                                                                                                                         |
+| `maxSelection`            | `int`                     | `10`                        | The maximum number of assets the user can select. Used in Images and Audio. Video is currently single-select.                                                                                                                        |
+| `gridLayout`              | `PickerGridLayout`        | `PickerGridLayout.masonry`  | Determines the visual structure of the media. Options are `masonry`, `aligned`, `quilted`, `staggered`, and `byog`. [See docs](#-dynamic-grid--byog-bring-your-own-grid)                                                             |
+| `customGridBuilder`       | `Widget Function?`        | `null`                      | Required when `gridLayout` is set to `byog`. Allows you to fully inject a custom `ListView`, `PageView`, or entirely custom Sliver architecture while the picker handles state. [See docs](#-dynamic-grid--byog-bring-your-own-grid) |
+| `primaryColor`            | `Color`                   | `Color(0xFF007AFF)`         | The global accent color for checkmarks, badges, seek-bars, and confirm buttons.                                                                                                                                                      |
+| `brightness`              | `Brightness?`             | `null`                      | Force a specific theme (`Brightness.dark` or `light`). If `null`, it automatically follows the system `Theme.of(context)`.                                                                                                           |
+| `textDelegate`            | `PickerTextDelegate`      | `EnglishPickerTextDelegate` | Handles 100% of the localized strings (buttons, search, empty states) with zero external dependencies.                                                                                                                               |
+| `initialSelection`        | `List<MediaItem>?`        | `null`                      | An optional list of previously selected media items. The picker dynamically maps them to the grid assets by ID to restore a prior selection state. [See docs](#-pre-selected-media-initial-selection)                                |
+| `enableSmartClipboard`    | `bool`                    | `false`                     | An optional flag to enable the Smart Clipboard integration. Appends a clipboard icon to scan system-level URLs, media paths, or raw copied bytes into the grid. [See docs](#-smart-clipboard-integration)                            |
+| `onEditMedia`             | `Function?`               | `null`                      | Optional callback to launch a custom external image editor (e.g. `pro_image_editor`) directly from the Fullscreen Preview. [See docs](#-bring-your-own-editor-byoe-architecture)                                                     |
+| `dropRegionBuilder`       | `Widget Function?`        | `null`                      | Optional BYOD wrapper builder. Wrap the picker with `desktop_drop` or any D&D package to natively accept dropped files and populate the grid. [See docs](#-bring-your-own-drop-byod-architecture)                                    |
+| `confirmText`             | `String`                  | `'Select'`                  | Deprecated. Use `textDelegate.confirm` instead. Legacy shortcut for the confirm button label.                                                                                                                                        |
+| `cancelText`              | `String`                  | `'Cancel'`                  | Deprecated. Use `textDelegate.cancel` instead. Legacy shortcut for the dismiss button label.                                                                                                                                         |
+| `googlePhotosConfig`      | `GooglePhotosConfig`      | `default`                   | Configuration for the built-in Google Photos cloud provider (enabled/disabled and other cloud-specific options).                                                                                                                     |
+| `exitConfirmation`        | `ExitConfirmationConfig?` | `null`                      | An optional configuration that prevents accidental closing of the picker when users have selected media.                                                                                                                             |
+| `showCameraTile`          | `bool`                    | `true`                      | When `true`, renders a live `camera` feed at index `0`. Supports both photo and video depending on `requestType`. Tap to open a full-screen Dribbble-inspired UI.                                                                    |
+| `enableSwipeToSelect`     | `bool`                    | `true`                      | When `true`, allows the user to long-press and drag their finger across the masonry grid to rapidly select items (iOS Photos style). Includes edge auto-scroll.                                                                      |
+| `useOriginalFile`         | `bool`                    | `false`                     | When `true`, fetches the absolute pristine original file rather than a system-optimized/compressed format from iOS or Android cache.                                                                                                 |
+| `thumbnailCacheSize`      | `int`                     | `200`                       | Maximum number of thumbnails kept in the LRU memory cache. A value of 200 ensures buttery scrolling over 2–3 screens of content.                                                                                                     |
+| `maxConcurrentDecodes`    | `int`                     | `3`                         | Maximum simultaneous thumbnail decodes. Limiting this ensures scrolling remains 60fps+ by preventing thread starvation on large grids.                                                                                               |
+| `prefetchEnabled`         | `bool`                    | `true`                      | When `true`, the picker intelligently pre-loads thumbnails for the next 30 items that are about to appear on-screen during scrolling, eliminating pop-in.                                                                            |
+| `themeData`               | `PickerThemeData?`        | `null`                      | Provides full control over individual UI colors (background, surface, text, etc.) which take precedence over the defaults resolved from `brightness`.                                                                                |
+| `autoCompressImages`      | `bool`                    | `false`                     | When `true`, activates the native built-in image compressor (via `flutter_image_compress`) before returning the file. Great for reducing upload bandwidth.                                                                           |
+| `imageCompressionQuality` | `int`                     | `85`                        | The JPEG target quality (0–100) used when `autoCompressImages` is `true`. Default 85 retains very high visual fidelity.                                                                                                              |
+| `onCompressMedia`         | `Function?`               | `null`                      | Optional BYOC hook called just before the picker returns. Use to inject `video_compress` or any custom algorithm. Return `null` to fallback to `autoCompressImages`. [See docs](-hybrid-smart-compression-built-in--byoc)            |
 
 ### CameraPickerConfig API
 

@@ -10,7 +10,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:file_selector/file_selector.dart';
 
 import 'package:app_links/app_links.dart';
@@ -189,6 +188,9 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
   // -- Conversion State -------------------------------------------------------
   bool _isConverting = false;
+
+  // -- Sorting State ----------------------------------------------------------
+  PickerSortOrder _currentSortOrder = PickerSortOrder.newest;
 
   /// Initial page loads 80 items; subsequent pages fetch 120 for fewer
   /// round-trips on large libraries.
@@ -374,6 +376,37 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     if (!_hasMore) return;
 
     setState(() => reset ? _isLoading = true : _isLoadingMore = true);
+
+    if (_currentSortOrder != PickerSortOrder.newest) {
+      if (reset) {
+        // For dynamic sorting, fetch the entire available dataset securely
+        final rawAssets = (await _source.getAssets(
+          album: _currentAlbum!,
+          page: 0,
+          pageSize: 20000,
+        ))
+            .where((a) => a.type != AssetType.audio)
+            .toList();
+
+        final localEntities = rawAssets
+            .whereType<LocalPickerAsset>()
+            .map((e) => e.entity)
+            .toList();
+
+        final sortedEntities = await SortService.instance
+            .sortAssets(localEntities, _currentSortOrder);
+
+        if (!mounted) return;
+        setState(() {
+          _assets = sortedEntities.map((e) => LocalPickerAsset(e)).toList();
+          _isLoading = false;
+          _isLoadingMore = false;
+          _hasMore =
+              false; // Sorting is handled comprehensively, disable pagination
+        });
+      }
+      return;
+    }
 
     final assets = (await _source.getAssets(
       album: _currentAlbum!,
@@ -777,10 +810,10 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   Future<void> _fetchClipboard() async {
     try {
       debugPrint(
-          '📋 [PickerPage] _fetchClipboard -> calling ClipboardService.instance.fetchAssets()...');
+          ' [PickerPage] _fetchClipboard -> calling ClipboardService.instance.fetchAssets()...');
       final assets = await ClipboardService.instance.fetchAssets();
       debugPrint(
-          '📋 [PickerPage] _fetchClipboard -> got ${assets.length} assets');
+          ' [PickerPage] _fetchClipboard -> got ${assets.length} assets');
       if (!mounted) return;
 
       if (assets.isNotEmpty) {
@@ -801,7 +834,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
         );
       }
     } catch (e) {
-      debugPrint('📋 [PickerPage] _fetchClipboard -> ERROR: $e');
+      debugPrint(' [PickerPage] _fetchClipboard -> ERROR: $e');
     } finally {
       if (mounted) {
         setState(() => _isClipboardLoading = false);
@@ -811,6 +844,30 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
   // Legacy _loadCloudPhotos has been permanently removed
   // to comply with Google's March 2025 Privacy Rules.
+
+  void _showSortSheet() {
+    HapticFeedback.lightImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black54,
+      builder: (_) => SmartSortSheet(
+        currentSortOrder: _currentSortOrder,
+        primaryColor: widget.config.primaryColor,
+        theme: _theme,
+        textDelegate: widget.config.textDelegate,
+        onSelect: (order) {
+          Navigator.pop(context);
+          if (_currentSortOrder == order) return;
+          setState(() {
+            _currentSortOrder = order;
+            if (_scrollController.hasClients) _scrollController.jumpTo(0);
+          });
+          _loadAssets(reset: true);
+        },
+      ),
+    );
+  }
 
   void _showAlbumSheet() {
     final bool canShowGoogle = widget.config.googlePhotosConfig.enabled;
@@ -1120,6 +1177,15 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                           onPressed: _pickFiles,
                           tooltip: 'Add Files',
                         ),
+                      if (!_isCloudMode &&
+                          !_isClipboardMode &&
+                          widget.config.enableSorting == true)
+                        IconButton(
+                          icon: Icon(Icons.tune_rounded,
+                              color: widget.config.primaryColor),
+                          tooltip: 'Sort Media',
+                          onPressed: _showSortSheet,
+                        ),
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 200),
                         transitionBuilder: (child, anim) => ScaleTransition(
@@ -1309,18 +1375,13 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                     setState(() => _selected.add(asset));
                   }
                 },
-                child: MasonryGridView.builder(
-                  controller: _scrollController,
-                  padding: EdgeInsets.zero,
-                  gridDelegate:
-                      const SliverSimpleGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                  ),
-                  mainAxisSpacing: 2,
-                  crossAxisSpacing: 2,
+                child: DynamicGridLayout(
+                  layout: widget.config.gridLayout,
+                  scrollController: _scrollController,
+                  crossAxisCount: 3,
+                  customGridBuilder: widget.config.customGridBuilder,
                   itemCount: cloudAssets.length + (_isCloudLoading ? 1 : 0),
                   itemBuilder: (context, index) {
-                    // Loading indicator at the bottom
                     if (index >= cloudAssets.length) {
                       return const Padding(
                         padding: EdgeInsets.all(16),
@@ -1334,73 +1395,79 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                         _selected.indexWhere((e) => e.id == asset.id);
                     final isSelected = selIdx >= 0;
 
-                    // Calculate aspect ratio for masonry
-                    final aspectRatio = (asset.width > 0 && asset.height > 0)
-                        ? asset.width / asset.height
-                        : 1.0;
+                    final bool isMasonry =
+                        widget.config.gridLayout == PickerGridLayout.masonry;
 
-                    return AspectRatio(
-                      aspectRatio: aspectRatio.clamp(0.5, 2.0),
-                      child: MetaData(
-                        metaData: asset,
-                        behavior: HitTestBehavior.translucent,
-                        child: GestureDetector(
-                          onTap: () {
-                            if (_isVideoMode &&
-                                widget.config.maxSelection <= 1) {
-                              _onVideoTap(asset);
-                            } else {
-                              _toggleSelection(asset);
-                            }
-                          },
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              kIsWeb
-                                  ? AuthImage(
-                                      imageUrl: asset.thumbUrl,
-                                      googleService: _googleService,
-                                      theme: _theme,
-                                    )
-                                  : CachedNetworkImage(
-                                      imageUrl: asset.thumbUrl,
-                                      httpHeaders: asset.headers,
-                                      fit: BoxFit.cover,
-                                      placeholder: (_, __) => Container(
-                                        color: _theme.elevated,
-                                      ),
-                                      errorBuilder: (_, __, ___) => Container(
-                                        color: _theme.elevated,
-                                        child: Icon(Icons.broken_image_rounded,
-                                            color: _theme.secondaryText,
-                                            size: 28),
-                                      ),
+                    final Widget tile = MetaData(
+                      metaData: asset,
+                      behavior: HitTestBehavior.translucent,
+                      child: GestureDetector(
+                        onTap: () {
+                          if (_isVideoMode && widget.config.maxSelection <= 1) {
+                            _onVideoTap(asset);
+                          } else {
+                            _toggleSelection(asset);
+                          }
+                        },
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            kIsWeb
+                                ? AuthImage(
+                                    imageUrl: asset.thumbUrl,
+                                    googleService: _googleService,
+                                    theme: _theme,
+                                  )
+                                : CachedNetworkImage(
+                                    imageUrl: asset.thumbUrl,
+                                    httpHeaders: asset.headers,
+                                    fit: BoxFit.cover,
+                                    placeholder: (_, __) => Container(
+                                      color: _theme.elevated,
                                     ),
-                              if (isSelected)
-                                Container(
-                                  color: Colors.black.withValues(alpha: 0.4),
-                                  alignment: Alignment.center,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: widget.config.primaryColor,
-                                      shape: BoxShape.circle,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      color: _theme.elevated,
+                                      child: Icon(Icons.broken_image_rounded,
+                                          color: _theme.secondaryText,
+                                          size: 28),
                                     ),
-                                    child: Text(
-                                      '${selIdx + 1}',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                  ),
+                            if (isSelected)
+                              Container(
+                                color: Colors.black.withValues(alpha: 0.4),
+                                alignment: Alignment.center,
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: widget.config.primaryColor,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    '${selIdx + 1}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
-                            ],
-                          ),
+                              ),
+                          ],
                         ),
                       ),
                     );
+
+                    if (isMasonry) {
+                      final aspectRatio = (asset.width > 0 && asset.height > 0)
+                          ? asset.width / asset.height
+                          : 1.0;
+                      return AspectRatio(
+                        aspectRatio: aspectRatio.clamp(0.5, 2.0),
+                        child: tile,
+                      );
+                    }
+
+                    return tile;
                   },
                 ),
               ),
@@ -1464,48 +1531,51 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
           setState(() => _selected.add(asset));
         }
       },
-      child: MasonryGridView.builder(
-        controller: _scrollController,
-        padding: EdgeInsets.zero,
-        gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-        ),
-        mainAxisSpacing: 2,
-        crossAxisSpacing: 2,
+      child: DynamicGridLayout(
+        layout: widget.config.gridLayout,
+        scrollController: _scrollController,
+        crossAxisCount: 3,
+        customGridBuilder: widget.config.customGridBuilder,
         itemCount: _clipboardAssets.length,
         itemBuilder: (context, index) {
           final asset = _clipboardAssets[index];
           final selIdx = _selected.indexWhere((e) => e.id == asset.id);
           final isSelected = selIdx >= 0;
 
-          // Compute aspect ratio from asset dimensions; default to 1:1 square
-          // if dimensions are unknown (prevents infinite height crash).
-          final double aspectRatio = (asset.width > 0 && asset.height > 0)
-              ? asset.width / asset.height
-              : 1.0;
+          final bool isMasonry =
+              widget.config.gridLayout == PickerGridLayout.masonry;
 
-          return AspectRatio(
-            aspectRatio: aspectRatio,
-            child: MediaThumbnailWidget(
-              asset: asset,
-              textDelegate: widget.config.textDelegate,
-              isSelected: isSelected,
-              selectionNumber: selIdx >= 0 ? selIdx + 1 : null,
-              primaryColor: widget.config.primaryColor,
-              isDark: _theme.isDark,
-              theme: _theme,
-              onTap: () {
-                if (_isVideoMode && widget.config.maxSelection <= 1) {
-                  _onVideoTap(asset);
-                } else {
-                  _toggleSelection(asset);
-                }
-              },
-              onLongPress: () {
-                HapticFeedback.lightImpact();
-              },
-            ),
+          final Widget thumbnail = MediaThumbnailWidget(
+            asset: asset,
+            textDelegate: widget.config.textDelegate,
+            isSelected: isSelected,
+            selectionNumber: selIdx >= 0 ? selIdx + 1 : null,
+            primaryColor: widget.config.primaryColor,
+            isDark: _theme.isDark,
+            theme: _theme,
+            onTap: () {
+              if (_isVideoMode && widget.config.maxSelection <= 1) {
+                _onVideoTap(asset);
+              } else {
+                _toggleSelection(asset);
+              }
+            },
+            onLongPress: () {
+              HapticFeedback.lightImpact();
+            },
           );
+
+          if (isMasonry) {
+            final double aspectRatio = (asset.width > 0 && asset.height > 0)
+                ? asset.width / asset.height
+                : 1.0;
+            return AspectRatio(
+              aspectRatio: aspectRatio,
+              child: thumbnail,
+            );
+          }
+
+          return thumbnail;
         },
       ),
     );
@@ -1805,14 +1875,11 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
               setState(() => _selected.add(asset));
             }
           },
-          child: MasonryGridView.builder(
-            controller: _scrollController,
-            padding: const EdgeInsets.all(1.5),
-            gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-            ),
-            mainAxisSpacing: 1.5,
-            crossAxisSpacing: 1.5,
+          child: DynamicGridLayout(
+            layout: widget.config.gridLayout,
+            scrollController: _scrollController,
+            crossAxisCount: crossAxisCount,
+            customGridBuilder: widget.config.customGridBuilder,
             itemCount: displayAssets.length + cameraOffset + extraLoadingItems,
             itemBuilder: (ctx, i) {
               // Camera tile at position 0
@@ -1842,37 +1909,48 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
               final selIdx = _selectionIndex(asset.id);
               final isSelected = selIdx >= 0;
 
-              final double ar = (asset.width > 0 && asset.height > 0)
-                  ? asset.width / asset.height
-                  : 1.0;
+              final bool isMasonry =
+                  widget.config.gridLayout == PickerGridLayout.masonry;
 
-              return AspectRatio(
-                aspectRatio: ar.clamp(0.35, 2.8),
-                child: MetaData(
-                  metaData: asset,
-                  behavior: HitTestBehavior.translucent,
-                  child: MediaThumbnailWidget(
-                    key: ValueKey(asset.id),
-                    asset: asset,
-                    textDelegate: widget.config.textDelegate,
-                    isSelected: isSelected,
-                    selectionNumber: isSelected ? selIdx + 1 : null,
-                    primaryColor: widget.config.primaryColor,
-                    isDark: _theme.isDark,
-                    theme: _theme,
-                    googleService: _googleService,
-                    showPlayOverlay:
-                        _isVideoMode || asset.type == AssetType.video,
-                    onTap: () {
-                      if (_isVideoMode && widget.config.maxSelection <= 1) {
-                        _onVideoTap(asset);
-                      } else {
-                        _toggleSelection(asset);
-                      }
-                    },
-                  ),
+              // Masonry supports AspectRatio wrapping for natural tile heights.
+              // Strict delegates (aligned, quilted, staggered) dictate their own
+              // sizes — wrapping them in AspectRatio causes constraint crashes.
+              final Widget thumbnail = MetaData(
+                metaData: asset,
+                behavior: HitTestBehavior.translucent,
+                child: MediaThumbnailWidget(
+                  key: ValueKey(asset.id),
+                  asset: asset,
+                  textDelegate: widget.config.textDelegate,
+                  isSelected: isSelected,
+                  selectionNumber: isSelected ? selIdx + 1 : null,
+                  primaryColor: widget.config.primaryColor,
+                  isDark: _theme.isDark,
+                  theme: _theme,
+                  googleService: _googleService,
+                  showPlayOverlay:
+                      _isVideoMode || asset.type == AssetType.video,
+                  onTap: () {
+                    if (_isVideoMode && widget.config.maxSelection <= 1) {
+                      _onVideoTap(asset);
+                    } else {
+                      _toggleSelection(asset);
+                    }
+                  },
                 ),
               );
+
+              if (isMasonry) {
+                final double ar = (asset.width > 0 && asset.height > 0)
+                    ? asset.width / asset.height
+                    : 1.0;
+                return AspectRatio(
+                  aspectRatio: ar.clamp(0.35, 2.8),
+                  child: thumbnail,
+                );
+              }
+
+              return thumbnail;
             },
           ),
         );

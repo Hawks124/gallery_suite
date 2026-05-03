@@ -6,3 +6,4 @@ export 'media_service.dart' show MediaService;
 export 'google_photos_service.dart' show GooglePhotosService;
 export 'thumbnail_decode_queue.dart' show ThumbnailDecodeQueue;
 export 'clipboard_service.dart' show ClipboardService;
+export 'sort_service.dart' show SortService;

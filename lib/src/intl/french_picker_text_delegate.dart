@@ -47,6 +47,11 @@ class FrenchPickerTextDelegate extends PickerTextDelegate {
     super.clipboardSubtitle = 'Coller depuis le presse-papier',
     super.clipboardEmpty = 'Aucun média trouvé dans le presse-papier.',
     super.clipboardLoading = 'Lecture du presse-papier…',
+    super.sortMediaTitle = 'Trier les médias',
+    super.sortNewestFirst = 'Les plus récents',
+    super.sortOldestFirst = 'Les plus anciens',
+    super.sortLargestFirst = 'Volumineux en premier',
+    super.sortSmallestFirst = 'Légers en premier',
     super.semanticImageUnselected =
         'Photo de la galerie. Appuyez deux fois pour sélectionner.',
     super.semanticImageSelectedFormat = 'Photo sélectionnée, numéro %d.',

@@ -59,6 +59,13 @@ abstract class PickerTextDelegate {
   /// Shown while the clipboard content is being read / fetched.
   final String clipboardLoading;
 
+  // -- Sorting -------------------------------------------------------------
+  final String sortMediaTitle;
+  final String sortNewestFirst;
+  final String sortOldestFirst;
+  final String sortLargestFirst;
+  final String sortSmallestFirst;
+
   // -- Accessibility (A11y) ------------------------------------------------
   final String semanticImageUnselected;
   final String semanticImageSelectedFormat;
@@ -106,6 +113,11 @@ abstract class PickerTextDelegate {
     required this.clipboardSubtitle,
     required this.clipboardEmpty,
     required this.clipboardLoading,
+    required this.sortMediaTitle,
+    required this.sortNewestFirst,
+    required this.sortOldestFirst,
+    required this.sortLargestFirst,
+    required this.sortSmallestFirst,
     required this.semanticImageUnselected,
     required this.semanticImageSelectedFormat,
     required this.semanticVideoFormat,

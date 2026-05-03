@@ -130,6 +130,19 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         // Maximum number of assets the user can pick.
         maxSelection: 10,
 
+        //  [NEW] Dynamic Grid Layouts:
+        // Instantly switch how your media is presented!
+        // Options: masonry (default), aligned, quilted, staggered, byog.
+        gridLayout: PickerGridLayout.quilted,
+
+        // Bring Your Own Grid (BYOG):
+        // If gridLayout is byog, inject your own ListView/PageView right here!
+        // customGridBuilder: (ctx, scroll, count, builder) {
+        //   return ListView.builder(
+        //     controller: scroll, itemCount: count, itemBuilder: builder
+        //   );
+        // },
+
         //  Live camera tile: a real-time camera preview appears as the
         // first tile in the grid. Tapping it opens a premium full-screen
         // camera with flash, flip, and glassmorphism UI.
