@@ -1,6 +1,5 @@
 # Ignore media files for pub.dev
 assets/media/
 .github/
-example/assets/demo.gif
-example/assets/demo_desktop.webp
+example/assets/
 website/

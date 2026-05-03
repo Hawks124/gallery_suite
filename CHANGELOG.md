@@ -4,16 +4,7 @@ All notable changes to this package will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0-dev.1] - 2026-05-02
-
-### V2 Pre-release (Development)
-
-- First pre-release of Gallery Suite for early adopters and community feedback.
-- **Feat**: Introduced architecture for Configurable Grid Layouts (`Aligned`, `Quilted`, `Staggered` and `BYOG`).
-- **Feat**: Added blueprint for Local File Sorting (`Newest`, `Oldest`, `Largest`, `Smallest`) with isolate-based processing.
-- **Refactor**: Abstracted list generation into a dedicated `DynamicGridLayout` widget.
-
-## [1.0.0] - 2026-03-24
+## [1.0.0] - 2026-05-03
 
 ### Initial Release
 

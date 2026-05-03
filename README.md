@@ -189,36 +189,37 @@ These are all fantastic tools. However, both `wechat_assets_picker` and `insta_a
 
 ## Table of Contents
 
-- [ Why Gallery Suite?](#-why-gallery-suite)
-- [ Platform Compatibility & Status](#-platform-compatibility--status-google-photos)
-- [ Features](#-features)
-- [ Quick Start](#-quick-start)
-- [ Installation & Setup](#-installation--setup)
-- [ Core Usage](#-core-usage)
-  - [ Pick Images](#pick-images)
-  - [ Pick a Video](#pick-a-video)
-  - [ Pick Audio](#pick-audio)
-  - [ Standalone Multi-Capture Camera](#standalone-multi-capture-camera)
-- [ Advanced Capabilities](#-advanced-capabilities)
-  - [ Google Photos Built-in Provider](-google-photos-built-in-provider-premium-cloud-integration)
-  - [ Bring Your Own Drop (BYOD) Architecture](-bring-your-own-drop-byod-architecture)
-  - [ Bring Your Own Editor (BYOE) Architecture](-bring-your-own-editor-byoe-architecture)
-  - [ Smart Clipboard Integration](#-smart-clipboard-integration)
-  - [ Auto-Conversion HEIC to JPG](#-auto-conversion-heic-to-jpg-experimental)
-  - [ Hybrid Smart Compression (Built-in + BYOC)](-hybrid-smart-compression-built-in--byoc)
-  - [ Exit Confirmation](#-exit-confirmation-accidental-exit-prevention)
-  - [ Accessibility (A11y) & Enterprise Ready](#-accessibility-a11y--enterprise-ready)
-  - [ Internationalization (Intl)](#-internationalization-intl)
-  - [ Pre-Selected Media (Initial Selection)](#-pre-selected-media-initial-selection)
-  - [ UI Theming & Customization](#-ui-theming--customization)
-- [ API Reference](#-api-reference)
-  - [ PickerConfig](#pickerconfig-api)
-  - [ CameraPickerConfig](#camerapickerconfig-api)
-- [ Performance Notes](#-performance-notes)
-- [ Version History & Roadmap](#-version-history--roadmap)
-- [ Support the Project](#-support-the-project)
-- [ License](#-license)
-- [ Acknowledgements & Credits](-acknowledgements--credits)
+- [Why Gallery Suite?](#why-gallery-suite)
+- [Platform Support](#platform-support)
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Installation & Setup](#installation--setup)
+- [Core Usage](#core-usage)
+  - [Pick Images](#pick-images)
+  - [Pick a Video](#pick-a-video)
+  - [Pick Audio](#pick-audio)
+  - [Standalone Multi-Capture Camera](#standalone-multi-capture-camera)
+- [Advanced Capabilities](#advanced-capabilities)
+  - [Google Photos Built-in Provider](#google-photos-built-in-provider-premium-cloud-integration)
+  - [Bring Your Own Drop (BYOD) Architecture](#bring-your-own-drop-byod-architecture)
+  - [Bring Your Own Editor (BYOE) Architecture](#bring-your-own-editor-byoe-architecture)
+  - [Smart Clipboard Integration](#smart-clipboard-integration)
+  - [Auto-Conversion HEIC to JPG](#auto-conversion-heic-to-jpg-experimental)
+  - [Hybrid Smart Compression (Built-in + BYOC)](#hybrid-smart-compression-built-in--byoc)
+  - [Exit Confirmation](#exit-confirmation-accidental-exit-prevention)
+  - [Accessibility (A11y) & Enterprise Ready](#accessibility-a11y--enterprise-ready)
+  - [Internationalization (Intl)](#internationalization-intl)
+  - [Pre-Selected Media (Initial Selection)](#pre-selected-media-initial-selection)
+  - [UI Theming & Customization](#ui-theming--customization)
+- [API Reference](#api-reference)
+  - [PickerConfig](#pickerconfig-api)
+  - [CameraPickerConfig](#camerapickerconfig-api)
+- [Performance Notes](#performance-notes)
+- [Showcase](#showcase)
+- [Version History & Roadmap](#version-history--roadmap)
+- [Support the Project](#support-the-project)
+- [License](#license)
+- [Acknowledgements & Credits](#acknowledgements--credits)
 
 ---
 
@@ -1192,14 +1193,27 @@ Controls the standalone camera behavior initiated through `CustomMediaPicker.cam
 
 ---
 
+## Showcase
+
+**Gallery Suite** powers the premium media experiences in:
+
+| App                                                                     | Description                                                                                |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| <img src="https://www.islamira.com/logo.png" width="36" height="36" />  | **IRA**<br>Social media and community platform — [islamira.com](https://www.islamira.com/) |
+| <img src="https://www.islamira.com/sally.png" width="36" height="36" /> | **Sally AI**<br>Advanced AI chat and synthesis interface integrated within IRA.            |
+
+> _Are you using Gallery Suite in your production app? [Open a PR](https://github.com/Hawks124/gallery_suite/pulls) to add your logo here!_
+
+---
+
 ## Version History & Roadmap
 
 We use [Semantic Versioning](https://semver.org/). This package is currently evolving rapidly:
 
-| Version    | Status | Highlights                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ---------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **v1.1.0** | Stable | Introduced **Standalone Multi-Capture Camera** interface! Support for "rafale" shooting, inline video capture management, horizontal capture review strip, and direct BYOE hooks. Complete UX improvements eliminating emojis from public documentation for enterprise readiness.                                                                                                                                                                                                                                              |
-| **v1.0.0** | Stable | Core engine (Grid, Video, Audio), Live Camera Tile, iOS-style swipe-to-select, Heavy Performance Optimizations (LRU Cache, Decode Queue, Prefetching), BYOE Architecture, Inline Search, Google Photos Cloud Provider with native persistence, auto-refresh tokens, secure sign-out flow, iCloud integration, and Drag & Drop Reorder. Plus: **Smart Clipboard** integration, **Hero Flight Animations**, **Experimental HEIC Auto-Conversion**, and **Hybrid Smart Compression** (native built-in + BYOC hook), A11y support. |
+| Version    | Status | Highlights                                                                                                                                                                                                                            |
+| ---------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **v2.x.x** | In Dev | **(Planned)** Configurable Grid Layouts (`Aligned`, `Quilted`, `BYOG`), Smart Local Media Sorting (Size/Date) via Isolate processing.                                                                                                 |
+| **1.0.0**  | Stable | Standalone Multi-Capture Camera, Google Photos Provider, Smart Clipboard, BYOE Architecture, Native Video/Audio Pickers, iOS Swipe-to-Select, Auto-convert HEIC, Hybrid Compression. (See [CHANGELOG](CHANGELOG.md) for more details) |
 
 ---
 
