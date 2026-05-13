@@ -6,7 +6,7 @@ import '../models/picker_theme.dart';
 
 // A placeholder widget displayed when the user taps "   Google Photos" but hasn't authenticated yet.
 
-class GooglePhotosConnectPlaceholder extends StatelessWidget {
+class GooglePhotosConnectPlaceholder extends StatefulWidget {
   final PickerTheme theme;
   final Color primaryColor;
   final PickerTextDelegate textDelegate;
@@ -19,6 +19,27 @@ class GooglePhotosConnectPlaceholder extends StatelessWidget {
     required this.textDelegate,
     required this.onConnect,
   });
+
+  @override
+  State<GooglePhotosConnectPlaceholder> createState() =>
+      _GooglePhotosConnectPlaceholderState();
+}
+
+class _GooglePhotosConnectPlaceholderState
+    extends State<GooglePhotosConnectPlaceholder> {
+  bool _isSigningIn = false;
+
+  void _handleConnect() {
+    if (_isSigningIn) return;
+    setState(() => _isSigningIn = true);
+    // Fire the callback — the parent is responsible for the async flow.
+    // We reset loading after a generous timeout to cover edge cases
+    // (user cancels browser, error, etc.)
+    widget.onConnect();
+    Future.delayed(const Duration(seconds: 15), () {
+      if (mounted) setState(() => _isSigningIn = false);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,9 +102,9 @@ class GooglePhotosConnectPlaceholder extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        textDelegate.googlePhotosConnectTitle,
+                        widget.textDelegate.googlePhotosConnectTitle,
                         style: TextStyle(
-                          color: primaryColor,
+                          color: widget.primaryColor,
                           fontSize: 26,
                           fontWeight: FontWeight.w800,
                           height: 1.3,
@@ -92,9 +113,9 @@ class GooglePhotosConnectPlaceholder extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        textDelegate.googlePhotosConnectSubtitle,
+                        widget.textDelegate.googlePhotosConnectSubtitle,
                         style: TextStyle(
-                          color: theme.secondaryText,
+                          color: widget.theme.secondaryText,
                           fontSize: 15,
                           fontWeight: FontWeight.w400,
                           height: 1.5,
@@ -116,7 +137,8 @@ class GooglePhotosConnectPlaceholder extends StatelessWidget {
                                 children: [
                                   Expanded(
                                     child: OutlinedButton(
-                                      onPressed: onConnect,
+                                      onPressed:
+                                          _isSigningIn ? null : _handleConnect,
                                       style: OutlinedButton.styleFrom(
                                         padding: const EdgeInsets.symmetric(
                                             vertical: 18),
@@ -133,40 +155,56 @@ class GooglePhotosConnectPlaceholder extends StatelessWidget {
                                         ),
                                         backgroundColor: Colors.transparent,
                                       ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Image.asset(
-                                            'assets/images/google.png',
-                                            package: 'gallery_suite',
-                                            width: 22,
-                                            height: 22,
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                              return Image.asset(
-                                                'assets/images/google.png',
-                                                width: 22,
-                                                height: 22,
-                                              );
-                                            },
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Flexible(
-                                            child: Text(
-                                              textDelegate
-                                                  .googlePhotosConnectButton,
-                                              style: TextStyle(
-                                                color: theme.primaryText,
-                                                fontSize: 17,
-                                                fontWeight: FontWeight.w700,
-                                                letterSpacing: -0.3,
+                                      child: _isSigningIn
+                                          ? SizedBox(
+                                              width: 22,
+                                              height: 22,
+                                              child:
+                                                  CircularProgressIndicator(
+                                                strokeWidth: 2.5,
+                                                valueColor:
+                                                    AlwaysStoppedAnimation(
+                                                  widget.theme.secondaryText,
+                                                ),
                                               ),
-                                              overflow: TextOverflow.ellipsis,
+                                            )
+                                          : Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Image.asset(
+                                                  'assets/images/google.png',
+                                                  package: 'gallery_suite',
+                                                  width: 22,
+                                                  height: 22,
+                                                  errorBuilder: (context,
+                                                      error, stackTrace) {
+                                                    return Image.asset(
+                                                      'assets/images/google.png',
+                                                      width: 22,
+                                                      height: 22,
+                                                    );
+                                                  },
+                                                ),
+                                                const SizedBox(width: 12),
+                                                Flexible(
+                                                  child: Text(
+                                                    widget.textDelegate
+                                                        .googlePhotosConnectButton,
+                                                    style: TextStyle(
+                                                      color: widget
+                                                          .theme.primaryText,
+                                                      fontSize: 17,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      letterSpacing: -0.3,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                          ),
-                                        ],
-                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 16),
@@ -176,18 +214,37 @@ class GooglePhotosConnectPlaceholder extends StatelessWidget {
                                         : const Color(0xFF1E1E1E),
                                     shape: const CircleBorder(),
                                     child: InkWell(
-                                      onTap: onConnect,
+                                      onTap:
+                                          _isSigningIn ? null : _handleConnect,
                                       customBorder: const CircleBorder(),
                                       child: SizedBox(
                                         width: 62,
                                         height: 62,
-                                        child: Icon(
-                                          Icons.arrow_forward_ios_rounded,
-                                          color: isDark
-                                              ? Colors.black
-                                              : Colors.white,
-                                          size: 22,
-                                        ),
+                                        child: _isSigningIn
+                                            ? Center(
+                                                child: SizedBox(
+                                                  width: 22,
+                                                  height: 22,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                    strokeWidth: 2.5,
+                                                    valueColor:
+                                                        AlwaysStoppedAnimation(
+                                                      isDark
+                                                          ? Colors.black
+                                                          : Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                            : Icon(
+                                                Icons
+                                                    .arrow_forward_ios_rounded,
+                                                color: isDark
+                                                    ? Colors.black
+                                                    : Colors.white,
+                                                size: 22,
+                                              ),
                                       ),
                                     ),
                                   ),
@@ -204,14 +261,15 @@ class GooglePhotosConnectPlaceholder extends StatelessWidget {
                             Icon(
                               Icons.lock_outline_rounded,
                               size: 14,
-                              color: theme.secondaryText.withValues(alpha: 0.5),
+                              color: widget.theme.secondaryText
+                                  .withValues(alpha: 0.5),
                             ),
                             const SizedBox(width: 6),
                             Text(
                               'Read-only   OAuth 2.0',
                               style: TextStyle(
-                                color:
-                                    theme.secondaryText.withValues(alpha: 0.5),
+                                color: widget.theme.secondaryText
+                                    .withValues(alpha: 0.5),
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
                                 letterSpacing: 0.3,
@@ -231,3 +289,4 @@ class GooglePhotosConnectPlaceholder extends StatelessWidget {
     );
   }
 }
+

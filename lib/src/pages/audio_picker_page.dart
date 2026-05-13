@@ -429,16 +429,6 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                           constraints: const BoxConstraints(),
                           splashRadius: 24,
                         ),
-                      if (widget.config.enableSmartClipboard && !kIsWeb)
-                        IconButton(
-                          onPressed: _fetchClipboardForAudio,
-                          tooltip: widget.config.textDelegate.clipboardSubtitle,
-                          icon: Icon(Icons.content_paste_rounded,
-                              color: widget.config.primaryColor, size: 24),
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          constraints: const BoxConstraints(),
-                          splashRadius: 24,
-                        ),
                       const SizedBox(width: 8),
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 200),
@@ -534,54 +524,6 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
         ),
       ),
     );
-  }
-
-  // -- Smart Clipboard --------------------------------------------------------
-
-  Future<void> _fetchClipboardForAudio() async {
-    setState(() => _isLoading = true);
-    try {
-      final assets = await ClipboardService.instance.fetchAssets();
-      if (!mounted) return;
-
-      if (assets.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(widget.config.textDelegate.clipboardEmpty),
-            backgroundColor: _theme.elevated,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        return;
-      }
-
-      // Filter for audio only
-      final audioAssets =
-          assets.where((a) => a.type == AssetType.audio).toList();
-      if (audioAssets.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(widget.config.textDelegate.noMediaFound),
-            backgroundColor: _theme.elevated,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        return;
-      }
-
-      setState(() {
-        _assets.insertAll(0, audioAssets);
-        // Auto-select if we only found 1 and multi-select is off
-        if (widget.config.maxSelection == 1 && audioAssets.length == 1) {
-          _selected.clear();
-          _selected.add(audioAssets.first);
-        } else if (_selected.length < widget.config.maxSelection) {
-          _selected.add(audioAssets.first); // auto select first found
-        }
-      });
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
   }
 
   Widget _buildList() {

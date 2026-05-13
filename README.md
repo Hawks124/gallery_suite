@@ -44,7 +44,9 @@
 ## Why Gallery Suite?
 
 > [!IMPORTANT]
-> **Looking for Architecture Specs?** While this README covers all immediate features, we highly recommend visiting our **[Official Documentation Hub](#)** for profound tutorials, GCP Setup workflows, and deep BYO injection guides (Bring Your Own Drop, Editor, Compressor).
+> **Looking for Advanced Integration?** While this README covers all immediate features, we highly recommend visiting our **[Official Documentation Hub](https://your-docs-website.com)** for profound tutorials, GCP Setup workflows, and deep BYO injection guides (Bring Your Own Drop, Editor, Compressor...).
+>
+> **Curious about the engine?** Check out the **[Deep Architecture Specs & Mermaid Diagram](https://your-docs-website.com/architecture)** to understand our Polymorphic Engine, Smart Clipboard, and Google Photos PKCE flow...
 
 The Flutter ecosystem already has excellent media pickers, and we deeply respect them:
 
@@ -258,7 +260,7 @@ if (assets != null) {
 
 ## Installation & Setup
 
-Because this package accesses the device's native media library, **you must configure native permissions before using it.** It will crash or show a "Permission Denied" screen if you skip this step. Also, you need to add the Google Photos Picker Redirect Handler and Gradle Configuration to your Android project if you want to use the Google Photos picker feature. Follow the steps below to configure the package.
+Because this package accesses the device's native media library, **you must configure native permissions before using it.** It will crash or show a "Permission Denied" screen if you skip this step. Steps marked with **(Optional — Google Photos)** are only required if you enable the built-in Google Photos cloud provider.
 
 ### Android Setup
 
@@ -295,7 +297,7 @@ Inside `android/app/src/main/AndroidManifest.xml` `<manifest>` block:
     tools:replace="android:maxSdkVersion" />
 ```
 
-#### PKCE OAuth Redirect Handler (Required for Google Photos Picker)
+#### PKCE OAuth Redirect Handler (Optional — Google Photos Only)
 
 Because `gallery_suite` uses the modern, secure PKCE flow, you must add an `<intent-filter>` to catch the Google browser redirect.
 
@@ -322,7 +324,7 @@ In your `android/app/src/main/AndroidManifest.xml`, locate your `<activity andro
 </application>
 ```
 
-#### Gradle Configuration (Required for Google Photos Picker)
+#### Gradle Configuration (Optional — Google Photos Only)
 
 You must pass your Google Client ID scheme to the manifest via `manifestPlaceholders`.
 
@@ -390,7 +392,7 @@ Inside `ios/Runner/Info.plist`:
 <key>NSMicrophoneUsageDescription</key>
 <string>Used to record audio for videos.</string>
 
-<!-- Required for Google Photos Auth Redirect -->
+<!-- Optional: Required only for Google Photos Auth Redirect -->
 <key>CFBundleURLTypes</key>
 <array>
     <dict>
@@ -426,7 +428,7 @@ Inside `macos/Runner/DebugProfile.entitlements` and `Release.entitlements`, add:
 <true/>
 ```
 
-**2. Google Photos Auth Redirect:**
+**2. Google Photos Auth Redirect (Optional):**
 If you enabled Google Photos, add your URL scheme to `macos/Runner/Info.plist`:
 
 ```xml
@@ -544,6 +546,9 @@ final assets = await CustomMediaPicker.camera(
 
 ## Advanced Capabilities
 
+> [!TIP]
+> **Complete BYO Integration Guides:** For comprehensive guides on architecting advanced Drag & Drop, Canvas Editing, and Compression injection, visit our **[Official BYO Guides](https://github.com/Hawks124/gallery_suite/wiki/BYO-Guides)**.
+
 ### Google Photos Built-in Provider (Premium Cloud Integration)
 
 `gallery_suite` comes with a powerful **First-Class Cloud Provider** built natively into the UI. Instead of forcing users to download their cloud photos to the device before picking them, the picker allows users to seamlessly browse, select, zoom, and reorganize **Google Photos directly within the Masonry grid**, mixed natively with local files.
@@ -593,7 +598,7 @@ void main() async {
 
 #### Opening the Picker
 
-Then, simply ensure the Google Photos feature is enabled when opening the picker. The Google Photos" tab will automatically appear in the UI:
+Then, simply ensure the Google Photos feature is enabled when opening the picker. The "Google Photos" tab will automatically appear in the UI:
 
 ```dart
 final assets = await CustomMediaPicker.show(
@@ -660,9 +665,6 @@ We have prepared a dedicated **[Comprehensive GCP Setup Guide](https://github.co
 1. Configure the new **Google Auth Platform** (Branding, Audience, Data Access).
 2. Generate your PKCE OAuth Client IDs.
 3. Understand the differences between the modern **Picker API** (free & immediate) and the legacy **Library API** (requires expensive CASA Tier-2 Verification).
-
-> [!TIP]
-> **Complete Integration Guides:** For comprehensive guides on architecting advanced Drag & Drop, Canvas Editing, and Compression injection, visit our **[Official BYO Guides](#)**.
 
 ### Bring Your Own Drop (BYOD) Architecture
 
@@ -1150,8 +1152,8 @@ The entire look and feel for the main gallery is controlled via `PickerConfig`. 
 | `textDelegate`            | `PickerTextDelegate`      | `EnglishPickerTextDelegate` | Handles 100% of the localized strings (buttons, search, empty states) with zero external dependencies.                                                                                                                    |
 | `initialSelection`        | `List<MediaItem>?`        | `null`                      | An optional list of previously selected media items. The picker dynamically maps them to the grid assets by ID to restore a prior selection state. [See docs](#-pre-selected-media-initial-selection)                     |
 | `enableSmartClipboard`    | `bool`                    | `false`                     | An optional flag to enable the Smart Clipboard integration. Appends a clipboard icon to scan system-level URLs, media paths, or raw copied bytes into the grid. [See docs](#-smart-clipboard-integration)                 |
-| `onEditMedia`             | `Function?`               | `null`                      | Optional callback to launch a custom external image editor (e.g. `pro_image_editor`) directly from the Fullscreen Preview. [See docs](-bring-your-own-editor-byoe-architecture)                                           |
-| `dropRegionBuilder`       | `Widget Function?`        | `null`                      | Optional BYOD wrapper builder. Wrap the picker with `desktop_drop` or any D&D package to natively accept dropped files and populate the grid. [See docs](-bring-your-own-drop-byod-architecture)                          |
+| `onEditMedia`             | `Function?`               | `null`                      | Optional callback to launch a custom external image editor (e.g. `pro_image_editor`) directly from the Fullscreen Preview. [See docs](#bring-your-own-editor-byoe-architecture)                                           |
+| `dropRegionBuilder`       | `Widget Function?`        | `null`                      | Optional BYOD wrapper builder. Wrap the picker with `desktop_drop` or any D&D package to natively accept dropped files and populate the grid. [See docs](#bring-your-own-drop-byod-architecture)                          |
 | `confirmText`             | `String` _(Deprecated)_   | `'Select'`                  | Deprecated. Use `textDelegate.confirm` instead. Legacy shortcut for the confirm button label.                                                                                                                             |
 | `cancelText`              | `String` _(Deprecated)_   | `'Cancel'`                  | Deprecated. Use `textDelegate.cancel` instead. Legacy shortcut for the dismiss button label.                                                                                                                              |
 | `googlePhotosConfig`      | `GooglePhotosConfig`      | `default`                   | Configuration for the built-in Google Photos cloud provider (enabled/disabled and other cloud-specific options).                                                                                                          |
@@ -1165,7 +1167,7 @@ The entire look and feel for the main gallery is controlled via `PickerConfig`. 
 | `themeData`               | `PickerThemeData?`        | `null`                      | Provides full control over individual UI colors (background, surface, text, etc.) which take precedence over the defaults resolved from `brightness`.                                                                     |
 | `autoCompressImages`      | `bool`                    | `false`                     | When `true`, activates the native built-in image compressor (via `flutter_image_compress`) before returning the file. Great for reducing upload bandwidth.                                                                |
 | `imageCompressionQuality` | `int`                     | `85`                        | The JPEG target quality (0–100) used when `autoCompressImages` is `true`. Default 85 retains very high visual fidelity.                                                                                                   |
-| `onCompressMedia`         | `Function?`               | `null`                      | Optional BYOC hook called just before the picker returns. Use to inject `video_compress` or any custom algorithm. Return `null` to fallback to `autoCompressImages`. [See docs](-hybrid-smart-compression-built-in--byoc) |
+| `onCompressMedia`         | `Function?`               | `null`                      | Optional BYOC hook called just before the picker returns. Use to inject `video_compress` or any custom algorithm. Return `null` to fallback to `autoCompressImages`. [See docs](#hybrid-smart-compression-built-in--byoc) |
 
 ### CameraPickerConfig API
 
