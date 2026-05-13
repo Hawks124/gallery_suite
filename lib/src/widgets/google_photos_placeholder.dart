@@ -159,8 +159,7 @@ class _GooglePhotosConnectPlaceholderState
                                           ? SizedBox(
                                               width: 22,
                                               height: 22,
-                                              child:
-                                                  CircularProgressIndicator(
+                                              child: CircularProgressIndicator(
                                                 strokeWidth: 2.5,
                                                 valueColor:
                                                     AlwaysStoppedAnimation(
@@ -177,8 +176,8 @@ class _GooglePhotosConnectPlaceholderState
                                                   package: 'gallery_suite',
                                                   width: 22,
                                                   height: 22,
-                                                  errorBuilder: (context,
-                                                      error, stackTrace) {
+                                                  errorBuilder: (context, error,
+                                                      stackTrace) {
                                                     return Image.asset(
                                                       'assets/images/google.png',
                                                       width: 22,
@@ -238,8 +237,7 @@ class _GooglePhotosConnectPlaceholderState
                                                 ),
                                               )
                                             : Icon(
-                                                Icons
-                                                    .arrow_forward_ios_rounded,
+                                                Icons.arrow_forward_ios_rounded,
                                                 color: isDark
                                                     ? Colors.black
                                                     : Colors.white,
@@ -289,4 +287,3 @@ class _GooglePhotosConnectPlaceholderState
     );
   }
 }
-
