@@ -312,7 +312,14 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
       context: context,
       config: CameraPickerConfig(
         maxSelection: 10,
-        enableVideo: true,
+        enablePhoto: true, // Tap captures a photo
+        enableVideo: true, // Long-press records a video
+        enableGallery: true, // Shows gallery thumbnail bottom-left
+        galleryModeConfig: const PickerConfig(
+          maxSelection: 10,
+          showCameraTile:
+              false, // Usually camera is hidden if coming from camera
+        ),
         primaryColor: const Color(0xFF10B981), // Emerald
         brightness: Theme.of(context).brightness,
 

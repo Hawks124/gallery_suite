@@ -5,6 +5,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 import '../../gallery_suite.dart';
 
@@ -25,11 +26,15 @@ class CameraScreen extends StatefulWidget {
   // The standalone configuration for multi-capture mode.
   final CameraPickerConfig? standaloneConfig;
 
+  // Callback to transition to the gallery picker.
+  final Future<void> Function()? onGalleryTap;
+
   const CameraScreen({
     super.key,
     required this.captureMode,
     required this.primaryColor,
     this.standaloneConfig,
+    this.onGalleryTap,
   });
 
   @override
@@ -55,6 +60,7 @@ class _CameraScreenState extends State<CameraScreen>
   // Standalone Multi-capture state
   final List<XFile> _capturedFiles = [];
   bool get _isStandalone => widget.standaloneConfig != null;
+  Uint8List? _galleryThumbnail;
 
   // Animation controllers
   late AnimationController _captureAnimCtrl;
@@ -74,12 +80,38 @@ class _CameraScreenState extends State<CameraScreen>
     );
     _initializeCamera();
 
-    // Show a brief "long press to record" hint when video is enabled
-    if (_isStandalone && widget.standaloneConfig!.enableVideo) {
+    // Show a brief "long press to record" hint when video is enabled and photo is enabled
+    if (_isStandalone &&
+        widget.standaloneConfig!.enableVideo &&
+        widget.standaloneConfig!.enablePhoto) {
       _showVideoHint = true;
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted) setState(() => _showVideoHint = false);
       });
+    }
+
+    if (_isStandalone && widget.standaloneConfig!.enableGallery) {
+      _fetchLatestGalleryThumbnail();
+    }
+  }
+
+  Future<void> _fetchLatestGalleryThumbnail() async {
+    try {
+      final hasAccess = await MediaService.instance.requestPermission();
+      if (!hasAccess) return;
+
+      final albums = await MediaService.instance.getAlbums(RequestType.image);
+      if (albums.isEmpty) return;
+
+      // Leverage the robust decode queue and OS fallbacks used by the main picker
+      final bytes =
+          await MediaService.instance.getAlbumCoverThumbnail(albums.first);
+
+      if (bytes != null && mounted) {
+        setState(() => _galleryThumbnail = bytes);
+      }
+    } catch (e) {
+      debugPrint('[CameraScreen] Error fetching thumbnail: $e');
     }
   }
 
@@ -433,6 +465,35 @@ class _CameraScreenState extends State<CameraScreen>
                           color: Colors.black, size: 22),
                     ),
                   )
+                else if (_isStandalone &&
+                    widget.standaloneConfig!.enableGallery)
+                  GestureDetector(
+                    onTap: () {
+                      if (widget.onGalleryTap != null) widget.onGalleryTap!();
+                    },
+                    child: Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.1),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
+                        image: _galleryThumbnail != null
+                            ? DecorationImage(
+                                image: MemoryImage(_galleryThumbnail!),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                      ),
+                      child: _galleryThumbnail == null
+                          ? const Icon(Icons.photo_library_rounded,
+                              color: Colors.white, size: 22)
+                          : null,
+                    ),
+                  )
                 else
                   const SizedBox(width: 52),
 
@@ -685,12 +746,26 @@ class _CameraScreenState extends State<CameraScreen>
   }
 
   Widget _buildPremiumCaptureButton() {
-    final isVideoMode = widget.captureMode == CameraCaptureMode.video ||
-        (_isStandalone && widget.standaloneConfig!.enableVideo);
+    final bool enableVideo = _isStandalone
+        ? widget.standaloneConfig!.enableVideo
+        : (widget.captureMode == CameraCaptureMode.video);
+    final bool enablePhoto = _isStandalone
+        ? widget.standaloneConfig!.enablePhoto
+        : (widget.captureMode == CameraCaptureMode.photo);
 
     return GestureDetector(
       onTap: () {
         if (_showVideoHint) setState(() => _showVideoHint = false);
+
+        // Enforce Video-Only tap behavior
+        if (!enablePhoto && enableVideo) {
+          _toggleVideoRecording();
+          return;
+        }
+
+        if (!enablePhoto) {
+          return; // Prevent tap if photo disabled and not video-only
+        }
 
         final hasVideo = _capturedFiles.any((f) =>
             f.path.toLowerCase().endsWith('.mp4') ||
@@ -707,7 +782,7 @@ class _CameraScreenState extends State<CameraScreen>
         }
         _capturePhoto();
       },
-      onLongPress: isVideoMode
+      onLongPress: enableVideo && enablePhoto
           ? () {
               if (_showVideoHint) setState(() => _showVideoHint = false);
 
@@ -728,7 +803,7 @@ class _CameraScreenState extends State<CameraScreen>
               _toggleVideoRecording();
             }
           : null,
-      onLongPressUp: isVideoMode
+      onLongPressUp: enableVideo && enablePhoto
           ? () {
               if (_isRecording) _toggleVideoRecording();
             }

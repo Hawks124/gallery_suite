@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import 'picker_theme.dart';
+import 'picker_config.dart';
 import 'exit_confirmation.dart';
 import '../intl/picker_text_delegate.dart';
 import '../intl/english_picker_text_delegate.dart';
@@ -14,12 +15,21 @@ class CameraPickerConfig {
   /// Note: Video recording inherently restricts the session to 1 regardless of this value.
   final int maxSelection;
 
+  /// Whether to allow capturing photos. Defaults to `true`.
+  final bool enablePhoto;
+
   /// Whether to allow recording video. Defaults to `true`.
   /// If `true`, a long press on the shutter will record video (if maxSelection permits).
   final bool enableVideo;
 
   /// Whether to record audio when capturing video. Defaults to `true`.
   final bool enableAudio;
+
+  /// Whether to display a gallery thumbnail button to transition to the full picker. Defaults to `true`.
+  final bool enableGallery;
+
+  /// Optional configuration for the gallery picker if [enableGallery] is true.
+  final PickerConfig? galleryModeConfig;
 
   /// Primary action color for the camera UI elements (e.g. shutter ring, checkmark).
   final Color primaryColor;
@@ -45,8 +55,11 @@ class CameraPickerConfig {
 
   const CameraPickerConfig({
     this.maxSelection = 5,
+    this.enablePhoto = true,
     this.enableVideo = true,
     this.enableAudio = true,
+    this.enableGallery = true,
+    this.galleryModeConfig,
     this.primaryColor = const Color(0xFF007AFF),
     this.brightness = Brightness.dark,
     this.themeData,

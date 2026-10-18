@@ -112,11 +112,24 @@ class CustomMediaPicker {
         transitionDuration: const Duration(milliseconds: 320),
         reverseTransitionDuration: const Duration(milliseconds: 260),
         pageBuilder: (ctx, animation, _) => CameraScreen(
-          // Currently, CameraScreen supports photo or video via captureMode.
           // Since standalone supports both via Gestures (Tap=Photo, Hold=Video), we pass photo as base.
           captureMode: CameraCaptureMode.photo,
           primaryColor: config.primaryColor,
           standaloneConfig: config,
+          onGalleryTap: config.enableGallery
+              ? () async {
+                  // Launch the actual picker with the provided gallery config (or defaults)
+                  final items = await CustomMediaPicker.show(
+                    context: context,
+                    config: config.galleryModeConfig ??
+                        const PickerConfig(showCameraTile: false),
+                  );
+                  // If user selected items, pop the camera and return them up the chain
+                  if (items != null && items.isNotEmpty && context.mounted) {
+                    Navigator.of(context).pop(items);
+                  }
+                }
+              : null,
         ),
         transitionsBuilder: (ctx, animation, _, child) {
           return SlideTransition(
@@ -398,6 +411,9 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   }
 
   void _onScroll() {
+    // Only paginate and prefetch the local gallery!
+    if (_isCloudMode || _isClipboardMode) return;
+
     // -- Pagination trigger (1500px = ~2 screens ahead) --------------------
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 1500) {
@@ -1896,7 +1912,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             itemCount: _selected.length,
-            onReorder: (oldIndex, newIndex) {
+            onReorderItem: (oldIndex, newIndex) {
               setState(() {
                 if (oldIndex < newIndex) {
                   newIndex -= 1;

@@ -532,7 +532,12 @@ final assets = await CustomMediaPicker.camera(
   context: context,
   config: CameraPickerConfig(
     maxSelection: 10,
-    enableVideo: true,
+    enablePhoto: true,         // Allows short-press to capture photos
+    enableVideo: true,         // Allows long-press to record videos
+    enableGallery: true,       // Shows the gallery thumbnail button
+    galleryModeConfig: const PickerConfig(
+      maxSelection: 10,        // Pass config to the gallery if launched
+    ),
     primaryColor: Theme.of(context).primaryColor,
     // Inject your BYOE directly here!
     onEditMedia: (ctx, asset, file) async {
@@ -1173,15 +1178,18 @@ The entire look and feel for the main gallery is controlled via `PickerConfig`. 
 
 Controls the standalone camera behavior initiated through `CustomMediaPicker.camera()`.
 
-| Parameter          | Type                      | Default                     | Description                                                                                                                  |
-| ------------------ | ------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `maxSelection`     | `int`                     | `10`                        | Setting this higher than 1 allows the user to take multiple distinct photos in a single camera session (burst/rafale style). |
-| `enableVideo`      | `bool`                    | `true`                      | When `true`, long-pressing the capture button records a video. Short-pressing captures a photo.                              |
-| `primaryColor`     | `Color`                   | `Color(0xFF007AFF)`         | The primary accent color for UI elements inside the standalone camera.                                                       |
-| `brightness`       | `Brightness?`             | `null`                      | Force a specific theme. By default is derived from system theme.                                                             |
-| `onEditMedia`      | `Function?`               | `null`                      | Optional BYOE hook directly inside the capture review screen! Seamlessly opens your editor on any selected taken shot.       |
-| `textDelegate`     | `PickerTextDelegate`      | `EnglishPickerTextDelegate` | Override the camera localization text.                                                                                       |
-| `exitConfirmation` | `ExitConfirmationConfig?` | `null`                      | Custom guard to prevent users from exiting the camera accidentally after taking a bunch of photos/videos without sending.    |
+| Parameter           | Type                      | Default                     | Description                                                                                                                  |
+| ------------------- | ------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `maxSelection`      | `int`                     | `10`                        | Setting this higher than 1 allows the user to take multiple distinct photos in a single camera session (burst/rafale style). |
+| `enablePhoto`       | `bool`                    | `true`                      | When `true`, short-pressing the capture button takes a photo.                                                                |
+| `enableVideo`       | `bool`                    | `true`                      | When `true`, long-pressing the capture button records a video. Short-pressing captures a photo (if `enablePhoto` is true).   |
+| `enableGallery`     | `bool`                    | `true`                      | When `true`, displays a thumbnail in the bottom left that, when tapped, smoothly routes the user to the gallery picker.      |
+| `galleryModeConfig` | `PickerConfig?`           | `null`                      | An optional `PickerConfig` to pass to the gallery if `enableGallery` is tapped.                                              |
+| `primaryColor`      | `Color`                   | `Color(0xFF007AFF)`         | The primary accent color for UI elements inside the standalone camera.                                                       |
+| `brightness`        | `Brightness?`             | `null`                      | Force a specific theme. By default is derived from system theme.                                                             |
+| `onEditMedia`       | `Function?`               | `null`                      | Optional BYOE hook directly inside the capture review screen! Seamlessly opens your editor on any selected taken shot.       |
+| `textDelegate`      | `PickerTextDelegate`      | `EnglishPickerTextDelegate` | Override the camera localization text.                                                                                       |
+| `exitConfirmation`  | `ExitConfirmationConfig?` | `null`                      | Custom guard to prevent users from exiting the camera accidentally after taking a bunch of photos/videos without sending.    |
 
 ---
 

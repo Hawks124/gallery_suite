@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:async';
 import '../utils/suite_utils.dart';
 import '../intl/picker_text_delegate.dart';
 import '../models/picker_theme.dart';
+import '../services/google_photos_service.dart';
 
 // A placeholder widget displayed when the user taps "   Google Photos" but hasn't authenticated yet.
 
@@ -28,15 +30,36 @@ class GooglePhotosConnectPlaceholder extends StatefulWidget {
 class _GooglePhotosConnectPlaceholderState
     extends State<GooglePhotosConnectPlaceholder> {
   bool _isSigningIn = false;
+  StreamSubscription<bool>? _authSub;
+  Timer? _safetyTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen to auth state changes to reset the spinner reactively
+    _authSub = GooglePhotosService.instance.onAuthStateChanged.listen((_) {
+      if (mounted && _isSigningIn) {
+        setState(() => _isSigningIn = false);
+        _safetyTimer?.cancel();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSub?.cancel();
+    _safetyTimer?.cancel();
+    super.dispose();
+  }
 
   void _handleConnect() {
     if (_isSigningIn) return;
     setState(() => _isSigningIn = true);
-    // Fire the callback — the parent is responsible for the async flow.
-    // We reset loading after a generous timeout to cover edge cases
-    // (user cancels browser, error, etc.)
     widget.onConnect();
-    Future.delayed(const Duration(seconds: 15), () {
+    // Safety fallback: if the user closes the browser or something goes wrong,
+    // reset after 2 minutes so the button isn't stuck forever.
+    _safetyTimer?.cancel();
+    _safetyTimer = Timer(const Duration(minutes: 2), () {
       if (mounted) setState(() => _isSigningIn = false);
     });
   }
