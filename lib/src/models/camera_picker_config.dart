@@ -1,12 +1,13 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-import 'picker_theme.dart';
-import 'picker_config.dart';
-import 'exit_confirmation.dart';
-import '../intl/picker_text_delegate.dart';
 import '../intl/english_picker_text_delegate.dart';
+import '../intl/picker_text_delegate.dart';
+import 'exit_confirmation.dart';
+import 'picker_config.dart';
+import 'picker_theme.dart';
 
 /// Configuration for the standalone [CustomMediaPicker.camera] entry point.
 class CameraPickerConfig {
@@ -45,7 +46,11 @@ class CameraPickerConfig {
   /// Standardizes editing behaviour in the full-screen capture preview.
   /// The `asset` argument is always `null` in standalone mode as the image is pure RAM/Disk.
   final Future<File?> Function(
-      BuildContext context, AssetEntity? asset, File originalFile)? onEditMedia;
+    BuildContext context,
+    AssetEntity? asset,
+    File originalFile,
+  )?
+  onEditMedia;
 
   /// Prevents accidental exits by warning the user if they press back while having captured photos.
   final ExitConfirmationConfig? exitConfirmation;

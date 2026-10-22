@@ -1,0 +1,41 @@
+name: pana
+
+# The pub.dev score is computed by pana on Linux, so the authoritative run
+# has to happen on a Linux runner — running it on Windows is not
+# representative (and pana >= 0.23.12 does not even work on Windows).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  score:
+    name: pub.dev score
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Install pana
+        run: dart pub global activate pana
+
+      - name: Run pana
+        run: |
+          pana \
+            --flutter-sdk "$FLUTTER_ROOT" \
+            --exit-code-threshold 0 \
+            .
+
+      - name: Publish dry-run
+        run: dart pub publish --dry-run

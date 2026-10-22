@@ -7,8 +7,10 @@
 import 'dart:typed_data';
 import 'package:photo_manager/photo_manager.dart';
 
+import '../enum/enum.dart';
 import '../models/picker_asset.dart';
 import '../services/media_service.dart';
+import '../services/sort_service.dart';
 import 'media_source.dart';
 
 /// Media source backed by `photo_manager` for iOS, Android, and macOS.
@@ -39,23 +41,31 @@ class NativeMediaSource implements MediaSource {
   }
 
   @override
+  Set<PickerSortOrder> get supportedSortOrders =>
+      SortService.instance.supportedOrders;
+
+  @override
   Future<List<PickerAsset>> getAssets({
     required AlbumDescriptor album,
     required int page,
     required int pageSize,
+    PickerSortOrder? sortOrder,
   }) async {
     if (album.nativeAlbum == null) return [];
     final entities = await _service.getAssets(
       album: album.nativeAlbum!,
       page: page,
       pageSize: pageSize,
+      sortOrder: sortOrder,
     );
     return entities.map((e) => LocalPickerAsset(e)).toList();
   }
 
   @override
   Future<List<PickerAsset>> searchAssets(
-      AlbumDescriptor album, String query) async {
+    AlbumDescriptor album,
+    String query,
+  ) async {
     if (album.nativeAlbum == null) return [];
     final entities = await _service.searchAssets(album.nativeAlbum!, query);
     return entities.map((e) => LocalPickerAsset(e)).toList();
@@ -63,26 +73,28 @@ class NativeMediaSource implements MediaSource {
 
   @override
   Future<Uint8List?> getThumbnail(PickerAsset asset, {int priority = 10}) {
-    if (asset is! LocalPickerAsset) return Future.value(null);
+    if (asset is! LocalPickerAsset) return Future.value();
     return _service.getThumbnail(asset.entity, priority: priority);
   }
 
   @override
   Future<Uint8List?> getPreviewThumbnail(PickerAsset asset) {
-    if (asset is! LocalPickerAsset) return Future.value(null);
+    if (asset is! LocalPickerAsset) return Future.value();
     return _service.getPreviewThumbnail(asset.entity);
   }
 
   @override
   Future<Uint8List?> getAlbumCoverThumbnail(AlbumDescriptor album) {
-    if (album.nativeAlbum == null) return Future.value(null);
+    if (album.nativeAlbum == null) return Future.value();
     return _service.getAlbumCoverThumbnail(album.nativeAlbum!);
   }
 
   @override
   void prefetchThumbnails(List<PickerAsset> assets) {
-    final locals =
-        assets.whereType<LocalPickerAsset>().map((a) => a.entity).toList();
+    final locals = assets
+        .whereType<LocalPickerAsset>()
+        .map((a) => a.entity)
+        .toList();
     if (locals.isNotEmpty) _service.prefetchThumbnails(locals);
   }
 }

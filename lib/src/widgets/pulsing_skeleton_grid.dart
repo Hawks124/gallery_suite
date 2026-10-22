@@ -5,7 +5,7 @@ import '../models/picker_theme.dart';
 class PulsingSkeletonGrid extends StatefulWidget {
   final PickerTheme theme;
 
-  const PulsingSkeletonGrid({super.key, required this.theme});
+  const PulsingSkeletonGrid({required this.theme, super.key});
 
   @override
   State<PulsingSkeletonGrid> createState() => _PulsingSkeletonGridState();
@@ -54,7 +54,7 @@ class _PulsingSkeletonGridState extends State<PulsingSkeletonGrid>
 
     return AnimatedBuilder(
       animation: _anim,
-      builder: (_, __) {
+      builder: (_, _) {
         final color = Color.lerp(
           widget.theme.shimmerBase,
           widget.theme.shimmerHighlight,

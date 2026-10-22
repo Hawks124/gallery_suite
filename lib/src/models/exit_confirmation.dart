@@ -41,10 +41,7 @@ class StandardExitConfirmation extends ExitConfirmationConfig {
           scale: Tween<double>(begin: 0.95, end: 1.0).animate(
             CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
           ),
-          child: FadeTransition(
-            opacity: animation,
-            child: child,
-          ),
+          child: FadeTransition(opacity: animation, child: child),
         );
       },
       pageBuilder: (ctx, anim, _) {
@@ -112,17 +109,22 @@ class StandardExitConfirmation extends ExitConfirmationConfig {
                         onPressed: () => Navigator.of(ctx).pop(false),
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           foregroundColor: isDark
                               ? const Color(0xFFA1A1AA)
                               : const Color(0xFF64748B),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         child: Text(
                           cancelText,
                           style: const TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w600),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -133,14 +135,19 @@ class StandardExitConfirmation extends ExitConfirmationConfig {
                           foregroundColor: Colors.white,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         child: Text(
                           confirmText,
                           style: const TextStyle(
-                              fontSize: 14, fontWeight: FontWeight.w600),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],

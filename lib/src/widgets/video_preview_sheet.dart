@@ -1,17 +1,17 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
-import '../utils/suite_utils.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 
-import '../models/picker_asset.dart';
-import '../services/google_photos_service.dart';
 import '../intl/picker_text_delegate.dart';
+import '../models/picker_asset.dart';
 import '../models/picker_theme.dart';
+import '../services/google_photos_service.dart';
+import '../utils/suite_utils.dart';
 import 'auth_image.dart';
 
 class VideoPreviewSheet extends StatefulWidget {
@@ -23,11 +23,11 @@ class VideoPreviewSheet extends StatefulWidget {
   final bool isMultiSelect;
 
   const VideoPreviewSheet({
-    super.key,
     required this.asset,
     required this.theme,
     required this.primaryColor,
     required this.textDelegate,
+    super.key,
     this.googleService,
     this.isMultiSelect = false,
   });
@@ -45,8 +45,9 @@ class VideoPreviewSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor:
-          Colors.black.withValues(alpha: 0.85), // Deep cinematic background
+      barrierColor: Colors.black.withValues(
+        alpha: 0.85,
+      ), // Deep cinematic background
       builder: (_) => VideoPreviewSheet(
         asset: asset,
         theme: theme,
@@ -122,7 +123,8 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
               controller = VideoPlayerController.file(tempFile);
             } else {
               throw Exception(
-                  'Failed to download video bytes from Google Photos');
+                'Failed to download video bytes from Google Photos',
+              );
             }
           } else {
             // Non-ppa remote URLs (standard Google Photos URLs with =dv suffix)
@@ -281,8 +283,10 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
 
               // Glassmorphic Header
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
                 child: Row(
                   children: [
                     Expanded(
@@ -297,7 +301,7 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
                               letterSpacing: 0.5,
                               fontWeight: FontWeight.w600,
                               fontFeatures: const [
-                                FontFeature.tabularFigures()
+                                FontFeature.tabularFigures(),
                               ],
                             ),
                           ),
@@ -323,12 +327,16 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          color:
-                              widget.theme.primaryText.withValues(alpha: 0.05),
+                          color: widget.theme.primaryText.withValues(
+                            alpha: 0.05,
+                          ),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(Icons.close_rounded,
-                            color: widget.theme.primaryText, size: 20),
+                        child: Icon(
+                          Icons.close_rounded,
+                          color: widget.theme.primaryText,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ],
@@ -345,10 +353,7 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
               ),
 
               // Premium Controls
-              FadeTransition(
-                opacity: _fadeController,
-                child: _buildControls(),
-              ),
+              FadeTransition(opacity: _fadeController, child: _buildControls()),
               SizedBox(height: MediaQuery.of(context).padding.bottom + 24),
             ],
           ),
@@ -359,20 +364,22 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
 
   Widget _buildVideoArea(double ar) {
     if (_isInitializing) {
-      return Container(
+      return DecoratedBox(
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Center(
           child: CircularProgressIndicator(
-              color: widget.primaryColor, strokeWidth: 3),
+            color: widget.primaryColor,
+            strokeWidth: 3,
+          ),
         ),
       );
     }
 
     if (_hasError || _controller == null) {
-      return Container(
+      return DecoratedBox(
         decoration: BoxDecoration(
           color: widget.theme.elevated,
           borderRadius: BorderRadius.circular(24),
@@ -414,7 +421,8 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
                       const SizedBox(height: 16),
                       TextButton.icon(
                         onPressed: () => _launchRemoteUrl(
-                            (widget.asset as RemotePickerAsset).baseUrl),
+                          (widget.asset as RemotePickerAsset).baseUrl,
+                        ),
                         icon: const Icon(Icons.open_in_new_rounded),
                         label: const Text('Open in Google Photos'),
                         style: TextButton.styleFrom(
@@ -430,8 +438,11 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.videocam_off_outlined,
-                        size: 48, color: widget.theme.secondaryText),
+                    Icon(
+                      Icons.videocam_off_outlined,
+                      size: 48,
+                      color: widget.theme.secondaryText,
+                    ),
                     const SizedBox(height: 12),
                     Text(
                       'Failed to play this video.',
@@ -450,7 +461,7 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
 
     return GestureDetector(
       onTap: _togglePlay,
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(24),
@@ -459,7 +470,7 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
               color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 20,
               offset: const Offset(0, 10),
-            )
+            ),
           ],
         ),
         child: ClipRRect(
@@ -490,7 +501,6 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
                               shape: BoxShape.circle,
                               border: Border.all(
                                 color: Colors.white.withValues(alpha: 0.3),
-                                width: 1,
                               ),
                             ),
                             child: const Icon(
@@ -563,15 +573,18 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
                       data: SliderThemeData(
                         trackHeight: 4,
                         thumbShape: const RoundSliderThumbShape(
-                            enabledThumbRadius: 7, elevation: 4),
+                          enabledThumbRadius: 7,
+                          elevation: 4,
+                        ),
                         activeTrackColor: widget.primaryColor,
-                        inactiveTrackColor:
-                            widget.theme.primaryText.withValues(alpha: 0.08),
+                        inactiveTrackColor: widget.theme.primaryText.withValues(
+                          alpha: 0.08,
+                        ),
                         thumbColor: widget.primaryColor,
                         overlayShape: SliderComponentShape.noOverlay,
                       ),
                       child: Slider(
-                        value: progress.toDouble(),
+                        value: progress,
                         onChanged: (v) {
                           final ms = (v * total.inMilliseconds).round();
                           ctrl.seekTo(Duration(milliseconds: ms));
@@ -591,7 +604,7 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               fontFeatures: const [
-                                FontFeature.tabularFigures()
+                                FontFeature.tabularFigures(),
                               ],
                             ),
                           ),
@@ -602,7 +615,7 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               fontFeatures: const [
-                                FontFeature.tabularFigures()
+                                FontFeature.tabularFigures(),
                               ],
                             ),
                           ),
@@ -635,9 +648,9 @@ class _VideoPreviewSheetState extends State<VideoPreviewSheet>
           gradient: LinearGradient(
             colors: [
               widget.primaryColor,
-              HSLColor.fromColor(widget.primaryColor)
-                  .withLightness(0.4)
-                  .toColor(),
+              HSLColor.fromColor(
+                widget.primaryColor,
+              ).withLightness(0.4).toColor(),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,

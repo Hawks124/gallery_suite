@@ -56,30 +56,32 @@ class MediaItem {
     this.useOriginalFile = false,
     this.editedFile,
     this.processedFile,
-  })  : remoteAsset = null,
-        fileAsset = null;
+  }) : remoteAsset = null,
+       fileAsset = null;
 
   // Creates a [MediaItem] wrapping a **remote/cloud** asset.
   const MediaItem.remote({
     required RemotePickerAsset this.remoteAsset,
     this.editedFile,
     this.processedFile,
-  })  : asset = null,
-        fileAsset = null,
-        useOriginalFile = false;
+  }) : asset = null,
+       fileAsset = null,
+       useOriginalFile = false;
 
   // Creates a [MediaItem] wrapping a **Web/Desktop** raw asset.
   const MediaItem.file({
     required FilePickerAsset this.fileAsset,
     this.editedFile,
     this.processedFile,
-  })  : asset = null,
-        remoteAsset = null,
-        useOriginalFile = false;
+  }) : asset = null,
+       remoteAsset = null,
+       useOriginalFile = false;
 
   // Convenience factory to create a [MediaItem] from any [PickerAsset].
-  factory MediaItem.fromAsset(PickerAsset asset,
-      {bool useOriginalFile = false}) {
+  factory MediaItem.fromAsset(
+    PickerAsset asset, {
+    bool useOriginalFile = false,
+  }) {
     if (asset is LocalPickerAsset) {
       return MediaItem(asset: asset.entity, useOriginalFile: useOriginalFile);
     } else if (asset is RemotePickerAsset) {
@@ -124,22 +126,22 @@ class MediaItem {
   bool get isVideo => isRemote
       ? remoteAsset!.type == AssetType.video
       : (isFile
-          ? fileAsset!.type == AssetType.video
-          : asset!.type == AssetType.video);
+            ? fileAsset!.type == AssetType.video
+            : asset!.type == AssetType.video);
 
   // Returns `true` if this asset is an image.
   bool get isImage => isRemote
       ? remoteAsset!.type == AssetType.image
       : (isFile
-          ? fileAsset!.type == AssetType.image
-          : asset!.type == AssetType.image);
+            ? fileAsset!.type == AssetType.image
+            : asset!.type == AssetType.image);
 
   // Returns `true` if this asset is an audio file.
   bool get isAudio => isRemote
       ? remoteAsset!.type == AssetType.audio
       : (isFile
-          ? fileAsset!.type == AssetType.audio
-          : asset!.type == AssetType.audio);
+            ? fileAsset!.type == AssetType.audio
+            : asset!.type == AssetType.audio);
 
   // The pixel width of the image or video.
   int get width => isRemote

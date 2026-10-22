@@ -5,15 +5,14 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui';
+
+import 'package:app_links/app_links.dart';
 import 'package:cached_network_image_ce/cached_network_image.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:file_selector/file_selector.dart';
-
-import 'package:app_links/app_links.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../gallery_suite.dart';
@@ -81,12 +80,13 @@ class CustomMediaPicker {
             : _MediaPickerPage(config: config),
         transitionsBuilder: (ctx, animation, _, child) {
           return SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 1),
-              end: Offset.zero,
-            ).animate(
-              CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-            ),
+            position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+                .animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
             child: child,
           );
         },
@@ -121,7 +121,8 @@ class CustomMediaPicker {
                   // Launch the actual picker with the provided gallery config (or defaults)
                   final items = await CustomMediaPicker.show(
                     context: context,
-                    config: config.galleryModeConfig ??
+                    config:
+                        config.galleryModeConfig ??
                         const PickerConfig(showCameraTile: false),
                   );
                   // If user selected items, pop the camera and return them up the chain
@@ -133,12 +134,13 @@ class CustomMediaPicker {
         ),
         transitionsBuilder: (ctx, animation, _, child) {
           return SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 1),
-              end: Offset.zero,
-            ).animate(
-              CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-            ),
+            position: Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+                .animate(
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  ),
+                ),
             child: child,
           );
         },
@@ -203,6 +205,9 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   // -- Conversion State -------------------------------------------------------
   bool _isConverting = false;
 
+  // -- Sorting State ----------------------------------------------------------
+  PickerSortOrder _currentSortOrder = PickerSortOrder.newest;
+
   /// Initial page loads 80 items; subsequent pages fetch 120 for fewer
   /// round-trips on large libraries.
   int get _pageSize => _page == 0 ? 80 : 120;
@@ -218,6 +223,13 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
+    // Honour the configured initial sort order, falling back to the default
+    // one when the current source cannot resolve it.
+    final requestedOrder = widget.config.defaultSortOrder;
+    if (_source.supportedSortOrders.contains(requestedOrder)) {
+      _currentSortOrder = requestedOrder;
+    }
+
     // Map any passed initial selection into the internal state.
     if (widget.config.initialSelection != null) {
       for (final item in widget.config.initialSelection!) {
@@ -231,9 +243,10 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
         if (item.editedFile != null) {
           _editedFiles[item.asset?.id ??
-              item.remoteAsset?.id ??
-              item.fileAsset?.id ??
-              ''] = item.editedFile!;
+                  item.remoteAsset?.id ??
+                  item.fileAsset?.id ??
+                  ''] =
+              item.editedFile!;
         }
       }
     }
@@ -241,7 +254,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     // Apply performance config to the shared native decode queue (if applicable).
     // The FileSelectorMediaSource handles its own loading.
     // photo_manager is unavailable on Web/Desktop — skip native decode queue.
-    final isDesktopOrWeb = kIsWeb ||
+    final isDesktopOrWeb =
+        kIsWeb ||
         (!kIsWeb &&
             (defaultTargetPlatform == TargetPlatform.windows ||
                 defaultTargetPlatform == TargetPlatform.linux));
@@ -262,8 +276,9 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     _googleProvider.restoreState();
 
     // Listen for auth changes (crucial for Web's async GIS flow)
-    _authSubscription =
-        _googleService.onAuthStateChanged.listen((isAuthenticated) {
+    _authSubscription = _googleService.onAuthStateChanged.listen((
+      isAuthenticated,
+    ) {
       if (mounted) {
         setState(() {}); // Re-build to hide placeholder/show albums
       }
@@ -279,7 +294,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final isDark = widget.config.brightness == Brightness.dark ||
+    final isDark =
+        widget.config.brightness == Brightness.dark ||
         (widget.config.brightness == null &&
             MediaQuery.of(context).platformBrightness == Brightness.dark);
     _theme = PickerTheme(isDark, widget.config.themeData);
@@ -392,9 +408,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
       album: _currentAlbum!,
       page: _page,
       pageSize: _pageSize,
-    ))
-        .where((a) => a.type != AssetType.audio)
-        .toList();
+      sortOrder: _currentSortOrder,
+    )).where((a) => a.type != AssetType.audio).toList();
 
     if (!mounted) return;
     setState(() {
@@ -434,7 +449,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     final scrollPixels = position.pixels;
 
     // Estimate which asset index we're at (~110px per row, 3 columns).
-    final estimatedRowHeight = 110.0;
+    const estimatedRowHeight = 110.0;
     final currentRow = (scrollPixels / estimatedRowHeight).floor();
     final visibleRows = (viewportHeight / estimatedRowHeight).ceil();
     final startIdx = (currentRow + visibleRows) * 3; // just past viewport
@@ -473,7 +488,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
   Future<void> _onCameraCaptured(File file) async {
     // On Web/Desktop, PhotoManager.editor is unavailable — return file as FilePickerAsset
-    final isDesktopOrWeb = kIsWeb ||
+    final isDesktopOrWeb =
+        kIsWeb ||
         (!kIsWeb &&
             (defaultTargetPlatform == TargetPlatform.windows ||
                 defaultTargetPlatform == TargetPlatform.linux));
@@ -514,8 +530,6 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
               title: 'Captured_${DateTime.now().millisecondsSinceEpoch}.jpg',
             ));
 
-      if (savedAsset == null) return; // ignore: unnecessary_null_comparison
-
       if (_isVideoMode || widget.config.maxSelection == 1) {
         // Single select: return immediately
         if (mounted) Navigator.of(context).pop([LocalPickerAsset(savedAsset)]);
@@ -540,7 +554,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
   Future<void> _pickFiles() async {
     if (_source is FileSelectorMediaSource) {
-      final newAssets = await (_source as FileSelectorMediaSource).pickFiles(
+      final newAssets = await (_source).pickFiles(
         requestType: widget.config.requestType,
       );
       if (newAssets.isNotEmpty) {
@@ -585,7 +599,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     final hasChanges = _selected.isNotEmpty || _editedFiles.isNotEmpty;
     if (!hasChanges || widget.config.exitConfirmation == null) {
       if (!mounted) return;
-      Navigator.of(context).pop(null);
+      Navigator.of(context).pop();
       return;
     }
 
@@ -596,13 +610,13 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
     if (!mounted) return;
     if (shouldExit) {
-      Navigator.of(context).pop(null);
+      Navigator.of(context).pop();
     }
   }
 
   Future<void> _onConfirm() async {
     if (_selected.isEmpty) {
-      Navigator.of(context).pop(null);
+      Navigator.of(context).pop();
       return;
     }
 
@@ -622,21 +636,27 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
         if (originalFile != null) {
           // Native defense: always rescue HEIC to JPG to avoid downstream crashes
-          File safeFile =
-              await NativeMediaCompressor.convertHeicIfNeeded(originalFile);
+          File safeFile = await NativeMediaCompressor.convertHeicIfNeeded(
+            originalFile,
+          );
           bool wasHeicConverted = safeFile.path != originalFile.path;
 
           // Compression Pipeline priority 1: BYOC Hook
           if (widget.config.onCompressMedia != null) {
             if (!mounted) return;
             processedFile = await widget.config.onCompressMedia!(
-                context, asset.entity, safeFile);
+              context,
+              asset.entity,
+              safeFile,
+            );
           }
           // Compression Pipeline priority 2: Native Built-in
           else if (widget.config.autoCompressImages &&
               asset.entity.type == AssetType.image) {
             processedFile = await NativeMediaCompressor.compressImage(
-                safeFile, widget.config.imageCompressionQuality);
+              safeFile,
+              widget.config.imageCompressionQuality,
+            );
           }
 
           // If no compression was applied but HEIC was rescued, use rescued file
@@ -645,22 +665,25 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
           }
         }
 
-        items.add(MediaItem(
-          asset: asset.entity,
-          useOriginalFile: widget.config.useOriginalFile,
-          editedFile: _editedFiles[asset.id],
-          processedFile: processedFile,
-        ));
+        items.add(
+          MediaItem(
+            asset: asset.entity,
+            useOriginalFile: widget.config.useOriginalFile,
+            editedFile: _editedFiles[asset.id],
+            processedFile: processedFile,
+          ),
+        );
       } else if (asset is RemotePickerAsset) {
-        items.add(MediaItem.remote(
-          remoteAsset: asset,
-          editedFile: _editedFiles[asset.id],
-        ));
+        items.add(
+          MediaItem.remote(
+            remoteAsset: asset,
+            editedFile: _editedFiles[asset.id],
+          ),
+        );
       } else if (asset is FilePickerAsset) {
-        items.add(MediaItem.file(
-          fileAsset: asset,
-          editedFile: _editedFiles[asset.id],
-        ));
+        items.add(
+          MediaItem.file(fileAsset: asset, editedFile: _editedFiles[asset.id]),
+        );
       }
     }
 
@@ -716,8 +739,11 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
             }
           });
 
-          final launched = await launchUrl(Uri.parse(pickedUrl),
-              mode: LaunchMode.inAppBrowserView, webOnlyWindowName: '_self');
+          final launched = await launchUrl(
+            Uri.parse(pickedUrl),
+            mode: LaunchMode.inAppBrowserView,
+            webOnlyWindowName: '_self',
+          );
 
           if (launched) {
             await completer.future.timeout(const Duration(seconds: 60));
@@ -793,10 +819,12 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
   Future<void> _fetchClipboard() async {
     try {
       debugPrint(
-          '📋 [PickerPage] _fetchClipboard -> calling ClipboardService.instance.fetchAssets()...');
+        ' [PickerPage] _fetchClipboard -> calling ClipboardService.instance.fetchAssets()...',
+      );
       final assets = await ClipboardService.instance.fetchAssets();
       debugPrint(
-          '📋 [PickerPage] _fetchClipboard -> got ${assets.length} assets');
+        ' [PickerPage] _fetchClipboard -> got ${assets.length} assets',
+      );
       if (!mounted) return;
 
       if (assets.isNotEmpty) {
@@ -817,7 +845,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
         );
       }
     } catch (e) {
-      debugPrint('📋 [PickerPage] _fetchClipboard -> ERROR: $e');
+      debugPrint(' [PickerPage] _fetchClipboard -> ERROR: $e');
     } finally {
       if (mounted) {
         setState(() => _isClipboardLoading = false);
@@ -827,6 +855,31 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
   // Legacy _loadCloudPhotos has been permanently removed
   // to comply with Google's March 2025 Privacy Rules.
+
+  void _showSortSheet() {
+    HapticFeedback.lightImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black54,
+      builder: (_) => SmartSortSheet(
+        currentSortOrder: _currentSortOrder,
+        primaryColor: widget.config.primaryColor,
+        theme: _theme,
+        textDelegate: widget.config.textDelegate,
+        supportedOrders: _source.supportedSortOrders,
+        onSelect: (order) {
+          Navigator.pop(context);
+          if (_currentSortOrder == order) return;
+          setState(() {
+            _currentSortOrder = order;
+            if (_scrollController.hasClients) _scrollController.jumpTo(0);
+          });
+          _loadAssets(reset: true);
+        },
+      ),
+    );
+  }
 
   void _showAlbumSheet() {
     final bool canShowGoogle = widget.config.googlePhotosConfig.enabled;
@@ -844,13 +897,13 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
         initialChildSize: 0.48,
         minChildSize: 0.3,
         maxChildSize: 0.88,
-        expand: true,
         snap: true,
         snapSizes: const [0.48, 0.88],
         builder: (_, scrollController) => AlbumSelectorSheet(
           albums: _albums,
-          currentAlbum:
-              (_isCloudMode || _isClipboardMode) ? null : _currentAlbum,
+          currentAlbum: (_isCloudMode || _isClipboardMode)
+              ? null
+              : _currentAlbum,
           primaryColor: widget.config.primaryColor,
           theme: _theme,
           textDelegate: widget.config.textDelegate,
@@ -915,7 +968,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
               if (!context.mounted) return;
               if (shouldExit) {
-                Navigator.of(context).pop(null);
+                Navigator.of(context).pop();
               }
             },
             child: Scaffold(
@@ -926,7 +979,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                   children: [
                     _buildBody(),
                     if (_isSignOutLoading)
-                      Container(
+                      ColoredBox(
                         color: Colors.black.withValues(alpha: 0.3),
                         child: Center(
                           child: Container(
@@ -953,76 +1006,77 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
   Widget _buildBodyWithDropRegion({required Widget child}) {
     if (widget.config.dropRegionBuilder != null) {
-      return widget.config.dropRegionBuilder!(
-        context,
-        child,
-        (List<XFile> files) async {
-          if (files.isEmpty ||
-              !_source.supportsFileAddition ||
-              _isCloudMode ||
-              !mounted) {
-            return;
+      return widget.config.dropRegionBuilder!(context, child, (
+        List<XFile> files,
+      ) async {
+        if (files.isEmpty ||
+            !_source.supportsFileAddition ||
+            _isCloudMode ||
+            !mounted) {
+          return;
+        }
+
+        final newAssets = <FilePickerAsset>[];
+        for (final file in files) {
+          // Prevent duplicates
+          if (_assets.any(
+            (a) => a is FilePickerAsset && a.filePath == file.path,
+          )) {
+            continue;
           }
 
-          final newAssets = <FilePickerAsset>[];
-          for (final file in files) {
-            // Prevent duplicates
-            if (_assets
-                .any((a) => a is FilePickerAsset && a.filePath == file.path)) {
-              continue;
-            }
+          Uint8List? bytes;
+          int width = 0;
+          int height = 0;
+          final fileName = file.path.split(RegExp(r'[\\/]')).last;
 
-            Uint8List? bytes;
-            int width = 0;
-            int height = 0;
-            final fileName = file.path.split(RegExp(r'[\\/]')).last;
+          try {
+            final ext = fileName.split('.').last.toLowerCase();
+            final isVideoOrAudio = {
+              'mp4',
+              'mov',
+              'avi',
+              'mkv',
+              'webm',
+              '3gp',
+              'mp3',
+              'wav',
+              'aac',
+              'flac',
+              'ogg',
+              'm4a',
+            }.contains(ext);
 
-            try {
-              final ext = fileName.split('.').last.toLowerCase();
-              final isVideoOrAudio = {
-                'mp4',
-                'mov',
-                'avi',
-                'mkv',
-                'webm',
-                '3gp',
-                'mp3',
-                'wav',
-                'aac',
-                'flac',
-                'ogg',
-                'm4a'
-              }.contains(ext);
-
-              if (!isVideoOrAudio) {
-                bytes = await file.readAsBytes();
-                if (bytes.isNotEmpty) {
-                  final image = await decodeImageFromList(bytes);
-                  width = image.width;
-                  height = image.height;
-                  image.dispose();
-                }
+            if (!isVideoOrAudio) {
+              bytes = await file.readAsBytes();
+              if (bytes.isNotEmpty) {
+                final image = await decodeImageFromList(bytes);
+                width = image.width;
+                height = image.height;
+                image.dispose();
               }
-            } catch (e) {
-              debugPrint('Error decoding dropped file specs: $e');
             }
+          } catch (e) {
+            debugPrint('Error decoding dropped file specs: $e');
+          }
 
-            newAssets.add(FilePickerAsset(
+          newAssets.add(
+            FilePickerAsset(
               filePath: file.path,
               title: fileName,
               bytes: bytes,
               width: width,
               height: height,
-            ));
-          }
+            ),
+          );
+        }
 
-          if (newAssets.isNotEmpty && mounted) {
-            setState(() {
-              _assets.insertAll(0, newAssets);
-            });
-          }
-        },
-      );
+        if (newAssets.isNotEmpty && mounted) {
+          setState(() {
+            _assets.insertAll(0, newAssets);
+          });
+        }
+      });
     }
     return child;
   }
@@ -1033,22 +1087,23 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     final targetList = _isCloudMode
         ? _googleProvider.importedAssets.value
         : (_isSearching && _searchQuery.isNotEmpty)
-            ? _searchResults
-            : _assets;
+        ? _searchResults
+        : _assets;
 
     if (targetList.isEmpty) return;
 
     HapticFeedback.selectionClick();
     setState(() {
-      _selected.clear();
-      _selected.addAll(targetList.take(widget.config.maxSelection));
+      _selected
+        ..clear()
+        ..addAll(targetList.take(widget.config.maxSelection));
     });
   }
 
   PreferredSizeWidget _buildAppBar() {
     return PreferredSize(
       preferredSize: const Size.fromHeight(56),
-      child: Container(
+      child: ColoredBox(
         color: _theme.surface,
         child: SafeArea(
           bottom: false,
@@ -1064,7 +1119,9 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                     style: TextButton.styleFrom(
                       foregroundColor: _theme.secondaryText,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 8),
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
                     ),
                     child: Text(
                       widget.config.textDelegate.cancel,
@@ -1080,8 +1137,10 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                   onTap: _showAlbumSheet,
                   behavior: HitTestBehavior.opaque,
                   child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 56, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 56,
+                      vertical: 8,
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -1090,12 +1149,11 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                             _isVideoMode
                                 ? widget.config.textDelegate.videosLabel
                                 : _isCloudMode
-                                    ? widget.config.textDelegate.googlePhotos
-                                    : _isClipboardMode
-                                        ? widget.config.textDelegate.clipboard
-                                        : (_currentAlbum?.name ??
-                                            widget.config.textDelegate
-                                                .imagesLabel),
+                                ? widget.config.textDelegate.googlePhotos
+                                : _isClipboardMode
+                                ? widget.config.textDelegate.clipboard
+                                : (_currentAlbum?.name ??
+                                      widget.config.textDelegate.imagesLabel),
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: _theme.primaryText,
@@ -1109,8 +1167,10 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                             widget.config.googlePhotosConfig.enabled) ...[
                           const SizedBox(width: 3),
                           RotationTransition(
-                            turns: Tween(begin: 0.0, end: 0.5)
-                                .animate(_chevronCtrl),
+                            turns: Tween(
+                              begin: 0.0,
+                              end: 0.5,
+                            ).animate(_chevronCtrl),
                             child: Icon(
                               Icons.keyboard_arrow_down_rounded,
                               color: _theme.secondaryText,
@@ -1131,16 +1191,31 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                           !_isCloudMode &&
                           !_isClipboardMode)
                         IconButton(
-                          icon: Icon(Icons.add_circle_outline_rounded,
-                              color: widget.config.primaryColor),
+                          icon: Icon(
+                            Icons.add_circle_outline_rounded,
+                            color: widget.config.primaryColor,
+                          ),
                           onPressed: _pickFiles,
                           tooltip: 'Add Files',
+                        ),
+                      if (!_isCloudMode &&
+                          !_isClipboardMode &&
+                          widget.config.enableSorting == true)
+                        IconButton(
+                          icon: Icon(
+                            Icons.tune_rounded,
+                            color: widget.config.primaryColor,
+                          ),
+                          tooltip: 'Sort Media',
+                          onPressed: _showSortSheet,
                         ),
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 200),
                         transitionBuilder: (child, anim) => ScaleTransition(
                           scale: CurvedAnimation(
-                              parent: anim, curve: Curves.easeOutBack),
+                            parent: anim,
+                            curve: Curves.easeOutBack,
+                          ),
                           child: FadeTransition(opacity: anim, child: child),
                         ),
                         child: (_selected.isNotEmpty)
@@ -1154,7 +1229,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                               )
                             : SizedBox(
                                 key: const ValueKey('empty'),
-                                width: (_source.supportsFileAddition &&
+                                width:
+                                    (_source.supportsFileAddition &&
                                         !_isCloudMode)
                                     ? 40
                                     : 80,
@@ -1202,8 +1278,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
           child: _isCloudMode
               ? _buildCloudBody()
               : _isClipboardMode
-                  ? _buildClipboardBody()
-                  : _buildGrid(),
+              ? _buildClipboardBody()
+              : _buildGrid(),
         ),
         AnimatedSize(
           duration: const Duration(milliseconds: 240),
@@ -1228,203 +1304,216 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     }
 
     return ValueListenableBuilder<List<RemotePickerAsset>>(
-        valueListenable: _googleProvider.importedAssets,
-        builder: (context, cloudAssets, _) {
-          // Loading spinner on first fetch
-          if (cloudAssets.isEmpty && _isCloudLoading) {
-            return const Center(child: CircularProgressIndicator.adaptive());
-          }
+      valueListenable: _googleProvider.importedAssets,
+      builder: (context, cloudAssets, _) {
+        // Loading spinner on first fetch
+        if (cloudAssets.isEmpty && _isCloudLoading) {
+          return const Center(child: CircularProgressIndicator.adaptive());
+        }
 
-          // Empty state with Import Button
-          if (cloudAssets.isEmpty && !_isCloudLoading) {
-            return Container(
-              color: _theme.background,
-              child: Stack(
-                children: [
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset(
-                            'assets/images/sad-cloud.png',
-                            width: 200,
-                            height: 200,
-                            package: 'gallery_suite',
-                            fit: BoxFit.contain,
+        // Empty state with Import Button
+        if (cloudAssets.isEmpty && !_isCloudLoading) {
+          return ColoredBox(
+            color: _theme.background,
+            child: Stack(
+              children: [
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          'assets/images/sad-cloud.png',
+                          width: 200,
+                          height: 200,
+                          package: 'gallery_suite',
+                          fit: BoxFit.contain,
+                        ),
+                        const SizedBox(height: 32),
+                        Text(
+                          widget
+                              .config
+                              .textDelegate
+                              .googlePhotosEmptyStateTitle,
+                          style: TextStyle(
+                            color: _theme.primaryText,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.5,
                           ),
-                          const SizedBox(height: 32),
-                          Text(
-                            widget.config.textDelegate
-                                .googlePhotosEmptyStateTitle,
-                            style: TextStyle(
-                              color: _theme.primaryText,
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.5,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          widget
+                              .config
+                              .textDelegate
+                              .googlePhotosEmptyStateSubtitle,
+                          style: TextStyle(
+                            color: _theme.secondaryText,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w400,
+                            height: 1.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 32),
+                        ElevatedButton.icon(
+                          onPressed: _pickFromGooglePhotos,
+                          icon: const Icon(
+                            Icons.add_photo_alternate_outlined,
+                            size: 20,
+                          ),
+                          label: Text(
+                            widget.config.textDelegate.googlePhotosImportButton,
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: widget.config.primaryColor,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 28,
+                              vertical: 16,
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            widget.config.textDelegate
-                                .googlePhotosEmptyStateSubtitle,
-                            style: TextStyle(
-                              color: _theme.secondaryText,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w400,
-                              height: 1.5,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100),
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 32),
-                          ElevatedButton.icon(
-                            onPressed: _pickFromGooglePhotos,
-                            icon: const Icon(Icons.add_photo_alternate_outlined,
-                                size: 20),
-                            label: Text(widget
-                                .config.textDelegate.googlePhotosImportButton),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: widget.config.primaryColor,
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 28, vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(100),
-                              ),
-                              textStyle: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            textStyle: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                  if (cloudAssets.isNotEmpty) _buildImportButton(),
-                ],
-              ),
-            );
-          }
+                ),
+                if (cloudAssets.isNotEmpty) _buildImportButton(),
+              ],
+            ),
+          );
+        }
 
-          // Show cloud photos grid
-          return Stack(
-            children: [
-              DraggableSelectionGrid(
+        // Show cloud photos grid
+        return Stack(
+          children: [
+            DraggableSelectionGrid(
+              scrollController: _scrollController,
+              enabled:
+                  (widget.config.maxSelection > 1) &&
+                  widget.config.enableSwipeToSelect,
+              onAssetHover: (asset) {
+                final idx = _selectionIndex(asset.id);
+                if (idx == -1 &&
+                    _selected.length < widget.config.maxSelection) {
+                  HapticFeedback.selectionClick();
+                  setState(() => _selected.add(asset));
+                }
+              },
+              child: DynamicGridLayout(
+                layout: widget.config.gridLayout,
                 scrollController: _scrollController,
-                enabled: (widget.config.maxSelection > 1) &&
-                    widget.config.enableSwipeToSelect,
-                onAssetHover: (asset) {
-                  final idx = _selectionIndex(asset.id);
-                  if (idx == -1 &&
-                      _selected.length < widget.config.maxSelection) {
-                    HapticFeedback.selectionClick();
-                    setState(() => _selected.add(asset));
+                crossAxisCount: 3,
+                customGridBuilder: widget.config.customGridBuilder,
+                itemCount: cloudAssets.length + (_isCloudLoading ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index >= cloudAssets.length) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(
+                        child: CircularProgressIndicator.adaptive(),
+                      ),
+                    );
                   }
-                },
-                child: MasonryGridView.builder(
-                  controller: _scrollController,
-                  padding: EdgeInsets.zero,
-                  gridDelegate:
-                      const SliverSimpleGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                  ),
-                  mainAxisSpacing: 2,
-                  crossAxisSpacing: 2,
-                  itemCount: cloudAssets.length + (_isCloudLoading ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    // Loading indicator at the bottom
-                    if (index >= cloudAssets.length) {
-                      return const Padding(
-                        padding: EdgeInsets.all(16),
-                        child:
-                            Center(child: CircularProgressIndicator.adaptive()),
-                      );
-                    }
 
-                    final asset = cloudAssets[index];
-                    final selIdx =
-                        _selected.indexWhere((e) => e.id == asset.id);
-                    final isSelected = selIdx >= 0;
+                  final asset = cloudAssets[index];
+                  final selIdx = _selected.indexWhere((e) => e.id == asset.id);
+                  final isSelected = selIdx >= 0;
 
-                    // Calculate aspect ratio for masonry
-                    final aspectRatio = (asset.width > 0 && asset.height > 0)
-                        ? asset.width / asset.height
-                        : 1.0;
+                  final bool isMasonry =
+                      widget.config.gridLayout == PickerGridLayout.masonry;
 
-                    return AspectRatio(
-                      aspectRatio: aspectRatio.clamp(0.5, 2.0),
-                      child: MetaData(
-                        metaData: asset,
-                        behavior: HitTestBehavior.translucent,
-                        child: GestureDetector(
-                          onTap: () {
-                            if (_isVideoMode &&
-                                widget.config.maxSelection <= 1) {
-                              _onVideoTap(asset);
-                            } else {
-                              _toggleSelection(asset);
-                            }
-                          },
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              kIsWeb
-                                  ? AuthImage(
-                                      imageUrl: asset.thumbUrl,
-                                      googleService: _googleService,
-                                      theme: _theme,
-                                    )
-                                  : CachedNetworkImage(
-                                      imageUrl: asset.thumbUrl,
-                                      httpHeaders: asset.headers,
-                                      fit: BoxFit.cover,
-                                      placeholder: (_, __) => Container(
-                                        color: _theme.elevated,
-                                      ),
-                                      errorBuilder: (_, __, ___) => Container(
-                                        color: _theme.elevated,
-                                        child: Icon(Icons.broken_image_rounded,
-                                            color: _theme.secondaryText,
-                                            size: 28),
-                                      ),
-                                    ),
-                              if (isSelected)
-                                Container(
-                                  color: Colors.black.withValues(alpha: 0.4),
-                                  alignment: Alignment.center,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
-                                      color: widget.config.primaryColor,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Text(
-                                      '${selIdx + 1}',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                  final Widget tile = MetaData(
+                    metaData: asset,
+                    behavior: HitTestBehavior.translucent,
+                    child: GestureDetector(
+                      onTap: () {
+                        if (_isVideoMode && widget.config.maxSelection <= 1) {
+                          _onVideoTap(asset);
+                        } else {
+                          _toggleSelection(asset);
+                        }
+                      },
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          kIsWeb
+                              ? AuthImage(
+                                  imageUrl: asset.thumbUrl,
+                                  googleService: _googleService,
+                                  theme: _theme,
+                                )
+                              : CachedNetworkImage(
+                                  imageUrl: asset.thumbUrl,
+                                  httpHeaders: asset.headers,
+                                  fit: BoxFit.cover,
+                                  placeholder: (_, _) =>
+                                      Container(color: _theme.elevated),
+                                  errorBuilder: (_, _, _) => ColoredBox(
+                                    color: _theme.elevated,
+                                    child: Icon(
+                                      Icons.broken_image_rounded,
+                                      color: _theme.secondaryText,
+                                      size: 28,
                                     ),
                                   ),
                                 ),
-                            ],
-                          ),
-                        ),
+                          if (isSelected)
+                            Container(
+                              color: Colors.black.withValues(alpha: 0.4),
+                              alignment: Alignment.center,
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: widget.config.primaryColor,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  '${selIdx + 1}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
+                    ),
+                  );
+
+                  if (isMasonry) {
+                    final aspectRatio = (asset.width > 0 && asset.height > 0)
+                        ? asset.width / asset.height
+                        : 1.0;
+                    return AspectRatio(
+                      aspectRatio: aspectRatio.clamp(0.5, 2.0),
+                      child: tile,
                     );
-                  },
-                ),
+                  }
+
+                  return tile;
+                },
               ),
-              _buildDeleteButton(),
-              _buildImportButton(),
-            ],
-          );
-        });
+            ),
+            _buildDeleteButton(),
+            _buildImportButton(),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildClipboardBody() {
@@ -1439,10 +1528,7 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
             const SizedBox(height: 16),
             Text(
               widget.config.textDelegate.clipboardLoading,
-              style: TextStyle(
-                color: _theme.secondaryText,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: _theme.secondaryText, fontSize: 14),
             ),
           ],
         ),
@@ -1454,15 +1540,15 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.content_paste_off_rounded,
-                size: 64, color: _theme.elevated),
+            Icon(
+              Icons.content_paste_off_rounded,
+              size: 64,
+              color: _theme.elevated,
+            ),
             const SizedBox(height: 16),
             Text(
               widget.config.textDelegate.clipboardEmpty,
-              style: TextStyle(
-                color: _theme.secondaryText,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: _theme.secondaryText, fontSize: 16),
             ),
           ],
         ),
@@ -1480,48 +1566,48 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
           setState(() => _selected.add(asset));
         }
       },
-      child: MasonryGridView.builder(
-        controller: _scrollController,
-        padding: EdgeInsets.zero,
-        gridDelegate: const SliverSimpleGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-        ),
-        mainAxisSpacing: 2,
-        crossAxisSpacing: 2,
+      child: DynamicGridLayout(
+        layout: widget.config.gridLayout,
+        scrollController: _scrollController,
+        crossAxisCount: 3,
+        customGridBuilder: widget.config.customGridBuilder,
         itemCount: _clipboardAssets.length,
         itemBuilder: (context, index) {
           final asset = _clipboardAssets[index];
           final selIdx = _selected.indexWhere((e) => e.id == asset.id);
           final isSelected = selIdx >= 0;
 
-          // Compute aspect ratio from asset dimensions; default to 1:1 square
-          // if dimensions are unknown (prevents infinite height crash).
-          final double aspectRatio = (asset.width > 0 && asset.height > 0)
-              ? asset.width / asset.height
-              : 1.0;
+          final bool isMasonry =
+              widget.config.gridLayout == PickerGridLayout.masonry;
 
-          return AspectRatio(
-            aspectRatio: aspectRatio,
-            child: MediaThumbnailWidget(
-              asset: asset,
-              textDelegate: widget.config.textDelegate,
-              isSelected: isSelected,
-              selectionNumber: selIdx >= 0 ? selIdx + 1 : null,
-              primaryColor: widget.config.primaryColor,
-              isDark: _theme.isDark,
-              theme: _theme,
-              onTap: () {
-                if (_isVideoMode && widget.config.maxSelection <= 1) {
-                  _onVideoTap(asset);
-                } else {
-                  _toggleSelection(asset);
-                }
-              },
-              onLongPress: () {
-                HapticFeedback.lightImpact();
-              },
-            ),
+          final Widget thumbnail = MediaThumbnailWidget(
+            asset: asset,
+            textDelegate: widget.config.textDelegate,
+            isSelected: isSelected,
+            selectionNumber: selIdx >= 0 ? selIdx + 1 : null,
+            primaryColor: widget.config.primaryColor,
+            isDark: _theme.isDark,
+            theme: _theme,
+            onTap: () {
+              if (_isVideoMode && widget.config.maxSelection <= 1) {
+                _onVideoTap(asset);
+              } else {
+                _toggleSelection(asset);
+              }
+            },
+            onLongPress: () {
+              HapticFeedback.lightImpact();
+            },
           );
+
+          if (isMasonry) {
+            final double aspectRatio = (asset.width > 0 && asset.height > 0)
+                ? asset.width / asset.height
+                : 1.0;
+            return AspectRatio(aspectRatio: aspectRatio, child: thumbnail);
+          }
+
+          return thumbnail;
         },
       ),
     );
@@ -1621,15 +1707,20 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
                   if (mounted) {
                     setState(() {
-                      _selected.removeWhere((e) =>
-                          e is RemotePickerAsset && idsToDelete.contains(e.id));
+                      _selected.removeWhere(
+                        (e) =>
+                            e is RemotePickerAsset &&
+                            idsToDelete.contains(e.id),
+                      );
                     });
                   }
                 },
                 borderRadius: BorderRadius.circular(100),
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFEF4444), // Dense semantic red
                     borderRadius: BorderRadius.circular(100),
@@ -1644,8 +1735,11 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.delete_outline_rounded,
-                          color: Colors.white, size: 20),
+                      const Icon(
+                        Icons.delete_outline_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         '${widget.config.textDelegate.googlePhotosDeleteButton} ($count)',
@@ -1676,8 +1770,11 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search_off_rounded,
-                size: 56, color: _theme.secondaryText),
+            Icon(
+              Icons.search_off_rounded,
+              size: 56,
+              color: _theme.secondaryText,
+            ),
             const SizedBox(height: 16),
             Text(
               '${widget.config.textDelegate.searchNoResults} "$_searchQuery"',
@@ -1695,8 +1792,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
     final List<PickerAsset> totalAssets = _isCloudMode
         ? _googleProvider.importedAssets.value
         : (_isSearching && _searchQuery.isNotEmpty)
-            ? _searchResults
-            : _assets;
+        ? _searchResults
+        : _assets;
 
     final displayAssets = totalAssets.where((a) {
       if (widget.config.requestType == RequestType.video) {
@@ -1722,8 +1819,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
               _isVideoMode
                   ? Icons.videocam_outlined
                   : (_isCloudMode
-                      ? Icons.cloud_outlined
-                      : Icons.photo_library_outlined),
+                        ? Icons.cloud_outlined
+                        : Icons.photo_library_outlined),
               size: 56,
               color: _theme.secondaryText,
             ),
@@ -1747,10 +1844,13 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: widget.config.primaryColor,
                   foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30)),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
                 ),
               ),
             ],
@@ -1759,15 +1859,19 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
               ElevatedButton.icon(
                 onPressed: _pickFromGooglePhotos,
                 icon: const Icon(Icons.add_photo_alternate_outlined),
-                label:
-                    Text(widget.config.textDelegate.googlePhotosImportButton),
+                label: Text(
+                  widget.config.textDelegate.googlePhotosImportButton,
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: widget.config.primaryColor,
                   foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30)),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -1777,7 +1881,10 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                   widget.config.textDelegate.googlePhotosEmptyStateSubtitle,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                      color: _theme.secondaryText, fontSize: 13, height: 1.3),
+                    color: _theme.secondaryText,
+                    fontSize: 13,
+                    height: 1.3,
+                  ),
                 ),
               ),
             ],
@@ -1788,7 +1895,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
 
     // Determine if the camera tile should be shown
     // Hide camera tile on Web/Desktop (WebRTC flash/torch causes crashes, no native integration)
-    final isDesktopOrWeb = kIsWeb ||
+    final isDesktopOrWeb =
+        kIsWeb ||
         (!kIsWeb &&
             (defaultTargetPlatform == TargetPlatform.windows ||
                 defaultTargetPlatform == TargetPlatform.linux));
@@ -1821,14 +1929,11 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
               setState(() => _selected.add(asset));
             }
           },
-          child: MasonryGridView.builder(
-            controller: _scrollController,
-            padding: const EdgeInsets.all(1.5),
-            gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-            ),
-            mainAxisSpacing: 1.5,
-            crossAxisSpacing: 1.5,
+          child: DynamicGridLayout(
+            layout: widget.config.gridLayout,
+            scrollController: _scrollController,
+            crossAxisCount: crossAxisCount,
+            customGridBuilder: widget.config.customGridBuilder,
             itemCount: displayAssets.length + cameraOffset + extraLoadingItems,
             itemBuilder: (ctx, i) {
               // Camera tile at position 0
@@ -1858,37 +1963,48 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
               final selIdx = _selectionIndex(asset.id);
               final isSelected = selIdx >= 0;
 
-              final double ar = (asset.width > 0 && asset.height > 0)
-                  ? asset.width / asset.height
-                  : 1.0;
+              final bool isMasonry =
+                  widget.config.gridLayout == PickerGridLayout.masonry;
 
-              return AspectRatio(
-                aspectRatio: ar.clamp(0.35, 2.8),
-                child: MetaData(
-                  metaData: asset,
-                  behavior: HitTestBehavior.translucent,
-                  child: MediaThumbnailWidget(
-                    key: ValueKey(asset.id),
-                    asset: asset,
-                    textDelegate: widget.config.textDelegate,
-                    isSelected: isSelected,
-                    selectionNumber: isSelected ? selIdx + 1 : null,
-                    primaryColor: widget.config.primaryColor,
-                    isDark: _theme.isDark,
-                    theme: _theme,
-                    googleService: _googleService,
-                    showPlayOverlay:
-                        _isVideoMode || asset.type == AssetType.video,
-                    onTap: () {
-                      if (_isVideoMode && widget.config.maxSelection <= 1) {
-                        _onVideoTap(asset);
-                      } else {
-                        _toggleSelection(asset);
-                      }
-                    },
-                  ),
+              // Masonry supports AspectRatio wrapping for natural tile heights.
+              // Strict delegates (aligned, quilted, staggered) dictate their own
+              // sizes — wrapping them in AspectRatio causes constraint crashes.
+              final Widget thumbnail = MetaData(
+                metaData: asset,
+                behavior: HitTestBehavior.translucent,
+                child: MediaThumbnailWidget(
+                  key: ValueKey(asset.id),
+                  asset: asset,
+                  textDelegate: widget.config.textDelegate,
+                  isSelected: isSelected,
+                  selectionNumber: isSelected ? selIdx + 1 : null,
+                  primaryColor: widget.config.primaryColor,
+                  isDark: _theme.isDark,
+                  theme: _theme,
+                  googleService: _googleService,
+                  showPlayOverlay:
+                      _isVideoMode || asset.type == AssetType.video,
+                  onTap: () {
+                    if (_isVideoMode && widget.config.maxSelection <= 1) {
+                      _onVideoTap(asset);
+                    } else {
+                      _toggleSelection(asset);
+                    }
+                  },
                 ),
               );
+
+              if (isMasonry) {
+                final double ar = (asset.width > 0 && asset.height > 0)
+                    ? asset.width / asset.height
+                    : 1.0;
+                return AspectRatio(
+                  aspectRatio: ar.clamp(0.35, 2.8),
+                  child: thumbnail,
+                );
+              }
+
+              return thumbnail;
             },
           ),
         );
@@ -1927,10 +2043,14 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                 animation: animation,
                 builder: (context, child) {
                   final animValue = Curves.easeInOut.transform(animation.value);
-                  final scale =
-                      Tween<double>(begin: 1.0, end: 1.05).transform(animValue);
-                  final elevation =
-                      Tween<double>(begin: 0.0, end: 8.0).transform(animValue);
+                  final scale = Tween<double>(
+                    begin: 1.0,
+                    end: 1.05,
+                  ).transform(animValue);
+                  final elevation = Tween<double>(
+                    begin: 0.0,
+                    end: 8.0,
+                  ).transform(animValue);
                   return Transform.scale(
                     scale: scale,
                     child: Material(
@@ -1957,7 +2077,8 @@ class _MediaPickerPageState extends State<_MediaPickerPage>
                 googleService: _googleService,
                 textDelegate: widget.config.textDelegate,
                 editedFile: _editedFiles[asset.id],
-                onEdit: (widget.config.onEditMedia != null &&
+                onEdit:
+                    (widget.config.onEditMedia != null &&
                         asset is LocalPickerAsset &&
                         asset.type == AssetType.image)
                     ? () async {

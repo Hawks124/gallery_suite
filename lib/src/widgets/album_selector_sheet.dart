@@ -21,7 +21,6 @@ class AlbumSelectorSheet extends StatelessWidget {
   final bool enableSmartClipboard;
 
   const AlbumSelectorSheet({
-    super.key,
     required this.albums,
     required this.currentAlbum,
     required this.primaryColor,
@@ -30,6 +29,7 @@ class AlbumSelectorSheet extends StatelessWidget {
     required this.scrollController,
     required this.source,
     required this.onSelect,
+    super.key,
     this.onGooglePhotosTap,
     this.isGooglePhotosConnected = false,
     this.onGooglePhotosSignOut,
@@ -39,7 +39,7 @@ class AlbumSelectorSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: theme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -75,11 +75,14 @@ class AlbumSelectorSheet extends StatelessWidget {
                   const Spacer(),
                   TextButton.icon(
                     onPressed: onGooglePhotosSignOut,
-                    icon: Icon(Icons.logout_rounded,
-                        size: 16, color: Colors.white),
+                    icon: const Icon(
+                      Icons.logout_rounded,
+                      size: 16,
+                      color: Colors.white,
+                    ),
                     label: Text(
                       textDelegate.googlePhotosDisconnect,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -87,7 +90,9 @@ class AlbumSelectorSheet extends StatelessWidget {
                     ),
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       backgroundColor: Colors.red,
@@ -104,10 +109,11 @@ class AlbumSelectorSheet extends StatelessWidget {
           Expanded(
             child: ListView.separated(
               controller: scrollController,
-              itemCount: albums.length +
+              itemCount:
+                  albums.length +
                   (onGooglePhotosTap != null ? 1 : 0) +
                   (enableSmartClipboard ? 1 : 0),
-              separatorBuilder: (_, __) =>
+              separatorBuilder: (_, _) =>
                   Divider(height: 0.5, color: theme.divider, indent: 82),
               itemBuilder: (_, i) {
                 final hasGoogle = onGooglePhotosTap != null;

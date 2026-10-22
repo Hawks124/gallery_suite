@@ -1,9 +1,10 @@
 import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
-import 'package:photo_manager/photo_manager.dart';
 import 'package:gallery_suite/gallery_suite.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 class PickedMedia {
   final File? file;
@@ -52,10 +53,12 @@ void main() {
     redirectScheme: 'com.googleusercontent.apps.YOUR_NATIVE_CLIENT_ID',
   );
 
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.dark,
-  ));
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ),
+  );
 
   runApp(const ExampleApp());
 }
@@ -73,10 +76,7 @@ class ExampleApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: 'Inter',
         scaffoldBackgroundColor: const Color(0xFFF8F9FA),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4F46E5),
-          brightness: Brightness.light,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4F46E5)),
         useMaterial3: true,
       ),
       darkTheme: ThemeData(
@@ -113,6 +113,15 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
   List<MediaItem> _selectedVideoItems = [];
   List<MediaItem> _selectedAudioItems = [];
 
+  // -- GRID LAYOUT ------------------------------------------------------------
+  // The layout is a live switch: pick one, then open the gallery to see the
+  // very same media rendered with a completely different geometry.
+  PickerGridLayout _gridLayout = PickerGridLayout.masonry;
+
+  // The sort order applied when the picker opens. The user can change it at
+  // any time from the sort button of the picker app bar.
+  PickerSortOrder _sortOrder = PickerSortOrder.newest;
+
   // -- IMAGE PICKER --------------------------------------------------------
   // This is the most feature-rich mode. It showcases:
   //     showCameraTile           live camera preview at grid position 0
@@ -125,83 +134,42 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
     final assets = await CustomMediaPicker.show(
       context: context,
       config: PickerConfig(
-        requestType: RequestType.image,
+        //  Dynamic Grid Layouts: change the geometry of the grid without
+        // touching anything else. Options: masonry (default), aligned,
+        // quilted, staggered and byog.
+        gridLayout: _gridLayout,
 
-        // Maximum number of assets the user can pick.
-        maxSelection: 10,
+        //  Bring Your Own Grid (BYOG): mandatory when `gridLayout` is
+        //  `byog`. The engine hands you the scroll controller, the item
+        //  count and an item builder that already wraps your tiles with
+        //  the native selection overlays, the cloud download bridges and
+        //  the Hero animations.
+        customGridBuilder: _gridLayout == PickerGridLayout.byog
+            ? (ctx, scrollController, itemCount, itemBuilder) {
+                return GridView.builder(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(8),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                  ),
+                  itemCount: itemCount,
+                  itemBuilder: (ctx, index) => itemBuilder(ctx, index),
+                );
+              }
+            : null,
 
-        //  Live camera tile: a real-time camera preview appears as the
-        // first tile in the grid. Tapping it opens a premium full-screen
-        // camera with flash, flip, and glassmorphism UI.
-        // Set to `false` if you handle camera externally.
-        showCameraTile: true,
-
-        //  Swipe-to-select: long press on any tile, then drag your finger
-        // across the grid to rapidly select multiple images without lifting.
-        // The grid auto-scrolls when your finger nears the top/bottom edge.
-        enableSwipeToSelect: true,
+        //  Smart Sorting: the order is applied by the gallery database
+        //  itself, so the pagination keeps working on huge libraries.
+        //  The user can change it from the sort button of the app bar.
+        defaultSortOrder: _sortOrder,
 
         //  Smart Clipboard integration: adds a tile to paste URLs, files, and bytes
         enableSmartClipboard: true,
 
         //  Restore previously selected items when the picker opens!
         initialSelection: _selectedImageItems,
-
-        //  Bring Your Own Editor (BYOE): Add a custom image editor
-        // without adding bloatware to the internal package!
-        // Docs: https://<your-domain>/docs/architectures/byoe
-        // Playground: https://<your-domain>/playground
-        // Top alternatives: `image_cropper` or `pro_image_editor`
-        // Tapping the Edit pencil in the Fullscreen Preview triggers this callback.
-        // onEditMedia: (ctx, asset, file) async {
-        //   if (asset.type != AssetType.image) return null;
-        //   final completer = Completer<File?>();
-        //   await Navigator.push(ctx, MaterialPageRoute(
-        //     builder: (editorCtx) => ProImageEditor.file(
-        //       file,
-        //       callbacks: ProImageEditorCallbacks(
-        //         onImageEditingComplete: (bytes) async {
-        //           final newFile = File('${Directory.systemTemp.path}/edited.jpg');
-        //           await newFile.writeAsBytes(bytes);
-        //           if (!completer.isCompleted) completer.complete(newFile);
-        //           if (editorCtx.mounted) Navigator.pop(editorCtx);
-        //         },
-        //         onCloseEditor: (_) {
-        //           if (!completer.isCompleted) completer.complete(null);
-        //           if (editorCtx.mounted) Navigator.pop(editorCtx);
-        //         },
-        //       ),
-        //     ),
-        //   ));
-        //   return completer.isCompleted ? completer.future : null;
-        // },
-
-        //  Bring Your Own Drop (BYOD): Wrap the picker with your favorite
-        // Desktop Drag-and-Drop package to accept dropped files magically!
-        // Docs: https://<your-domain>/docs/architectures/byod
-        // Playground: https://<your-domain>/playground
-        // Top alternatives: `desktop_drop` or `super_drag_and_drop`
-        // dropRegionBuilder: (context, child, onFilesDropped) {
-        //   return DropTarget( // from desktop_drop package
-        //     onDragDone: (details) {
-        //         onFilesDropped(details.files);
-        //     },
-        //     child: child,
-        //   );
-        // },
-
-        // Set to `false` if you prefer classic tap-only selection.
-        // enableSwipeToSelect: false,
-
-        //  Premium Cloud Integration: Google Photos (Picker API - 2026 Compliant)
-        // Enable the built-in Google Photos tab. By default it works out-of-the-box
-        // if your app uses Firebase. You can also explicitly pass Client IDs.
-        // NOTE: Ensure "Google Photos Picker API" is enabled in your GCP Console.
-        googlePhotosConfig: const GooglePhotosConfig(
-          enabled: true,
-          // NOTE: For Web, you MUST use a 'Web Application' Client ID from GCP.
-          // clientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com',
-        ),
 
         //  Brand accent used for selection badges, checkmarks, seek bars,
         // and the confirm button gradient.
@@ -213,29 +181,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         //  Internationalization: Zero-dependency translation!
         // Use EnglishPickerTextDelegate, FrenchPickerTextDelegate, or create your own.
         // You can even override specific words:
-        textDelegate: const EnglishPickerTextDelegate(
-          confirm: 'Choose',
-        ),
-
-        //  Architecture & Performance:
-        // Tuned for 10,000+ photo libraries on ProMotion displays.
-        thumbnailCacheSize: 200, // LRU cache limit
-        maxConcurrentDecodes: 3, // Prevents frame drops during scroll
-        prefetchEnabled: true, // Preloads off-screen items to prevent pop-in
-
-        //  Original File vs System Cache:
-        // Set to true to fetch the pristine bytes ignoring OS-level HEIC->JPG compression.
-        // Defaults to false for speed and OS-level compatibility.
-        useOriginalFile: false,
-
-        //  [NEW] Hybrid Smart Compression:
-        // Option 1: Enable the native built-in compressor (images only).
-        // Will use flutter_image_compress native bridges to reduce file size before returning.
-        // GREAT for images. Disabled by default.
-        autoCompressImages: false,
-        imageCompressionQuality:
-            85, // 0-100, only effective if autoCompressImages is true.
-
+        textDelegate: const EnglishPickerTextDelegate(confirm: 'Choose'),
         // Option 2: Use a BYOC (Bring Your Own Compressor) Hook.
         // This takes STRICT PRIORITY over autoCompressImages.
         // Docs: https://<your-domain>/docs/architectures/byoc
@@ -256,17 +202,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
 
         //  Exit Confirmation: Prevent users from losing their selections
         // if they accidentally press the back button or swipe to pop.
-        exitConfirmation: const StandardExitConfirmation(
-          title: 'Discard selections?',
-          content:
-              'You have selected media. If you go back now, your current selections will be lost.',
-          confirmText: 'Discard',
-          cancelText: 'Cancel',
-        ),
-
-        // Localized button labels.
-        confirmText: 'Select',
-        cancelText: 'Cancel',
+        exitConfirmation: const StandardExitConfirmation(),
       ),
     );
 
@@ -279,17 +215,22 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
       if (kIsWeb && (asset.isFile || asset.isRemote)) {
         final b = await asset.bytes;
         if (b == null || b.isEmpty) continue;
-        items.add(PickedMedia(
-          bytes: b,
-          title: asset.title ?? (asset.isRemote ? 'Cloud Image' : 'Web Image'),
-        ));
+        items.add(
+          PickedMedia(
+            bytes: b,
+            title:
+                asset.title ?? (asset.isRemote ? 'Cloud Image' : 'Web Image'),
+          ),
+        );
       } else {
         final f = await asset.file;
         if (f != null) {
-          items.add(PickedMedia(
-            file: f,
-            title: asset.title ?? f.path.split(RegExp(r'[\\/]')).last,
-          ));
+          items.add(
+            PickedMedia(
+              file: f,
+              title: asset.title ?? f.path.split(RegExp(r'[\\/]')).last,
+            ),
+          );
         }
       }
     }
@@ -312,11 +253,11 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
       context: context,
       config: CameraPickerConfig(
         maxSelection: 10,
-        enablePhoto: true, // Tap captures a photo
-        enableVideo: true, // Long-press records a video
-        enableGallery: true, // Shows gallery thumbnail bottom-left
+
+        //  Tap the shutter to capture a photo, long-press it to record a
+        //  video, and use the gallery thumbnail in the bottom-left corner
+        //  to jump to the full gallery. All three are enabled by default.
         galleryModeConfig: const PickerConfig(
-          maxSelection: 10,
           showCameraTile:
               false, // Usually camera is hidden if coming from camera
         ),
@@ -325,12 +266,10 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
 
         // You can inject an editor exactly like in the Image Picker
         // onEditMedia: (ctx, asset, file) async { ... }
-
         exitConfirmation: const StandardExitConfirmation(
           title: 'Discard photo session?',
           content:
               'If you go back now, all the captures you just took will be lost.',
-          confirmText: 'Discard',
           cancelText: 'Keep capturing',
         ),
       ),
@@ -342,10 +281,12 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
     for (final asset in assets) {
       final f = await asset.file;
       if (f != null) {
-        items.add(PickedMedia(
-          file: f,
-          title: asset.title ?? f.path.split(RegExp(r'[\\/]')).last,
-        ));
+        items.add(
+          PickedMedia(
+            file: f,
+            title: asset.title ?? f.path.split(RegExp(r'[\\/]')).last,
+          ),
+        );
       }
     }
 
@@ -371,10 +312,6 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         // Videos are typically single-select in messaging apps.
         maxSelection: 1,
 
-        //  The camera tile switches to video recording mode automatically
-        // when requestType is set to video.
-        showCameraTile: true,
-
         //  [NEW] Hybrid Smart Compression:
         // Use the BYOC hook to inject video compression (e.g. video_compress).
         // Since built-in compression only handles images, this is the way for videos.
@@ -388,7 +325,6 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         //   }
         //   return null;
         // },
-
         primaryColor: const Color(0xFFE11D48),
         brightness: Theme.of(context).brightness,
         enableSmartClipboard: true,
@@ -402,18 +338,21 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
     _selectedVideoItems = List.from(assets);
     if (kIsWeb && (asset.isFile || asset.isRemote)) {
       final b = await asset.bytes;
-      setState(() => _pickedVideo = PickedMedia(
-            bytes: b,
-            title:
-                asset.title ?? (asset.isRemote ? 'Cloud Video' : 'Web Video'),
-          ));
+      setState(
+        () => _pickedVideo = PickedMedia(
+          bytes: b,
+          title: asset.title ?? (asset.isRemote ? 'Cloud Video' : 'Web Video'),
+        ),
+      );
     } else {
       final f = await asset.file;
       if (f != null && mounted) {
-        setState(() => _pickedVideo = PickedMedia(
-              file: f,
-              title: asset.title ?? f.path.split(RegExp(r'[\\/]')).last,
-            ));
+        setState(
+          () => _pickedVideo = PickedMedia(
+            file: f,
+            title: asset.title ?? f.path.split(RegExp(r'[\\/]')).last,
+          ),
+        );
       }
     }
   }
@@ -444,23 +383,56 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
     _selectedAudioItems = List.from(assets);
     if (kIsWeb && (asset.isFile || asset.isRemote)) {
       final b = await asset.bytes;
-      setState(() => _pickedAudio = PickedMedia(
-            bytes: b,
-            title:
-                asset.title ?? (asset.isRemote ? 'Cloud Audio' : 'Web Audio'),
-          ));
+      setState(
+        () => _pickedAudio = PickedMedia(
+          bytes: b,
+          title: asset.title ?? (asset.isRemote ? 'Cloud Audio' : 'Web Audio'),
+        ),
+      );
     } else {
       final f = await asset.file;
       if (f != null && mounted) {
-        setState(() => _pickedAudio = PickedMedia(
-              file: f,
-              title: asset.title ?? f.path.split(RegExp(r'[\\/]')).last,
-            ));
+        setState(
+          () => _pickedAudio = PickedMedia(
+            file: f,
+            title: asset.title ?? f.path.split(RegExp(r'[\\/]')).last,
+          ),
+        );
       }
     }
   }
 
   // -- BUILD --------------------------------------------------------------
+  /// The human readable name of a [PickerGridLayout].
+  String _gridLayoutLabel(PickerGridLayout layout) {
+    switch (layout) {
+      case PickerGridLayout.masonry:
+        return 'Masonry';
+      case PickerGridLayout.aligned:
+        return 'Aligned';
+      case PickerGridLayout.quilted:
+        return 'Quilted';
+      case PickerGridLayout.staggered:
+        return 'Staggered';
+      case PickerGridLayout.byog:
+        return 'BYOG';
+    }
+  }
+
+  /// The human readable name of a [PickerSortOrder].
+  String _sortOrderLabel(PickerSortOrder order) {
+    switch (order) {
+      case PickerSortOrder.newest:
+        return 'Newest';
+      case PickerSortOrder.oldest:
+        return 'Oldest';
+      case PickerSortOrder.largest:
+        return 'Largest';
+      case PickerSortOrder.smallest:
+        return 'Smallest';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -530,6 +502,84 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                     ),
                   ),
                   const SizedBox(height: 24),
+
+                  // -- Live grid layout switcher ---------------------------
+                  Text(
+                    'GRID LAYOUT',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                      color: isDark
+                          ? const Color(0xFF94A3B8)
+                          : const Color(0xFF64748B),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: PickerGridLayout.values.map((layout) {
+                      final selected = layout == _gridLayout;
+                      return ChoiceChip(
+                        label: Text(_gridLayoutLabel(layout)),
+                        selected: selected,
+                        showCheckmark: false,
+                        onSelected: (_) => setState(() => _gridLayout = layout),
+                        selectedColor: const Color(0xFF4F46E5),
+                        backgroundColor: isDark
+                            ? const Color(0xFF1E293B)
+                            : Colors.white,
+                        side: BorderSide(
+                          color: isDark
+                              ? const Color(0xFF334155)
+                              : const Color(0xFFE2E8F0),
+                        ),
+                        labelStyle: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: selected
+                              ? Colors.white
+                              : isDark
+                              ? Colors.white70
+                              : const Color(0xFF334155),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: PickerSortOrder.values.map((order) {
+                      final selected = order == _sortOrder;
+                      return ChoiceChip(
+                        label: Text(_sortOrderLabel(order)),
+                        selected: selected,
+                        showCheckmark: false,
+                        onSelected: (_) => setState(() => _sortOrder = order),
+                        selectedColor: const Color(0xFF10B981),
+                        backgroundColor: isDark
+                            ? const Color(0xFF1E293B)
+                            : Colors.white,
+                        side: BorderSide(
+                          color: isDark
+                              ? const Color(0xFF334155)
+                              : const Color(0xFFE2E8F0),
+                        ),
+                        labelStyle: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: selected
+                              ? Colors.white
+                              : isDark
+                              ? Colors.white70
+                              : const Color(0xFF334155),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
@@ -552,8 +602,9 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                   ],
                   onTap: _pickImages,
                   isDark: isDark,
-                  child:
-                      _pickedImages.isNotEmpty ? _buildImagesPreview() : null,
+                  child: _pickedImages.isNotEmpty
+                      ? _buildImagesPreview()
+                      : null,
                 ),
                 const SizedBox(height: 16),
                 _buildActionCard(
@@ -567,7 +618,6 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                   ],
                   onTap: _pickStandaloneCamera,
                   isDark: isDark,
-                  child: null, // Captures update the image strip above
                 ),
                 const SizedBox(height: 16),
                 _buildActionCard(
@@ -629,7 +679,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
     required bool isDark,
     Widget? child,
   }) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(24),
@@ -716,10 +766,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
                     ),
                   ],
                 ),
-                if (child != null) ...[
-                  const SizedBox(height: 20),
-                  child,
-                ],
+                if (child != null) ...[const SizedBox(height: 20), child],
               ],
             ),
           ),
@@ -736,7 +783,7 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: _pickedImages.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
         itemBuilder: (_, i) {
           final media = _pickedImages[i];
           final hasImage = media.bytes != null || media.file != null;
@@ -764,8 +811,11 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
             ),
             child: hasImage
                 ? null
-                : const Icon(Icons.image_outlined,
-                    color: Colors.white54, size: 32),
+                : const Icon(
+                    Icons.image_outlined,
+                    color: Colors.white54,
+                    size: 32,
+                  ),
           );
         },
       ),
@@ -796,8 +846,9 @@ class _PickerDemoPageState extends State<PickerDemoPage> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color:
-                    isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155),
+                color: isDark
+                    ? const Color(0xFFE2E8F0)
+                    : const Color(0xFF334155),
               ),
             ),
           ),

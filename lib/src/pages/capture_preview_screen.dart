@@ -1,9 +1,10 @@
 import 'dart:io';
+import 'dart:ui';
+
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:camera/camera.dart';
 import 'package:video_player/video_player.dart';
-import 'dart:ui';
 
 import '../../gallery_suite.dart';
 
@@ -16,10 +17,10 @@ class CapturePreviewScreen extends StatefulWidget {
   final CameraPickerConfig config;
 
   const CapturePreviewScreen({
-    super.key,
     required this.capturedFiles,
     required this.initialIndex,
     required this.config,
+    super.key,
   });
 
   @override
@@ -66,7 +67,10 @@ class _CapturePreviewScreenState extends State<CapturePreviewScreen> {
 
     final originalFile = File(_currentFiles[_currentIndex].path);
     final editedFile = await hook(
-        context, null, originalFile); // Null asset because it's purely local
+      context,
+      null,
+      originalFile,
+    ); // Null asset because it's purely local
 
     if (editedFile != null && mounted) {
       setState(() {
@@ -100,10 +104,7 @@ class _CapturePreviewScreenState extends State<CapturePreviewScreen> {
                 );
               }
 
-              return Image.file(
-                file,
-                fit: BoxFit.contain,
-              );
+              return Image.file(file, fit: BoxFit.contain);
             },
           ),
 
@@ -114,14 +115,16 @@ class _CapturePreviewScreenState extends State<CapturePreviewScreen> {
             right: 0,
             child: Container(
               padding: EdgeInsets.only(
-                  top: MediaQuery.paddingOf(context).top, bottom: 16),
+                top: MediaQuery.paddingOf(context).top,
+                bottom: 16,
+              ),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.black.withValues(alpha: 0.6),
-                    Colors.transparent
+                    Colors.transparent,
                   ],
                 ),
               ),
@@ -173,7 +176,7 @@ class _CapturePreviewScreenState extends State<CapturePreviewScreen> {
                   end: Alignment.topCenter,
                   colors: [
                     Colors.black.withValues(alpha: 0.8),
-                    Colors.transparent
+                    Colors.transparent,
                   ],
                 ),
               ),
@@ -183,32 +186,37 @@ class _CapturePreviewScreenState extends State<CapturePreviewScreen> {
                   TextButton.icon(
                     onPressed: _onDelete,
                     icon: const Icon(Icons.delete_outline, color: Colors.white),
-                    label: Text(widget.config.textDelegate.cameraActionDelete,
-                        style: const TextStyle(color: Colors.white)),
+                    label: Text(
+                      widget.config.textDelegate.cameraActionDelete,
+                      style: const TextStyle(color: Colors.white),
+                    ),
                   ),
                   if (widget.config.onEditMedia != null &&
                       !(_currentFiles.isNotEmpty &&
-                          (_currentFiles[_currentIndex]
-                                  .path
+                          (_currentFiles[_currentIndex].path
                                   .toLowerCase()
                                   .endsWith('.mp4') ||
-                              _currentFiles[_currentIndex]
-                                  .path
+                              _currentFiles[_currentIndex].path
                                   .toLowerCase()
                                   .endsWith('.mov'))))
                     TextButton.icon(
                       onPressed: _onEdit,
-                      icon:
-                          const Icon(Icons.edit_outlined, color: Colors.white),
-                      label: Text(widget.config.textDelegate.cameraActionEdit,
-                          style: const TextStyle(color: Colors.white)),
+                      icon: const Icon(
+                        Icons.edit_outlined,
+                        color: Colors.white,
+                      ),
+                      label: Text(
+                        widget.config.textDelegate.cameraActionEdit,
+                        style: const TextStyle(color: Colors.white),
+                      ),
                     ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: widget.config.primaryColor,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24)),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
                     ),
                     onPressed: () {
                       // Validate and return the finalised session files
@@ -230,10 +238,7 @@ class _VideoPreviewItem extends StatefulWidget {
   final File file;
   final Color primaryColor;
 
-  const _VideoPreviewItem({
-    required this.file,
-    required this.primaryColor,
-  });
+  const _VideoPreviewItem({required this.file, required this.primaryColor});
 
   @override
   State<_VideoPreviewItem> createState() => _VideoPreviewItemState();
@@ -259,8 +264,9 @@ class _VideoPreviewItemState extends State<_VideoPreviewItem> {
         _controller = controller;
         _isInitializing = false;
       });
-      controller.setLooping(true);
-      controller.play();
+      controller
+        ..setLooping(true)
+        ..play();
     } catch (e) {
       if (mounted) {
         setState(() => _isInitializing = false);
@@ -317,14 +323,16 @@ class _VideoPreviewItemState extends State<_VideoPreviewItem> {
             data: SliderThemeData(
               trackHeight: 3,
               thumbShape: const RoundSliderThumbShape(
-                  enabledThumbRadius: 6, elevation: 2),
+                enabledThumbRadius: 6,
+                elevation: 2,
+              ),
               activeTrackColor: widget.primaryColor,
               inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
               thumbColor: widget.primaryColor,
               overlayShape: SliderComponentShape.noOverlay,
             ),
             child: Slider(
-              value: progress.toDouble(),
+              value: progress,
               onChanged: (v) {
                 final ms = (v * total.inMilliseconds).round();
                 ctrl.seekTo(Duration(milliseconds: ms));
@@ -368,15 +376,17 @@ class _VideoPreviewItemState extends State<_VideoPreviewItem> {
     if (_isInitializing) {
       return Center(
         child: CircularProgressIndicator(
-            color: widget.primaryColor, strokeWidth: 3),
+          color: widget.primaryColor,
+          strokeWidth: 3,
+        ),
       );
     }
 
     final ctrl = _controller;
     if (ctrl == null) {
       return const Center(
-          child:
-              Icon(Icons.videocam_off_outlined, color: Colors.white, size: 48));
+        child: Icon(Icons.videocam_off_outlined, color: Colors.white, size: 48),
+      );
     }
 
     final isPlaying = ctrl.value.isPlaying;
@@ -388,7 +398,6 @@ class _VideoPreviewItemState extends State<_VideoPreviewItem> {
         fit: StackFit.expand,
         children: [
           FittedBox(
-            fit: BoxFit.contain,
             child: SizedBox(
               width: ctrl.value.size.width,
               height: ctrl.value.size.height,
@@ -412,7 +421,6 @@ class _VideoPreviewItemState extends State<_VideoPreviewItem> {
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.3),
-                        width: 1,
                       ),
                     ),
                     child: const Icon(

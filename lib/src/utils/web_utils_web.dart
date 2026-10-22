@@ -21,11 +21,14 @@ class WebUtils {
   /// Bypasses some aggressive CORS preflight OPTIONS requests by dynamically
   /// scrubbing the HTTP headers for special Picker-API URLs (e.g., `ppa/`).
   static Future<Uint8List?> fetchMediaBytes(
-      String url, Map<String, String> headers) async {
+    String url,
+    Map<String, String> headers,
+  ) async {
     try {
       final completer = Completer<Uint8List?>();
-      final xhr = html.HttpRequest();
-      xhr.open('GET', url);
+      final xhr = html.HttpRequest()
+        ..open('GET', url)
+        ..responseType = 'arraybuffer';
 
       if (!url.contains('/ppa/')) {
         headers.forEach((key, value) {
@@ -33,7 +36,6 @@ class WebUtils {
         });
       }
 
-      xhr.responseType = 'arraybuffer';
       xhr.onLoad.listen((event) {
         if (xhr.status == 200) {
           final buffer = xhr.response as ByteBuffer;

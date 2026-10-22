@@ -8,11 +8,11 @@ class SendButton extends StatelessWidget {
   final bool isLoading;
 
   const SendButton({
-    super.key,
     required this.label,
-    this.count,
     required this.color,
     required this.onTap,
+    super.key,
+    this.count,
     this.isLoading = false,
   });
 

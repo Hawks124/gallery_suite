@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
+
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import '../../gallery_suite.dart';
@@ -30,9 +31,9 @@ class CameraScreen extends StatefulWidget {
   final Future<void> Function()? onGalleryTap;
 
   const CameraScreen({
-    super.key,
     required this.captureMode,
     required this.primaryColor,
+    super.key,
     this.standaloneConfig,
     this.onGalleryTap,
   });
@@ -104,8 +105,9 @@ class _CameraScreenState extends State<CameraScreen>
       if (albums.isEmpty) return;
 
       // Leverage the robust decode queue and OS fallbacks used by the main picker
-      final bytes =
-          await MediaService.instance.getAlbumCoverThumbnail(albums.first);
+      final bytes = await MediaService.instance.getAlbumCoverThumbnail(
+        albums.first,
+      );
 
       if (bytes != null && mounted) {
         setState(() => _galleryThumbnail = bytes);
@@ -119,9 +121,9 @@ class _CameraScreenState extends State<CameraScreen>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _recordingTimer?.cancel();
-    _controller
-        ?.dispose()
-        .catchError((e) => debugPrint('Screen dispose error: $e'));
+    _controller?.dispose().catchError(
+      (e) => debugPrint('Screen dispose error: $e'),
+    );
     _captureAnimCtrl.dispose();
     _flipAnimCtrl.dispose();
     super.dispose();
@@ -132,9 +134,9 @@ class _CameraScreenState extends State<CameraScreen>
     if (_controller == null || !_controller!.value.isInitialized) return;
 
     if (state == AppLifecycleState.inactive) {
-      _controller
-          ?.dispose()
-          .catchError((e) => debugPrint('Lifecycle dispose error: $e'));
+      _controller?.dispose().catchError(
+        (e) => debugPrint('Lifecycle dispose error: $e'),
+      );
     } else if (state == AppLifecycleState.resumed) {
       _initializeCamera();
     }
@@ -285,8 +287,9 @@ class _CameraScreenState extends State<CameraScreen>
         if (mounted) {
           if (_isStandalone) {
             setState(() {
-              _capturedFiles.clear();
-              _capturedFiles.add(xFile);
+              _capturedFiles
+                ..clear()
+                ..add(xFile);
               _isRecording = false;
               _recordingSeconds = 0;
             });
@@ -328,16 +331,17 @@ class _CameraScreenState extends State<CameraScreen>
 
   Future<void> _onWillPop() async {
     if (!_isStandalone || _capturedFiles.isEmpty) {
-      if (mounted) Navigator.of(context).pop<List<MediaItem>?>(null);
+      if (mounted) Navigator.of(context).pop<List<MediaItem>?>();
       return;
     }
-    final confirmation = widget.standaloneConfig?.exitConfirmation ??
+    final confirmation =
+        widget.standaloneConfig?.exitConfirmation ??
         const StandardExitConfirmation();
 
     final shouldPop = await confirmation.show(context, widget.primaryColor);
 
     if (shouldPop == true && mounted) {
-      Navigator.of(context).pop<List<MediaItem>?>(null);
+      Navigator.of(context).pop<List<MediaItem>?>();
     }
   }
 
@@ -376,9 +380,7 @@ class _CameraScreenState extends State<CameraScreen>
         // Camera preview - scaled to fill screen with no borders
         Transform.scale(
           scale: scale,
-          child: Center(
-            child: CameraPreview(controller),
-          ),
+          child: Center(child: CameraPreview(controller)),
         ),
 
         // Deep vignette and gradient overlay for premium depth
@@ -386,7 +388,6 @@ class _CameraScreenState extends State<CameraScreen>
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: RadialGradient(
-                center: Alignment.center,
                 radius: 1.5,
                 colors: [
                   Colors.transparent,
@@ -414,10 +415,7 @@ class _CameraScreenState extends State<CameraScreen>
                     onTap: () => _onWillPop(),
                   ),
                   if (_hasFlash)
-                    _buildGlassButton(
-                      icon: _flashIcon,
-                      onTap: _cycleFlashMode,
-                    ),
+                    _buildGlassButton(icon: _flashIcon, onTap: _cycleFlashMode),
                 ],
               ),
             ),
@@ -448,7 +446,6 @@ class _CameraScreenState extends State<CameraScreen>
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // If standalone and we have captures, show the "Send" button instead of flip
                 if (_isStandalone && _capturedFiles.isNotEmpty)
@@ -461,8 +458,11 @@ class _CameraScreenState extends State<CameraScreen>
                         shape: BoxShape.circle,
                         color: Colors.white,
                       ),
-                      child: const Icon(Icons.send_rounded,
-                          color: Colors.black, size: 22),
+                      child: const Icon(
+                        Icons.send_rounded,
+                        color: Colors.black,
+                        size: 22,
+                      ),
                     ),
                   )
                 else if (_isStandalone &&
@@ -479,7 +479,6 @@ class _CameraScreenState extends State<CameraScreen>
                         color: Colors.white.withValues(alpha: 0.1),
                         border: Border.all(
                           color: Colors.white.withValues(alpha: 0.2),
-                          width: 1,
                         ),
                         image: _galleryThumbnail != null
                             ? DecorationImage(
@@ -489,8 +488,11 @@ class _CameraScreenState extends State<CameraScreen>
                             : null,
                       ),
                       child: _galleryThumbnail == null
-                          ? const Icon(Icons.photo_library_rounded,
-                              color: Colors.white, size: 22)
+                          ? const Icon(
+                              Icons.photo_library_rounded,
+                              color: Colors.white,
+                              size: 22,
+                            )
                           : null,
                     ),
                   )
@@ -503,11 +505,12 @@ class _CameraScreenState extends State<CameraScreen>
                 // Flip camera button
                 _cameras.length > 1
                     ? RotationTransition(
-                        turns:
-                            Tween(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-                          parent: _flipAnimCtrl,
-                          curve: Curves.easeInOutBack,
-                        )),
+                        turns: Tween(begin: 0.0, end: 1.0).animate(
+                          CurvedAnimation(
+                            parent: _flipAnimCtrl,
+                            curve: Curves.easeInOutBack,
+                          ),
+                        ),
                         child: _buildGlassButton(
                           icon: Icons.flip_camera_ios_rounded,
                           onTap: _switchCamera,
@@ -553,14 +556,16 @@ class _CameraScreenState extends State<CameraScreen>
                         borderRadius: BorderRadius.circular(30),
                         border: Border.all(
                           color: Colors.redAccent.withValues(alpha: 0.5),
-                          width: 1,
                         ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.fiber_manual_record,
-                              color: Colors.redAccent, size: 14),
+                          const Icon(
+                            Icons.fiber_manual_record,
+                            color: Colors.redAccent,
+                            size: 14,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             () {
@@ -629,7 +634,9 @@ class _CameraScreenState extends State<CameraScreen>
                     filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 10),
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.35),
                         borderRadius: BorderRadius.circular(20),
@@ -641,12 +648,17 @@ class _CameraScreenState extends State<CameraScreen>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.touch_app_rounded,
-                              color: Colors.white70, size: 16),
+                          const Icon(
+                            Icons.touch_app_rounded,
+                            color: Colors.white70,
+                            size: 16,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             widget
-                                .standaloneConfig!.textDelegate.cameraVideoHint,
+                                .standaloneConfig!
+                                .textDelegate
+                                .cameraVideoHint,
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 12,
@@ -667,7 +679,8 @@ class _CameraScreenState extends State<CameraScreen>
   }
 
   Widget _buildCaptureStripItem(XFile xFile, int index) {
-    final isVideo = xFile.path.toLowerCase().endsWith('.mp4') ||
+    final isVideo =
+        xFile.path.toLowerCase().endsWith('.mp4') ||
         xFile.path.toLowerCase().endsWith('.mov');
     return GestureDetector(
       onTap: () => _openCapturePreview(index),
@@ -689,7 +702,7 @@ class _CameraScreenState extends State<CameraScreen>
               color: Colors.black26,
               blurRadius: 8,
               offset: Offset(0, 4),
-            )
+            ),
           ],
         ),
         child: isVideo
@@ -701,8 +714,11 @@ class _CameraScreenState extends State<CameraScreen>
                     color: Colors.black.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.play_arrow_rounded,
-                      color: Colors.white, size: 14),
+                  child: const Icon(
+                    Icons.play_arrow_rounded,
+                    color: Colors.white,
+                    size: 14,
+                  ),
                 ),
               )
             : null,
@@ -726,8 +742,9 @@ class _CameraScreenState extends State<CameraScreen>
 
     if (result != null) {
       setState(() {
-        _capturedFiles.clear();
-        _capturedFiles.addAll(result);
+        _capturedFiles
+          ..clear()
+          ..addAll(result);
       });
       // If user clicked "Done" with items, we should probably confirm the session natively.
       // But the Preview screen can also return the modified list just to continue shooting.
@@ -767,9 +784,11 @@ class _CameraScreenState extends State<CameraScreen>
           return; // Prevent tap if photo disabled and not video-only
         }
 
-        final hasVideo = _capturedFiles.any((f) =>
-            f.path.toLowerCase().endsWith('.mp4') ||
-            f.path.toLowerCase().endsWith('.mov'));
+        final hasVideo = _capturedFiles.any(
+          (f) =>
+              f.path.toLowerCase().endsWith('.mp4') ||
+              f.path.toLowerCase().endsWith('.mov'),
+        );
         if (_isStandalone && hasVideo) {
           HapticFeedback.heavyImpact();
           return; // Cannot take photo if a video is already captured
@@ -786,10 +805,13 @@ class _CameraScreenState extends State<CameraScreen>
           ? () {
               if (_showVideoHint) setState(() => _showVideoHint = false);
 
-              final hasPhoto = _capturedFiles.isNotEmpty &&
-                  !_capturedFiles.any((f) =>
-                      f.path.toLowerCase().endsWith('.mp4') ||
-                      f.path.toLowerCase().endsWith('.mov'));
+              final hasPhoto =
+                  _capturedFiles.isNotEmpty &&
+                  !_capturedFiles.any(
+                    (f) =>
+                        f.path.toLowerCase().endsWith('.mp4') ||
+                        f.path.toLowerCase().endsWith('.mov'),
+                  );
               if (_isStandalone && hasPhoto) {
                 HapticFeedback.heavyImpact();
                 return; // Cannot record video if photos were already taken
@@ -809,10 +831,9 @@ class _CameraScreenState extends State<CameraScreen>
             }
           : null,
       child: ScaleTransition(
-        scale: Tween(begin: 1.0, end: 0.85).animate(CurvedAnimation(
-          parent: _captureAnimCtrl,
-          curve: Curves.easeOutCirc,
-        )),
+        scale: Tween(begin: 1.0, end: 0.85).animate(
+          CurvedAnimation(parent: _captureAnimCtrl, curve: Curves.easeOutCirc),
+        ),
         child: Container(
           width: 84,
           height: 84,
@@ -870,10 +891,7 @@ class _CameraScreenState extends State<CameraScreen>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.white.withValues(alpha: 0.1),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-                width: 1,
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             ),
             child: Icon(icon, color: Colors.white, size: size),
           ),

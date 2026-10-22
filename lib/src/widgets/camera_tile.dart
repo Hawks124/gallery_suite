@@ -28,11 +28,11 @@ class CameraTileWidget extends StatefulWidget {
   final ValueChanged<File> onCaptured;
 
   const CameraTileWidget({
-    super.key,
     required this.primaryColor,
     required this.isDark,
     required this.captureMode,
     required this.onCaptured,
+    super.key,
   });
 
   @override
@@ -57,9 +57,9 @@ class _CameraTileWidgetState extends State<CameraTileWidget>
 
   @override
   void dispose() {
-    _previewController
-        ?.dispose()
-        .catchError((e) => debugPrint('Tile preview dispose error: $e'));
+    _previewController?.dispose().catchError(
+      (e) => debugPrint('Tile preview dispose error: $e'),
+    );
     _pulseCtrl.dispose();
     super.dispose();
   }
@@ -128,10 +128,7 @@ class _CameraTileWidgetState extends State<CameraTileWidget>
         ),
         transitionsBuilder: (ctx, animation, _, child) {
           return FadeTransition(
-            opacity: CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOut,
-            ),
+            opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
             child: child,
           );
         },
@@ -188,8 +185,9 @@ class _CameraTileWidgetState extends State<CameraTileWidget>
             // Frosted overlay
             Container(
               decoration: BoxDecoration(
-                color:
-                    Colors.black.withValues(alpha: _previewReady ? 0.25 : 0.0),
+                color: Colors.black.withValues(
+                  alpha: _previewReady ? 0.25 : 0.0,
+                ),
               ),
             ),
 
@@ -199,10 +197,7 @@ class _CameraTileWidgetState extends State<CameraTileWidget>
                 animation: _pulseCtrl,
                 builder: (context, child) {
                   final scale = 1.0 + (_pulseCtrl.value * 0.08);
-                  return Transform.scale(
-                    scale: scale,
-                    child: child,
-                  );
+                  return Transform.scale(scale: scale, child: child);
                 },
                 child: Container(
                   width: 52,

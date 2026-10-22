@@ -4,5 +4,5 @@ library;
 
 export 'audio_picker_page.dart';
 export 'camera_screen.dart';
-export 'fullscreen_preview_page.dart';
 export 'capture_preview_screen.dart';
+export 'fullscreen_preview_page.dart';

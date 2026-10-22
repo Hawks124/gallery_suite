@@ -87,7 +87,8 @@ class ClipboardService {
       final fileAssets = await _tryParseFiles();
       if (fileAssets.isNotEmpty) {
         debugPrint(
-            '[ClipboardService] Found ${fileAssets.length} Files! Returning.');
+          '[ClipboardService] Found ${fileAssets.length} Files! Returning.',
+        );
         assets.addAll(fileAssets);
         return assets;
       }
@@ -117,7 +118,8 @@ class ClipboardService {
       final data = await Clipboard.getData(Clipboard.kTextPlain);
       final text = data?.text?.trim();
       debugPrint(
-          '[ClipboardService] _tryParseTextUrl -> Clipboard text: "$text"');
+        '[ClipboardService] _tryParseTextUrl -> Clipboard text: "$text"',
+      );
       if (text == null || text.isEmpty) return null;
 
       final uri = Uri.tryParse(text);
@@ -128,7 +130,8 @@ class ClipboardService {
 
       final mimeType = lookupMimeType(uri.path) ?? '';
       debugPrint(
-          '[ClipboardService] _tryParseTextUrl -> URL mimeType: $mimeType');
+        '[ClipboardService] _tryParseTextUrl -> URL mimeType: $mimeType',
+      );
       AssetType? type;
 
       if (mimeType.startsWith('image/')) {
@@ -150,21 +153,25 @@ class ClipboardService {
         } else {
           try {
             debugPrint(
-                '[ClipboardService] _tryParseTextUrl -> Executing HTTP GET fallback...');
-            final response = await http.get(
-              uri,
-              headers: {
-                'User-Agent':
-                    'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
-                'Accept':
-                    'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.5',
-              },
-            ).timeout(const Duration(seconds: 5));
+              '[ClipboardService] _tryParseTextUrl -> Executing HTTP GET fallback...',
+            );
+            final response = await http
+                .get(
+                  uri,
+                  headers: {
+                    'User-Agent':
+                        'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+                    'Accept':
+                        'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5',
+                  },
+                )
+                .timeout(const Duration(seconds: 5));
 
             final contentType = response.headers['content-type'] ?? '';
             debugPrint(
-                '[ClipboardService] _tryParseTextUrl -> HTTP GET contentType = $contentType');
+              '[ClipboardService] _tryParseTextUrl -> HTTP GET contentType = $contentType',
+            );
 
             if (contentType.startsWith('image/')) {
               type = AssetType.image;
@@ -179,33 +186,36 @@ class ClipboardService {
               final ogImageUrl = _extractOgImage(response.body);
               if (ogImageUrl != null) {
                 debugPrint(
-                    '[ClipboardService] _tryParseTextUrl -> Found og:image: $ogImageUrl');
+                  '[ClipboardService] _tryParseTextUrl -> Found og:image: $ogImageUrl',
+                );
                 return RemotePickerAsset(
                   id: 'clipboard_og_${ogImageUrl.hashCode.toRadixString(36)}',
                   baseUrl: ogImageUrl,
                   title: uri.pathSegments.isNotEmpty
                       ? uri.pathSegments.last
                       : 'Web Image',
-                  type: AssetType.image,
                 );
               }
             }
           } catch (e) {
             debugPrint(
-                '[ClipboardService] _tryParseTextUrl -> HTTP GET error: $e');
+              '[ClipboardService] _tryParseTextUrl -> HTTP GET error: $e',
+            );
           }
         }
       }
 
       debugPrint(
-          '[ClipboardService] _tryParseTextUrl -> Computed AssetType: $type');
+        '[ClipboardService] _tryParseTextUrl -> Computed AssetType: $type',
+      );
       if (type == null) return null;
 
       return RemotePickerAsset(
         id: 'clipboard_url_${text.hashCode.toRadixString(36)}',
         baseUrl: text,
-        title:
-            uri.pathSegments.isNotEmpty ? uri.pathSegments.last : 'Clipboard',
+        title: uri.pathSegments.isNotEmpty
+            ? uri.pathSegments.last
+            : 'Clipboard',
         type: type,
       );
     } catch (e) {
@@ -221,7 +231,8 @@ class ClipboardService {
     try {
       final paths = await Pasteboard.files();
       debugPrint(
-          '[ClipboardService] _tryParseFiles -> Pasteboard.files() returned: $paths');
+        '[ClipboardService] _tryParseFiles -> Pasteboard.files() returned: $paths',
+      );
       if (paths.isEmpty) return [];
 
       final assets = <FilePickerAsset>[];
@@ -229,25 +240,30 @@ class ClipboardService {
       for (var path in paths) {
         if (path.startsWith('content://')) {
           debugPrint(
-              '[ClipboardService] _tryParseFiles -> Detected Android Content URI: $path');
+            '[ClipboardService] _tryParseFiles -> Detected Android Content URI: $path',
+          );
           try {
             final id = path.split('/').last;
             debugPrint(
-                '[ClipboardService] _tryParseFiles -> Extracting ID: $id');
+              '[ClipboardService] _tryParseFiles -> Extracting ID: $id',
+            );
             final entity = await AssetEntity.fromId(id);
             final resolvedFile = await entity?.file;
             if (resolvedFile != null && resolvedFile.existsSync()) {
               debugPrint(
-                  '[ClipboardService] _tryParseFiles -> Successfully mapped URI to real file: ${resolvedFile.path}');
+                '[ClipboardService] _tryParseFiles -> Successfully mapped URI to real file: ${resolvedFile.path}',
+              );
               path = resolvedFile.path;
             } else {
               debugPrint(
-                  '[ClipboardService] _tryParseFiles -> FAILED to resolve Content URI via photo_manager.');
+                '[ClipboardService] _tryParseFiles -> FAILED to resolve Content URI via photo_manager.',
+              );
               continue; // Unable to resolve the secure URI
             }
           } catch (e) {
             debugPrint(
-                '[ClipboardService] _tryParseFiles -> exception resolving URI: $e');
+              '[ClipboardService] _tryParseFiles -> exception resolving URI: $e',
+            );
             continue;
           }
         }
@@ -255,12 +271,14 @@ class ClipboardService {
         final file = io.File(path);
         if (!file.existsSync()) {
           debugPrint(
-              '[ClipboardService] _tryParseFiles -> File does not exist locally: $path');
+            '[ClipboardService] _tryParseFiles -> File does not exist locally: $path',
+          );
           continue;
         }
 
         final mimeType = lookupMimeType(path) ?? '';
-        final isMedia = mimeType.startsWith('image/') ||
+        final isMedia =
+            mimeType.startsWith('image/') ||
             mimeType.startsWith('video/') ||
             mimeType.startsWith('audio/');
 
@@ -270,7 +288,8 @@ class ClipboardService {
             !_hasVideoExtension(path.toLowerCase()) &&
             !_hasAudioExtension(path.toLowerCase())) {
           debugPrint(
-              '[ClipboardService] _tryParseFiles -> File is not a media file type: $path');
+            '[ClipboardService] _tryParseFiles -> File is not a media file type: $path',
+          );
           continue;
         }
 
@@ -290,17 +309,20 @@ class ClipboardService {
             }
           } catch (e) {
             debugPrint(
-                '[ClipboardService] _tryParseFiles -> Exception reading bytes: $e');
+              '[ClipboardService] _tryParseFiles -> Exception reading bytes: $e',
+            );
           }
         }
 
-        assets.add(FilePickerAsset(
-          filePath: path,
-          title: path.split(kIsWeb ? '/' : io.Platform.pathSeparator).last,
-          bytes: bytes,
-          width: width,
-          height: height,
-        ));
+        assets.add(
+          FilePickerAsset(
+            filePath: path,
+            title: path.split(kIsWeb ? '/' : io.Platform.pathSeparator).last,
+            bytes: bytes,
+            width: width,
+            height: height,
+          ),
+        );
       }
 
       return assets;
@@ -316,17 +338,20 @@ class ClipboardService {
     if (kIsWeb) return null;
     try {
       debugPrint(
-          '[ClipboardService] _tryParseImageBytes -> Calling Pasteboard.image...');
+        '[ClipboardService] _tryParseImageBytes -> Calling Pasteboard.image...',
+      );
       final Uint8List? imageBytes = await Pasteboard.image;
 
       if (imageBytes == null) {
         debugPrint(
-            '[ClipboardService] _tryParseImageBytes -> Pasteboard.image returned NULL.');
+          '[ClipboardService] _tryParseImageBytes -> Pasteboard.image returned NULL.',
+        );
         return null;
       }
       if (imageBytes.isEmpty) {
         debugPrint(
-            '[ClipboardService] _tryParseImageBytes -> Pasteboard.image returned EMPTY bytes.');
+          '[ClipboardService] _tryParseImageBytes -> Pasteboard.image returned EMPTY bytes.',
+        );
         return null;
       }
 
@@ -480,17 +505,21 @@ class ClipboardService {
     // --- Pass 3: Apple Touch Icon (Often a high-quality logo/fallback) ---
     final iconPatterns = [
       RegExp(
-          r'''<link[^>]+rel\s*=\s*["']apple-touch-icon["'][^>]+href\s*=\s*["']([^"']+)["']''',
-          caseSensitive: false),
+        r'''<link[^>]+rel\s*=\s*["']apple-touch-icon["'][^>]+href\s*=\s*["']([^"']+)["']''',
+        caseSensitive: false,
+      ),
       RegExp(
-          r'''<link[^>]+href\s*=\s*["']([^"']+)["'][^>]+rel\s*=\s*["']apple-touch-icon["']''',
-          caseSensitive: false),
+        r'''<link[^>]+href\s*=\s*["']([^"']+)["'][^>]+rel\s*=\s*["']apple-touch-icon["']''',
+        caseSensitive: false,
+      ),
       RegExp(
-          r'''<link[^>]+rel\s*=\s*["']icon["'][^>]+href\s*=\s*["']([^"']+)["']''',
-          caseSensitive: false),
+        r'''<link[^>]+rel\s*=\s*["']icon["'][^>]+href\s*=\s*["']([^"']+)["']''',
+        caseSensitive: false,
+      ),
       RegExp(
-          r'''<link[^>]+href\s*=\s*["']([^"']+)["'][^>]+rel\s*=\s*["']icon["']''',
-          caseSensitive: false),
+        r'''<link[^>]+href\s*=\s*["']([^"']+)["'][^>]+rel\s*=\s*["']icon["']''',
+        caseSensitive: false,
+      ),
     ];
     for (final pattern in iconPatterns) {
       final match = pattern.firstMatch(html);
@@ -501,8 +530,10 @@ class ClipboardService {
     }
 
     // --- Pass 4: First generic <img src="..."> ---
-    final imgPattern = RegExp(r'''<img[^>]+src\s*=\s*["'](http[^"']+)["']''',
-        caseSensitive: false);
+    final imgPattern = RegExp(
+      r'''<img[^>]+src\s*=\s*["'](http[^"']+)["']''',
+      caseSensitive: false,
+    );
     var match = imgPattern.firstMatch(html);
     if (match != null) {
       final resolved = _resolveOgUrl(match.group(1));
@@ -511,8 +542,9 @@ class ClipboardService {
 
     // --- Pass 5: Bruteforce ANY absolute image URL in the raw HTML ---
     final rawUrlPattern = RegExp(
-        r'''https?:\/\/[^\s"'<>{}]+?\.(?:jpg|jpeg|png|webp)''',
-        caseSensitive: false);
+      r'''https?:\/\/[^\s"'<>{}]+?\.(?:jpg|jpeg|png|webp)''',
+      caseSensitive: false,
+    );
     match = rawUrlPattern.firstMatch(html);
     if (match != null) {
       final resolved = _resolveOgUrl(match.group(0));

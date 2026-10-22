@@ -8,7 +8,7 @@ on:
 
 jobs:
   analyze:
-    name: Analyze & Auto-fix
+    name: Analyze, Test & Format
     runs-on: ubuntu-latest
 
     steps:
@@ -24,15 +24,18 @@ jobs:
         run: flutter pub get
 
       - name: Apply safe auto-fixes (dart fix)
-        run: dart fix --apply lib
+        run: dart fix --apply
 
       - name: Verify no pending auto-fixes remain
         run: |
-          if ! git diff --exit-code lib/; then
-            echo "dart fix produced changes. Run 'dart fix --apply lib' locally and commit the result."
-            git diff --stat lib/
+          if ! git diff --exit-code; then
+            echo "dart fix produced changes. Run 'dart fix --apply' locally and commit the result."
+            git diff --stat
             exit 1
           fi
 
-      - name: Flutter Analyze (errors & warnings only)
-        run: flutter analyze --no-fatal-infos
+      - name: Flutter Analyze
+        run: flutter analyze
+
+      - name: Run the test suite
+        run: flutter test

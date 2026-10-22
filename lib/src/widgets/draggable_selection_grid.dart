@@ -33,10 +33,10 @@ class DraggableSelectionGrid extends StatefulWidget {
   final bool enabled;
 
   const DraggableSelectionGrid({
-    super.key,
     required this.child,
     required this.scrollController,
     required this.onAssetHover,
+    super.key,
     this.onDragStart,
     this.onDragEnd,
     this.enabled = true,
@@ -143,8 +143,9 @@ class _DraggableSelectionGridState extends State<DraggableSelectionGrid> {
   void _startAutoScroll() {
     if (_autoScrollTimer?.isActive ?? false) return;
 
-    _autoScrollTimer =
-        Timer.periodic(const Duration(milliseconds: 16), (timer) {
+    _autoScrollTimer = Timer.periodic(const Duration(milliseconds: 16), (
+      timer,
+    ) {
       final ctrl = widget.scrollController;
       if (!ctrl.hasClients) {
         _stopAutoScroll();

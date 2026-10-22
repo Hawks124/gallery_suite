@@ -1,37 +1,30 @@
 name: gallery_suite
 description: >-
-  Ultimate Flutter media picker featuring a built-in Google Photos provider and BYOE architecture. Includes 120fps masonry grid, swipe-to-select, camera, and inline audio/video.
+  In-app Flutter media picker with a built-in Google Photos provider, 5 grid layouts
+  (incl. BYOG), swipe-to-select, multi-capture camera and inline audio/video playback.
 version: 1.0.0
 homepage: https://github.com/Hawks124/gallery_suite
 repository: https://github.com/Hawks124/gallery_suite
 issue_tracker: https://github.com/Hawks124/gallery_suite/issues
 
+# pub.dev accepts a maximum of 5 topics. The full set lives in the GitHub repo topics.
 topics:
-  - image
-  - video
-  - audio
-  - media
-  - gallery
-  - assets
-  - camera
-  - photo
   - image-picker
   - media-picker
-  - cloud-picker
+  - gallery
+  - camera
   - google-photos
-  - masonry
 
-# platforms:
-#   android:
-#   ios:
-#   linux:
-#   macos:
-#   web:
-#   windows:
+platforms:
+  android:
+  ios:
+  macos:
+  windows:
+  linux:
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
-  flutter: ">=3.10.0"
+  sdk: ">=3.9.0 <4.0.0"
+  flutter: ">=3.35.0"
 
 dependencies:
   flutter:
@@ -41,8 +34,8 @@ dependencies:
   video_player: ^2.10.0
   just_audio: ^0.10.4
   camera: ^0.12.0
-  camera_windows: ^0.2.6+4
-  camera_macos: ^0.0.9
+  camera_windows: ">=0.2.6+4 <0.4.0"
+  camera_macos: ">=0.0.9 <0.2.0"
   camera_linux: ^0.0.8
   google_sign_in: ^7.2.0
   http: ^1.3.0
@@ -62,8 +55,24 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   assets:
     - assets/images/
+
+# Screenshots published on the pub.dev package page.
+# Every file must live inside the published archive and stay under 4 MB.
+screenshots:
+  - description: >-
+      The image picker: a 120fps masonry grid mixing local media, Google Photos
+      cloud assets and clipboard items, with multi-select and swipe-to-select.
+    path: doc/screenshots/image_picker.gif
+  - description: >-
+      Swipe-to-select: long-press and drag across the grid to select many items
+      at once, iOS Photos style, with edge auto-scrolling.
+    path: doc/screenshots/swipe_to_select.gif
+  - description: >-
+      The audio picker: a list view with album art and an inline mini-player for
+      instant playback, no round-trip to a native view.
+    path: doc/screenshots/audio_picker.gif

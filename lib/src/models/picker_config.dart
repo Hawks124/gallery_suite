@@ -1,9 +1,10 @@
 // Configuration models for the Gallery Suite picker.
 
 import 'dart:io';
+
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:file_selector/file_selector.dart';
 
 import '../../gallery_suite.dart';
 
@@ -32,6 +33,28 @@ class PickerConfig {
   // Maximum number of selectable assets. Default is 10.
   final int maxSelection;
 
+  // The visual grid layout behavior. Defaults to [PickerGridLayout.masonry].
+  final PickerGridLayout gridLayout;
+
+  // Bring Your Own Grid builder. Required if [gridLayout] is [PickerGridLayout.byog].
+  //
+  // It provides the [ScrollController], the total [itemCount], and an [itemBuilder]
+  // that automatically wraps each item with the necessary GestureDetector, Hero,
+  // Selection markers, and Player overlays. You simply return a grid/list widget.
+  final Widget Function(
+    BuildContext context,
+    ScrollController scrollController,
+    int itemCount,
+    Widget Function(BuildContext, int) itemBuilder,
+  )?
+  customGridBuilder;
+
+  // The default sort order for local media. Defaults to [PickerSortOrder.newest].
+  final PickerSortOrder defaultSortOrder;
+
+  // Whether to show the sorting dropdown in the UI. Defaults to `true`.
+  final bool enableSorting;
+
   // Whether to show the live Camera tile as the first item in the grid.
   // Defaults to `true`. Effective only for image and video modes.
   final bool showCameraTile;
@@ -53,13 +76,15 @@ class PickerConfig {
   // Label for the send / confirm button that appears in the AppBar once
   // at least one asset is selected. Defaults to `'Sélectionner'`.
   @Deprecated(
-      'Use textDelegate.confirm instead. This field will be removed in v2.0.0.')
+    'Use textDelegate.confirm instead. This field will be removed in v2.0.0.',
+  )
   final String confirmText;
 
   // Label for the cancel button that dismisses the picker without a
   // selection. Defaults to `'Annuler'`.
   @Deprecated(
-      'Use textDelegate.cancel instead. This field will be removed in v2.0.0.')
+    'Use textDelegate.cancel instead. This field will be removed in v2.0.0.',
+  )
   final String cancelText;
 
   // Handles all text localization within the picker.
@@ -116,7 +141,11 @@ class PickerConfig {
   //
   // Requires [RequestType.image] or mixed mode.
   final Future<File?> Function(
-      BuildContext context, AssetEntity asset, File originalFile)? onEditMedia;
+    BuildContext context,
+    AssetEntity asset,
+    File originalFile,
+  )?
+  onEditMedia;
 
   // Configuration for the Google Photos cloud provider.
   final GooglePhotosConfig googlePhotosConfig;
@@ -167,8 +196,11 @@ class PickerConfig {
   ///
   /// *Note: This hook takes priority over [autoCompressImages].*
   final Future<File?> Function(
-          BuildContext context, AssetEntity asset, File originalFile)?
-      onCompressMedia;
+    BuildContext context,
+    AssetEntity asset,
+    File originalFile,
+  )?
+  onCompressMedia;
 
   /// **BYOD (Bring Your Own Drop) Hook**
   ///
@@ -190,8 +222,12 @@ class PickerConfig {
   ///   );
   /// }
   /// ```
-  final Widget Function(BuildContext context, Widget child,
-      ValueChanged<List<XFile>> onFilesDropped)? dropRegionBuilder;
+  final Widget Function(
+    BuildContext context,
+    Widget child,
+    ValueChanged<List<XFile>> onFilesDropped,
+  )?
+  dropRegionBuilder;
 
   // Creates a [PickerConfig] with the given options.
   //
@@ -200,6 +236,10 @@ class PickerConfig {
   const PickerConfig({
     this.requestType = RequestType.image,
     this.maxSelection = 10,
+    this.gridLayout = PickerGridLayout.masonry,
+    this.customGridBuilder,
+    this.defaultSortOrder = PickerSortOrder.newest,
+    this.enableSorting = true,
     this.showCameraTile = true,
     this.enableSwipeToSelect = true,
     this.useOriginalFile = false,
@@ -222,5 +262,8 @@ class PickerConfig {
     this.imageCompressionQuality = 85,
     this.onCompressMedia,
     this.dropRegionBuilder,
-  });
+  }) : assert(
+         gridLayout != PickerGridLayout.byog || customGridBuilder != null,
+         'customGridBuilder is required when gridLayout is PickerGridLayout.byog',
+       );
 }

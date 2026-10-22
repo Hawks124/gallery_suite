@@ -12,7 +12,6 @@ class InlineSearchBar extends StatelessWidget {
   final VoidCallback onCancel;
 
   const InlineSearchBar({
-    super.key,
     required this.theme,
     required this.hintText,
     required this.searchQuery,
@@ -20,6 +19,7 @@ class InlineSearchBar extends StatelessWidget {
     required this.searchFocus,
     required this.onChanged,
     required this.onCancel,
+    super.key,
   });
 
   @override
@@ -41,24 +41,31 @@ class InlineSearchBar extends StatelessWidget {
           onChanged: onChanged,
           decoration: InputDecoration(
             hintText: hintText,
-            hintStyle:
-                TextStyle(color: theme.secondaryText.withValues(alpha: 0.5)),
-            prefixIcon:
-                Icon(Icons.search, color: theme.secondaryText, size: 20),
+            hintStyle: TextStyle(
+              color: theme.secondaryText.withValues(alpha: 0.5),
+            ),
+            prefixIcon: Icon(
+              Icons.search,
+              color: theme.secondaryText,
+              size: 20,
+            ),
             suffixIcon: searchQuery.isNotEmpty
                 ? IconButton(
-                    icon: Icon(Icons.cancel,
-                        color: theme.secondaryText, size: 16),
+                    icon: Icon(
+                      Icons.cancel,
+                      color: theme.secondaryText,
+                      size: 16,
+                    ),
                     onPressed: onCancel,
                   )
                 : null,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),
-              borderSide: BorderSide(color: Colors.transparent),
+              borderSide: const BorderSide(color: Colors.transparent),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),
-              borderSide: BorderSide(color: Colors.transparent),
+              borderSide: const BorderSide(color: Colors.transparent),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(30),

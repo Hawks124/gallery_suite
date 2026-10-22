@@ -27,8 +27,6 @@ class NativeMediaCompressor {
       final xFile = await FlutterImageCompress.compressAndGetFile(
         file.absolute.path,
         targetPath,
-        format: CompressFormat.jpeg,
-        quality: 95,
       );
 
       if (xFile != null) {
@@ -36,7 +34,8 @@ class NativeMediaCompressor {
       }
     } catch (e) {
       debugPrint(
-          '[HeicConverter] Fallback - Native HEIC compression failed: $e');
+        '[HeicConverter] Fallback - Native HEIC compression failed: $e',
+      );
     }
 
     // If conversion crashes (e.g unsupported device), return original defensively
@@ -66,7 +65,8 @@ class NativeMediaCompressor {
       }
     } catch (e) {
       debugPrint(
-          '[NativeMediaCompressor] General native compression failed: $e');
+        '[NativeMediaCompressor] General native compression failed: $e',
+      );
     }
 
     return file;

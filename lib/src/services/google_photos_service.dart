@@ -3,20 +3,19 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'package:crypto/crypto.dart';
-import 'package:flutter/foundation.dart';
-
-// Conditionally import dart:io to avoid Pana blocking Web compatibility
-import '../utils/suite_utils.dart';
 
 import 'package:app_links/app_links.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:google_sign_in/google_sign_in.dart' as gsi;
-import 'package:http/http.dart' as http;
+import 'package:crypto/crypto.dart';
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
+import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart' as gsi;
 import 'package:googleapis_auth/googleapis_auth.dart' as auth;
+import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/picker_asset.dart';
+// Conditionally import dart:io to avoid Pana blocking Web compatibility
+import '../utils/suite_utils.dart';
 
 // A service that handles Google Sign-In authentication and securely communicates
 // with the Google Photos Library API.
@@ -119,7 +118,8 @@ class GooglePhotosService {
           (Platform.isAndroid || Platform.isWindows || Platform.isLinux)) {
         if (_clientId == null) {
           debugPrint(
-              '[GooglePhotosService] Error: clientId is required for PKCE integration.');
+            '[GooglePhotosService] Error: clientId is required for PKCE integration.',
+          );
         }
         _initialized = true;
         _initCompleter?.complete();
@@ -131,19 +131,21 @@ class GooglePhotosService {
         serverClientId: _serverClientId,
       );
 
-      gsi.GoogleSignIn.instance.authenticationEvents
-          .listen((gsi.GoogleSignInAuthenticationEvent event) async {
+      gsi.GoogleSignIn.instance.authenticationEvents.listen((
+        gsi.GoogleSignInAuthenticationEvent event,
+      ) async {
         if (event is gsi.GoogleSignInAuthenticationEventSignIn) {
           _currentUser = event.user;
           try {
-            final authData =
-                await event.user.authorizationClient.authorizeScopes(_scopes);
+            final authData = await event.user.authorizationClient
+                .authorizeScopes(_scopes);
             _authClient = authData.authClient(scopes: _scopes);
             _accessToken = authData.accessToken;
             _notifyAuthState(true);
           } catch (e) {
             debugPrint(
-                '[GooglePhotosService] Error acquiring scopes from stream: $e');
+              '[GooglePhotosService] Error acquiring scopes from stream: $e',
+            );
             _notifyAuthState(false);
           }
         } else if (event is gsi.GoogleSignInAuthenticationEventSignOut) {
@@ -183,8 +185,9 @@ class GooglePhotosService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
         _accessToken = data['access_token'] as String?;
-        _tokenExpiry = DateTime.now()
-            .add(Duration(seconds: data['expires_in'] as int? ?? 3599));
+        _tokenExpiry = DateTime.now().add(
+          Duration(seconds: data['expires_in'] as int? ?? 3599),
+        );
 
         // Re-authenticate the internal client
         if (_accessToken != null) {
@@ -210,8 +213,11 @@ class GooglePhotosService {
     if (_accessToken == null) return;
     try {
       final credentials = auth.AccessCredentials(
-        auth.AccessToken('Bearer', _accessToken!,
-            _tokenExpiry ?? DateTime.now().add(const Duration(hours: 1))),
+        auth.AccessToken(
+          'Bearer',
+          _accessToken!,
+          _tokenExpiry ?? DateTime.now().add(const Duration(hours: 1)),
+        ),
         _refreshToken,
         _scopes,
       );
@@ -292,12 +298,14 @@ class GooglePhotosService {
       final code = Uri.parse(result).queryParameters['code'];
       if (code == null || code.isEmpty) {
         debugPrint(
-            '[GooglePhotosService] PKCE: No authorization code received');
+          '[GooglePhotosService] PKCE: No authorization code received',
+        );
         return false;
       }
 
       debugPrint(
-          '[GooglePhotosService] PKCE: authorization code received, exchanging...');
+        '[GooglePhotosService] PKCE: authorization code received, exchanging...',
+      );
 
       // Exchange authorization code for access token
       final tokenBody = {
@@ -323,19 +331,24 @@ class GooglePhotosService {
         final data = json.decode(tokenResponse.body) as Map<String, dynamic>;
         _accessToken = data['access_token'] as String?;
         _refreshToken = data['refresh_token'] as String?;
-        _tokenExpiry = DateTime.now()
-            .add(Duration(seconds: data['expires_in'] as int? ?? 3599));
+        _tokenExpiry = DateTime.now().add(
+          Duration(seconds: data['expires_in'] as int? ?? 3599),
+        );
 
         if (_accessToken != null) {
           final returnedScopes = data['scope'] as String?;
           debugPrint('[GooglePhotosService] PKCE: Token exchange successful!');
           debugPrint(
-              '[GooglePhotosService] PKCE: Scopes granted: $returnedScopes');
+            '[GooglePhotosService] PKCE: Scopes granted: $returnedScopes',
+          );
 
           // Create an AuthClient from the PKCE token
           final credentials = auth.AccessCredentials(
-            auth.AccessToken('Bearer', _accessToken!,
-                DateTime.now().add(const Duration(hours: 1)).toUtc()),
+            auth.AccessToken(
+              'Bearer',
+              _accessToken!,
+              DateTime.now().add(const Duration(hours: 1)).toUtc(),
+            ),
             null,
             _scopes,
           );
@@ -384,12 +397,12 @@ class GooglePhotosService {
 
     try {
       await _ensureInitialized();
-      final account =
-          await gsi.GoogleSignIn.instance.attemptLightweightAuthentication();
+      final account = await gsi.GoogleSignIn.instance
+          .attemptLightweightAuthentication();
       if (account != null) {
         _currentUser = account;
-        final authData =
-            await account.authorizationClient.authorizationForScopes(_scopes);
+        final authData = await account.authorizationClient
+            .authorizationForScopes(_scopes);
         if (authData != null) {
           _authClient = authData.authClient(scopes: _scopes);
           _accessToken = authData.accessToken;
@@ -430,8 +443,9 @@ class GooglePhotosService {
       _currentUser = account;
       debugPrint('[GooglePhotosService] Authenticated as: ${account.email}');
 
-      final authData =
-          await account.authorizationClient.authorizeScopes(_scopes);
+      final authData = await account.authorizationClient.authorizeScopes(
+        _scopes,
+      );
       _authClient = authData.authClient(scopes: _scopes);
       _accessToken = authData.accessToken;
       debugPrint('[GooglePhotosService] AuthClient obtained successfully');
@@ -493,7 +507,8 @@ class GooglePhotosService {
         }
       } else {
         debugPrint(
-            '[GooglePhotosService] Picker Session error: ${response.statusCode} ${response.body}');
+          '[GooglePhotosService] Picker Session error: ${response.statusCode} ${response.body}',
+        );
       }
     } catch (e) {
       debugPrint('[GooglePhotosService] createPickerSession error: $e');
@@ -504,8 +519,9 @@ class GooglePhotosService {
   Future<List<RemotePickerAsset>> fetchPickedPhotos(String sessionId) async {
     if (!isAuthenticated) return [];
     try {
-      final url = Uri.parse('https://photospicker.googleapis.com/v1/mediaItems')
-          .replace(queryParameters: {'sessionId': sessionId});
+      final url = Uri.parse(
+        'https://photospicker.googleapis.com/v1/mediaItems',
+      ).replace(queryParameters: {'sessionId': sessionId});
 
       final client = _authClient ?? http.Client();
       final response = await client.get(
@@ -530,9 +546,7 @@ class GooglePhotosService {
   }
 
   Map<String, String> get _authHeaders {
-    final headers = <String, String>{
-      'Accept': 'application/json',
-    };
+    final headers = <String, String>{'Accept': 'application/json'};
 
     if (_accessToken != null) {
       headers['Authorization'] = 'Bearer $_accessToken';
@@ -561,7 +575,8 @@ class GooglePhotosService {
       }
       if (remoteUrl == null) {
         debugPrint(
-            '[GooglePhotosService] Item remoteUrl is null for ID: $id (Checked mediaFile.baseUrl and mediaFileUri)');
+          '[GooglePhotosService] Item remoteUrl is null for ID: $id (Checked mediaFile.baseUrl and mediaFileUri)',
+        );
         return null;
       }
 
@@ -571,8 +586,10 @@ class GooglePhotosService {
       final width = int.tryParse(metadata['width']?.toString() ?? '') ?? 0;
       final height = int.tryParse(metadata['height']?.toString() ?? '') ?? 0;
       final duration = isVideo
-          ? _parseDuration((metadata['video'] ?? metadata['videoMetadata'])
-              as Map<String, dynamic>?)
+          ? _parseDuration(
+              (metadata['video'] ?? metadata['videoMetadata'])
+                  as Map<String, dynamic>?,
+            )
           : null;
 
       return RemotePickerAsset(
@@ -629,7 +646,8 @@ class GooglePhotosService {
         return response.bodyBytes;
       }
       debugPrint(
-          '[GooglePhotosService] getMediaBytes Error ${response.statusCode}: $url');
+        '[GooglePhotosService] getMediaBytes Error ${response.statusCode}: $url',
+      );
     } catch (e) {
       debugPrint('[GooglePhotosService] getMediaBytes exception: $e');
     }

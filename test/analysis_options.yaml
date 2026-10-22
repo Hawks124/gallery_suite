@@ -1,0 +1,11 @@
+# Scoped overrides for the test suite.
+#
+# The strict rules of the root analysis_options.yaml apply everywhere, with
+# one exception: `cascade_invocations` only adds noise to test bodies, where
+# the readability of a sequence of assertions matters more than the
+# micro-optimisation of the receiver.
+include: ../analysis_options.yaml
+
+linter:
+  rules:
+    cascade_invocations: false

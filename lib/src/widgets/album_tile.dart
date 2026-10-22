@@ -12,13 +12,13 @@ class AlbumTile extends StatefulWidget {
   final VoidCallback onTap;
 
   const AlbumTile({
-    super.key,
     required this.album,
     required this.isCurrent,
     required this.primaryColor,
     required this.theme,
     required this.source,
     required this.onTap,
+    super.key,
   });
 
   @override
@@ -58,13 +58,18 @@ class _AlbumTileState extends State<AlbumTile> {
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: _cover != null
-                  ? Image.memory(_cover!,
+                  ? Image.memory(
+                      _cover!,
                       width: 54,
                       height: 54,
                       fit: BoxFit.cover,
-                      gaplessPlayback: true)
+                      gaplessPlayback: true,
+                    )
                   : Container(
-                      width: 54, height: 54, color: widget.theme.elevated),
+                      width: 54,
+                      height: 54,
+                      color: widget.theme.elevated,
+                    ),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -78,16 +83,21 @@ class _AlbumTileState extends State<AlbumTile> {
                           ? widget.primaryColor
                           : widget.theme.primaryText,
                       fontSize: 15,
-                      fontWeight:
-                          widget.isCurrent ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight: widget.isCurrent
+                          ? FontWeight.w600
+                          : FontWeight.w400,
                       letterSpacing: -0.1,
                     ),
                   ),
                   if (_count >= 0) ...[
                     const SizedBox(height: 2),
-                    Text('$_count',
-                        style: TextStyle(
-                            color: widget.theme.secondaryText, fontSize: 13)),
+                    Text(
+                      '$_count',
+                      style: TextStyle(
+                        color: widget.theme.secondaryText,
+                        fontSize: 13,
+                      ),
+                    ),
                   ],
                 ],
               ),
