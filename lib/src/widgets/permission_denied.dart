@@ -10,11 +10,11 @@ class PermissionDeniedWidget extends StatelessWidget {
   final String buttonText;
 
   const PermissionDeniedWidget({
-    super.key,
     required this.theme,
     required this.title,
     required this.subtitle,
     required this.buttonText,
+    super.key,
   });
 
   @override
@@ -61,20 +61,21 @@ class PermissionDeniedWidget extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton(
-                    onPressed: PhotoManager.openSetting,
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      side: BorderSide(
-                        color: theme.isDark
-                            ? Colors.white.withValues(alpha: 0.15)
-                            : Colors.grey.withValues(alpha: 0.3),
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      backgroundColor: Colors.transparent,
+                  onPressed: PhotoManager.openSetting,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    side: BorderSide(
+                      color: theme.isDark
+                          ? Colors.white.withValues(alpha: 0.15)
+                          : Colors.grey.withValues(alpha: 0.3),
                     ),
-                    child: Text(buttonText)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    backgroundColor: Colors.transparent,
+                  ),
+                  child: Text(buttonText),
+                ),
               ),
               const SizedBox(width: 16),
               Material(

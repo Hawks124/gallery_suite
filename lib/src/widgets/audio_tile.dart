@@ -1,7 +1,9 @@
 import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
-import '../models/picker_theme.dart';
+
 import '../models/picker_asset.dart';
+import '../models/picker_theme.dart';
 import '../sources/media_source_factory.dart';
 
 class AudioTile extends StatefulWidget {
@@ -15,7 +17,6 @@ class AudioTile extends StatefulWidget {
   final VoidCallback onSelect;
 
   const AudioTile({
-    super.key,
     required this.asset,
     required this.isPlaying,
     required this.isCurrentTrack,
@@ -24,6 +25,7 @@ class AudioTile extends StatefulWidget {
     required this.theme,
     required this.onPlay,
     required this.onSelect,
+    super.key,
   });
 
   @override
@@ -62,16 +64,18 @@ class _AudioTileState extends State<AudioTile>
   }
 
   Future<void> _loadThumb() async {
-    final data =
-        await MediaSourceFactory.activeSource.getThumbnail(widget.asset);
+    final data = await MediaSourceFactory.activeSource.getThumbnail(
+      widget.asset,
+    );
     if (mounted) setState(() => _thumb = data);
   }
 
   String _cleanTitle(String title) {
     return title
         .replaceAll(
-            RegExp(r'\.(mp3|wav|aac|flac|ogg|m4a|opus)$', caseSensitive: false),
-            '')
+          RegExp(r'\.(mp3|wav|aac|flac|ogg|m4a|opus)$', caseSensitive: false),
+          '',
+        )
         .trim();
   }
 
@@ -167,7 +171,9 @@ class _AudioTileState extends State<AudioTile>
                   Text(
                     _fmt(duration),
                     style: TextStyle(
-                        color: widget.theme.secondaryText, fontSize: 12),
+                      color: widget.theme.secondaryText,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -180,8 +186,10 @@ class _AudioTileState extends State<AudioTile>
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
                 transitionBuilder: (child, anim) => ScaleTransition(
-                  scale:
-                      CurvedAnimation(parent: anim, curve: Curves.easeOutBack),
+                  scale: CurvedAnimation(
+                    parent: anim,
+                    curve: Curves.easeOutBack,
+                  ),
                   child: child,
                 ),
                 child: widget.isSelected
@@ -200,8 +208,11 @@ class _AudioTileState extends State<AudioTile>
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.check_rounded,
-                            color: Colors.white, size: 15),
+                        child: const Icon(
+                          Icons.check_rounded,
+                          color: Colors.white,
+                          size: 15,
+                        ),
                       )
                     : Container(
                         key: const ValueKey('unsel'),

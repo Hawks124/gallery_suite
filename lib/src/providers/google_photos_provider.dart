@@ -15,8 +15,9 @@ class GooglePhotosProvider {
   static final GooglePhotosProvider instance = GooglePhotosProvider._();
 
   /// Reactive list of assets imported from Google Photos.
-  final ValueNotifier<List<RemotePickerAsset>> importedAssets =
-      ValueNotifier([]);
+  final ValueNotifier<List<RemotePickerAsset>> importedAssets = ValueNotifier(
+    [],
+  );
 
   /// Indicating whether the authentication state is currently being loaded from disk.
   final ValueNotifier<bool> isAuthStateLoading = ValueNotifier(false);
@@ -64,7 +65,8 @@ class GooglePhotosProvider {
             expiry != null &&
             DateTime.now().isAfter(expiry)) {
           debugPrint(
-              '[GooglePhotosProvider] Access token expired. Attempting refresh.');
+            '[GooglePhotosProvider] Access token expired. Attempting refresh.',
+          );
           if (refresh != null) {
             final refreshed = await service.refreshAccessToken();
             if (refreshed) {
@@ -94,16 +96,19 @@ class GooglePhotosProvider {
             : null;
 
         final loadedAssets = decoded
-            .map((e) => RemotePickerAsset.fromJson(
-                  e as Map<String, dynamic>,
-                  googleService: service,
-                  injectedHeaders: headers?.cast<String, String>(),
-                ))
+            .map(
+              (e) => RemotePickerAsset.fromJson(
+                e as Map<String, dynamic>,
+                googleService: service,
+                injectedHeaders: headers?.cast<String, String>(),
+              ),
+            )
             .toList();
 
         importedAssets.value = loadedAssets;
         debugPrint(
-            '[GooglePhotosProvider] Restored ${loadedAssets.length} assets');
+          '[GooglePhotosProvider] Restored ${loadedAssets.length} assets',
+        );
       }
     } catch (e) {
       debugPrint('[GooglePhotosProvider] Error restoring state: $e');
@@ -121,11 +126,13 @@ class GooglePhotosProvider {
       // Save Auth State
       final authFile = await _authFile;
       if (service.accessToken != null || service.refreshToken != null) {
-        await authFile.writeAsString(json.encode({
-          'access_token': service.accessToken,
-          'refresh_token': service.refreshToken,
-          'expiry': service.tokenExpiry?.toIso8601String(),
-        }));
+        await authFile.writeAsString(
+          json.encode({
+            'access_token': service.accessToken,
+            'refresh_token': service.refreshToken,
+            'expiry': service.tokenExpiry?.toIso8601String(),
+          }),
+        );
       } else {
         if (authFile.existsSync()) authFile.deleteSync();
       }
@@ -158,8 +165,8 @@ class GooglePhotosProvider {
 
   /// Removes an asset from the imported list.
   Future<void> removePhoto(String id) async {
-    final current = List<RemotePickerAsset>.from(importedAssets.value);
-    current.removeWhere((a) => a.id == id);
+    final current = List<RemotePickerAsset>.from(importedAssets.value)
+      ..removeWhere((a) => a.id == id);
     importedAssets.value = current;
     await saveState();
   }

@@ -4,19 +4,34 @@ All notable changes to this package will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2026-05-03
+## [1.0.0] - 2026-10-22
 
 ### Initial Release
 
 Welcome to the first stable release of `gallery_suite`! This package provides a premium, fully customized in-app media picker experience.
 
-- **Pure Dart & Multi-Platform**: Platform-agnostic architecture natively supporting iOS, Android, macOS, Web, Windows, and Linux.
+> **Note:** this is the first release ever published on pub.dev. The `1.0.0` version therefore starts the versioning history of the package.
+
+- **Pure Dart & Multi-Platform**: Platform-agnostic architecture natively supporting Android, iOS, macOS, Windows, Linux, and Web (through the `file_selector` fallback).
 - **Desktop First-Class Experience**: Intelligent LayoutBuilder responsive grids, `Ctrl+A`/`Cmd+A` keyboard shortcuts, and a clean BYOD (Bring Your Own Drop) native injection hook.
 - **Google Photos Built-in Provider**: Natively browse, select, and organize Google Photos assets directly within the grid.
 - **Native iCloud Integration**: Transparent support for iCloud photo libraries with zero configuration required.
 - **Glassmorphic Cloud Indicators**: Visual feedback badges for iCloud and remote assets to ensure a responsive user experience.
 - **Smart Cloud-to-Local Bridge**: Automatic background downloading of cloud assets to local temporary files.
 - **March 2025 Policy Compliant**: Fully integrated the latest Google Photos Picker API.
+
+### Dynamic Grid Engine & BYOG
+
+- **Five switchable grid layouts** — `masonry` (default), `aligned`, `quilted`, `staggered` and `byog` — switchable with a single `PickerGridLayout` enum, applied to local, cloud *and* clipboard assets.
+- **Bring Your Own Grid (BYOG)** — hand the rendering over to your own widget tree through `customGridBuilder`. The engine injects the scroll controller, the item count and an item builder that already carries the native selection overlays, the cloud download bridges and the Hero animations.
+- **Enforced contract** — the configuration asserts that `customGridBuilder` is provided whenever `gridLayout` is `byog`, so a misconfiguration can never reach the UI.
+
+### Smart Sorting (Database-Level Ordering)
+
+- **Four orders** — `newest`, `oldest`, `largest` and `smallest` — reachable from the sort button of the picker app bar.
+- **Pushed down to the gallery database** — the order is applied by the OS query itself, so the pagination keeps working on libraries of tens of thousands of assets and the memory stays flat. The previous implementation used to materialise the whole library in Dart to sort it in an isolate.
+- **Real byte size** — the size orders sort on the actual size of the file (`MediaStore._size` on Android, the real file size on Web/Desktop) instead of a pixel-resolution proxy. The option is simply not offered on the platforms that cannot resolve it (iOS and macOS) rather than faking it.
+- **`defaultSortOrder`** — the initial order can now be configured through `PickerConfig` (it was previously ignored).
 
 ### Core Pickers
 

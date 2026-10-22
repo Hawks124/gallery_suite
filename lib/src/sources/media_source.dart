@@ -7,6 +7,7 @@
 import 'dart:typed_data';
 import 'package:photo_manager/photo_manager.dart' show RequestType;
 
+import '../enum/enum.dart';
 import '../models/picker_asset.dart';
 import 'album_descriptor.dart';
 
@@ -30,11 +31,19 @@ abstract class MediaSource {
   Future<List<AlbumDescriptor>> getAlbums(RequestType type);
 
   /// Returns a page of assets from the given [album].
+  ///
+  /// When [sortOrder] is provided, the source is expected to order the
+  /// assets accordingly — ideally by pushing the order down to the
+  /// underlying database so pagination stays intact.
   Future<List<PickerAsset>> getAssets({
     required AlbumDescriptor album,
     required int page,
     required int pageSize,
+    PickerSortOrder? sortOrder,
   });
+
+  /// The sort orders this source is able to honour.
+  Set<PickerSortOrder> get supportedSortOrders;
 
   /// Searches for assets within [album] matching [query] by title/filename.
   Future<List<PickerAsset>> searchAssets(AlbumDescriptor album, String query);

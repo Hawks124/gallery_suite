@@ -113,17 +113,20 @@ class RemotePickerAsset implements PickerAsset {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'type': type.index,
-        'width': width,
-        'height': height,
-        'duration_ms': duration.inMilliseconds,
-        'baseUrl': baseUrl,
-      };
+    'id': id,
+    'title': title,
+    'type': type.index,
+    'width': width,
+    'height': height,
+    'duration_ms': duration.inMilliseconds,
+    'baseUrl': baseUrl,
+  };
 
-  factory RemotePickerAsset.fromJson(Map<String, dynamic> json,
-      {Map<String, String>? injectedHeaders, dynamic googleService}) {
+  factory RemotePickerAsset.fromJson(
+    Map<String, dynamic> json, {
+    Map<String, String>? injectedHeaders,
+    dynamic googleService,
+  }) {
     return RemotePickerAsset(
       id: json['id'] as String,
       baseUrl: json['baseUrl'] as String,
@@ -166,7 +169,7 @@ class RemotePickerAsset implements PickerAsset {
     if (type == AssetType.video) {
       // Use =m18 for Web (transcoded mp4) for better compatibility
       // Use =dv for other platforms (direct video)
-      final suffix = kIsWeb ? '=m18' : '=dv';
+      const suffix = kIsWeb ? '=m18' : '=dv';
       return '$baseUrl$suffix';
     }
     return '$baseUrl=w2048-h2048'; // High resolution for photos
@@ -209,17 +212,28 @@ class FilePickerAsset implements PickerAsset {
   // Pre-loaded raw bytes of the file (used for thumbnail generation).
   final Uint8List? bytes;
 
+  // The real size of the file in bytes, when the platform could report it.
+  //
+  // Used by the sort sheet to order files by their actual weight instead
+  // of guessing it from the pixel dimensions.
+  final int? byteSize;
+
+  // The last time the file was modified, when the platform could report it.
+  final DateTime? lastModified;
+
   // Creates a [FilePickerAsset] from a file path.
   FilePickerAsset({
     required this.filePath,
     String? title,
     this.bytes,
+    this.byteSize,
+    this.lastModified,
     this.width = 0,
     this.height = 0,
     this.duration = Duration.zero,
-  })  : id = filePath.hashCode.toRadixString(36),
-        title = title ?? filePath.split('/').last.split('\\').last,
-        type = _inferType(title ?? filePath);
+  }) : id = filePath.hashCode.toRadixString(36),
+       title = title ?? filePath.split('/').last.split('\\').last,
+       type = _inferType(title ?? filePath);
 
   // Convenience: return the local [File].
   File get file => File(filePath);

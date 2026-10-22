@@ -9,11 +9,11 @@ class GooglePhotosTile extends StatelessWidget {
   final VoidCallback onTap;
 
   const GooglePhotosTile({
-    super.key,
     required this.theme,
     required this.primaryColor,
     required this.label,
     required this.onTap,
+    super.key,
   });
 
   @override

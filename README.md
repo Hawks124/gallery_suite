@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/example/assets/branding_banner.png" alt="Gallery Suite Branding Banner" width="100%" />
 </p>
 <h1 align="center">
-  <a href="https://your-docs-website.com">
+  <a href="https://github.com/Hawks124/gallery_suite">
     <!-- <img src="assets/images/Gallery%20Suite.svg" height="80" alt="Gallery Suite Logo">
     <br/> -->
     Gallery Suite
@@ -12,31 +12,40 @@
 <p align="center">
   <a href="https://github.com/Hawks124/gallery_suite/actions/workflows/ci.yml"><img src="https://github.com/Hawks124/gallery_suite/actions/workflows/ci.yml/badge.svg" alt="CI/CD Status"></a>
   <a href="https://github.com/Hawks124/gallery_suite/actions/workflows/build.yml"><img src="https://github.com/Hawks124/gallery_suite/actions/workflows/build.yml/badge.svg" alt="Build Status"></a>
+  <a href="https://github.com/Hawks124/gallery_suite/actions/workflows/pana.yml"><img src="https://github.com/Hawks124/gallery_suite/actions/workflows/pana.yml/badge.svg" alt="pub.dev score"></a>
   <a href="https://pub.dev/packages/gallery_suite"><img src="https://img.shields.io/pub/v/gallery_suite.svg" alt="pub.dev"></a>
   <a href="https://pub.dev/packages/gallery_suite/score"><img src="https://img.shields.io/pub/points/gallery_suite?color=blue&label=pub%20points" alt="pub points"></a>
   <a href="https://pub.dev/packages/gallery_suite"><img src="https://img.shields.io/pub/likes/gallery_suite?logo=flutter" alt="likes"></a>
-  <a href="https://pub.dev/packages/gallery_suite"><img src="https://img.shields.io/badge/sdk-%3E%3D3.3.0-blue?logo=dart" alt="Dart SDK"></a>
+  <a href="https://pub.dev/packages/gallery_suite"><img src="https://img.shields.io/badge/sdk-%3E%3D3.9.0-blue?logo=dart" alt="Dart SDK"></a>
   <a href="https://github.com/Hawks124/gallery_suite/stargazers"><img src="https://img.shields.io/github/stars/Hawks124/gallery_suite?style=social" alt="stars"></a>
   <a href="https://pub.dev/publishers/RiRi"><img src="https://img.shields.io/pub/publisher/gallery_suite.svg" alt="publisher"></a>
   <a href="https://opensource.org/licenses/Apache-2.0"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
-  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.10%2B-blue.svg" alt="Flutter"></a>
-  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web%20%7C%20macOS%20%7C%20Windows%20%7C%20Linux-lightgrey.svg" alt="Platform"></a>
+  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.35%2B-blue.svg" alt="Flutter"></a>
+  <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20macOS%20%7C%20Windows%20%7C%20Linux-lightgrey.svg" alt="Platform"></a>
   <a href="https://pub.dev/packages/flutter_lints"><img src="https://img.shields.io/badge/style-flutter__lints-blue" alt="Style"></a>
   <a href="https://www.contributor-covenant.org"><img src="https://img.shields.io/badge/Contributor%20Covenant-3.0-4baaaa.svg" alt="Contributor Covenant"></a>
   <a href="https://github.com/Hawks124/gallery_suite/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"></a>
 </p>
 
-**Gallery Suite** is the ultimate media picker for Flutter, featuring a native **Google Photos Cloud Provider** built directly into the UI. It replaces restrictive OS dialogs with a fully customizable, 120fps masonry grid that seamlessly mixes local device files with cloud assets. Ship premium features out-of-the-box like iOS-style swipe-to-select, **Smart Clipboard** OS integration, Bring Your Own Editor (BYOE) architecture, inline video/audio playback, **Enterprise A11y Readiness**, and glassmorphic micro-animations.
+**Gallery Suite** is the ultimate media picker for Flutter, featuring a native **Google Photos Cloud Provider** built directly into the UI. It replaces restrictive OS dialogs with a fully customizable, 120fps masonry grid that seamlessly mixes local device files with cloud assets. Ship premium features out-of-the-box like iOS-style swipe-to-select, **five switchable grid layouts** (including a Bring Your Own Grid mode), **database-level smart sorting**, **Smart Clipboard** OS integration, Bring Your Own Editor (BYOE) architecture, inline video/audio playback, **Enterprise A11y Readiness**, and glassmorphic micro-animations.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/example/assets/demo.gif" width="100%" alt="Gallery Suite UI Demo Animations" />
+  <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/doc/screenshots/image_picker.gif" width="32%" alt="The image picker with its masonry grid" />
+  <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/doc/screenshots/swipe_to_select.gif" width="32%" alt="Swipe to select many assets at once" />
+  <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/doc/screenshots/audio_picker.gif" width="32%" alt="The audio picker with its inline mini player" />
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/example/assets/screenshot_image_picker.png" width="24%" />
-  <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/example/assets/screenshot_video_preview.png" width="24%" />
-  <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/example/assets/screenshot_audio_picker.png" width="24%" />
-  <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/example/assets/screenshot_theme_dark.png" width="24%" />
+  <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/example/assets/inline_video_preview.gif" width="24%" alt="Inline video preview" />
+  <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/example/assets/swipe_to_select.gif" width="24%" alt="Swipe to select" />
+  <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/example/assets/drag_drop_handle.gif" width="24%" alt="Drag and drop reordering" />
+  <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/example/assets/live_edit.gif" width="24%" alt="Bring Your Own Editor" />
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/example/assets/inline_search.gif" width="24%" alt="Inline asset search" />
+  <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/example/assets/exit_pop.gif" width="24%" alt="Exit confirmation" />
+  <img src="https://raw.githubusercontent.com/Hawks124/gallery_suite/main/example/assets/video_picker.gif" width="24%" alt="The video picker" />
 </p>
 
 ---
@@ -44,9 +53,9 @@
 ## Why Gallery Suite?
 
 > [!IMPORTANT]
-> **Looking for Advanced Integration?** While this README covers all immediate features, we highly recommend visiting our **[Official Documentation Hub](https://your-docs-website.com)** for profound tutorials, GCP Setup workflows, and deep BYO injection guides (Bring Your Own Drop, Editor, Compressor...).
+> **Looking for Advanced Integration?** While this README covers all immediate features, we highly recommend visiting our **[Official Documentation Hub][docs-hub]** for profound tutorials, GCP Setup workflows, and deep BYO injection guides (Bring Your Own Drop, Editor, Compressor...).
 >
-> **Curious about the engine?** Check out the **[Deep Architecture Specs & Mermaid Diagram](https://your-docs-website.com/architecture)** to understand our Polymorphic Engine, Smart Clipboard, and Google Photos PKCE flow...
+> **Curious about the engine?** Check out the **[Deep Architecture Specs & Mermaid Diagram][docs-architecture]** to understand our Polymorphic Engine, Smart Clipboard, and Google Photos PKCE flow...
 
 The Flutter ecosystem already has excellent media pickers, and we deeply respect them:
 
@@ -62,6 +71,29 @@ These are all fantastic tools. However, both `wechat_assets_picker` and `insta_a
 4. **Hybrid Smart Compression** — A built-in native image compressor + extensible BYOC hooks for videos, reducing upload bandwidth by up to 80%.
 5. **Smart Clipboard** — Paste images, file paths, and media URLs directly from the OS clipboard into the picker grid.
 6. **Accessibility (A11y) Ready** — Enterprise and Government compliant out of the box! Assets are wrapped in natively translated `Semantics` tags announcing item type, duration, and selection order natively to **VoiceOver** and **TalkBack** screen readers.
+
+### How it compares
+
+| Feature | `image_picker` | `wechat_assets_picker` | `insta_assets_picker` | `gallery_suite` |
+| --- | --- | --- | --- | --- |
+| Platforms Supported | All | iOS, Android, macOS | iOS, Android | Android, iOS, macOS, Windows, Linux (+ Web with the file picker) |
+| Assets supported | Image, Video | Image, Video, Audio | Image, Video | Image, Video, Audio |
+| Picker UI | Native OS dialog | WeChat-style grid | Instagram-style crop | 5 switchable layouts, fully brandable |
+| Branding | ❌ OS-locked | ⚠️ WeChat identity | ⚠️ Instagram identity | ✅ 100% your brand |
+| Audio/Video | System default | Custom | No audio support | Inline playback (mini-player) |
+| Multi-select | Images only | Yes | Yes | Yes (Images, Video & Audio) |
+| In-app Camera | No | Via add-on package | No | ✅ Yes (live tile & custom UI) |
+| Standalone Camera | No | No | No | ✅ Yes (multi-capture session) |
+| Swipe-To-Select | No | No | No | ✅ Yes (iOS Photos style) |
+| Inline Search | No | No | No | ✅ Yes (cross-platform Dart filter) |
+| BYOE Image Editing | No | No | Crop only | ✅ Yes (dependency injection) |
+| Cloud Providers | No | No | No | ✅ Yes (Google Photos built-in) |
+| Grid Layouts | System | Fixed | Fixed | ✅ Masonry, Aligned, Quilted, Staggered, BYOG |
+| Smart Sorting | No | Partial | No | ✅ Database-level, real byte size |
+| Smart Clipboard | No | No | No | ✅ Yes (URLs, files, raw bytes) |
+| HEIC Auto-Convert | No | No | No | ✅ Yes (background iOS bridge) |
+| UI Theming | System restricted | Custom | Instagram-fixed | Fully customizable per instance |
+| A11y & Enterprise | No | No | No | ✅ Yes (VoiceOver & TalkBack) |
 
 ### Zero Bloatware & Extreme Performance
 
@@ -115,7 +147,9 @@ These are all fantastic tools. However, both `wechat_assets_picker` and `insta_a
 > **✅** = Full support · **⚠️** = Partial / requires extra config · **➖** = Not applicable on this platform
 
 > [!NOTE]
-> The [pub.dev](https://pub.dev/packages/gallery_suite) platform badge shows **Android + iOS** because Pana (the pub.dev scoring tool) performs a strict _static import analysis_. It propagates a platform block from a dependency's manifest even when the feature is fully guarded at runtime. For example, the `camera` package's own manifest does not list macOS — even though `camera_macos` works perfectly. This is a known Pana limitation, not a limitation of `gallery_suite` itself.
+> The platforms are declared explicitly in the `pubspec.yaml`. Pana (the pub.dev scoring tool) would otherwise infer them from a strict _static import analysis_ and propagate a platform block from a dependency's manifest — for example the `camera` package's own manifest does not list macOS, even though `camera_macos` works perfectly. Declaring them keeps the pub.dev badges aligned with the runtime feature matrix above.
+>
+> The **Web** column is deliberately left out of the `platforms:` declaration: the picker runs on Web through the `file_selector` fallback (no native gallery, no album browsing), and the package is not WebAssembly compatible, so claiming a full Web support would be misleading.
 
 ### Google Photos OAuth2 Compatibility
 
@@ -202,6 +236,8 @@ These are all fantastic tools. However, both `wechat_assets_picker` and `insta_a
   - [Pick Audio](#pick-audio)
   - [Standalone Multi-Capture Camera](#standalone-multi-capture-camera)
 - [Advanced Capabilities](#advanced-capabilities)
+  - [Dynamic Grid & BYOG](#dynamic-grid--byog-bring-your-own-grid)
+  - [Smart Sorting](#smart-sorting-database-level-ordering)
   - [Google Photos Built-in Provider](#google-photos-built-in-provider-premium-cloud-integration)
   - [Bring Your Own Drop (BYOD) Architecture](#bring-your-own-drop-byod-architecture)
   - [Bring Your Own Editor (BYOE) Architecture](#bring-your-own-editor-byoe-architecture)
@@ -532,7 +568,12 @@ final assets = await CustomMediaPicker.camera(
   context: context,
   config: CameraPickerConfig(
     maxSelection: 10,
-    enableVideo: true,
+    enablePhoto: true,         // Allows short-press to capture photos
+    enableVideo: true,         // Allows long-press to record videos
+    enableGallery: true,       // Shows the gallery thumbnail button
+    galleryModeConfig: const PickerConfig(
+      maxSelection: 10,        // Pass config to the gallery if launched
+    ),
     primaryColor: Theme.of(context).primaryColor,
     // Inject your BYOE directly here!
     onEditMedia: (ctx, asset, file) async {
@@ -548,6 +589,73 @@ final assets = await CustomMediaPicker.camera(
 
 > [!TIP]
 > **Complete BYO Integration Guides:** For comprehensive guides on architecting advanced Drag & Drop, Canvas Editing, and Compression injection, visit our **[Official BYO Guides](https://github.com/Hawks124/gallery_suite/wiki/BYO-Guides)**.
+
+### Dynamic Grid & BYOG (Bring Your Own Grid)
+
+`gallery_suite` doesn't just offer a standard masonry grid. It ships with a **Dynamic Layout Engine** that lets you switch the visual presentation of all your media (local, cloud **and** clipboard) by passing a single `PickerGridLayout` enum.
+
+| Layout | Description |
+| --- | --- |
+| `PickerGridLayout.masonry` | The default. Variable-height columns, each photo keeps its natural aspect ratio. |
+| `PickerGridLayout.aligned` | CSS-grid style: every tile of a row shares the height of the tallest one. |
+| `PickerGridLayout.quilted` | Pattern-based layout where tiles span several rows and columns, creating a visual hierarchy. |
+| `PickerGridLayout.staggered` | Asymmetric interlocking layout where tiles occupy variable column spans. |
+| `PickerGridLayout.byog` | **Bring Your Own Grid.** Every built-in layout is disabled and the rendering is delegated to your own widget tree. |
+
+```dart
+final assets = await CustomMediaPicker.show(
+  context: context,
+  config: PickerConfig(
+    // 1. Instantly switch the grid layout!
+    gridLayout: PickerGridLayout.quilted,
+
+    // 2. Bring Your Own Grid (BYOG)
+    // If you pass `PickerGridLayout.byog`, you MUST provide a `customGridBuilder`.
+    //
+    // The engine gives you the `ScrollController`, the total `ItemCount`, and an
+    // intelligent `itemBuilder` that automatically wraps your custom UI with the
+    // native selection overlays, the cloud download bridges and the Hero animations.
+    customGridBuilder: (ctx, scrollController, itemCount, itemBuilder) {
+      return ListView.builder(
+        controller: scrollController,
+        itemCount: itemCount, // Automatically handles +1 for camera/skeleton tiles
+        itemBuilder: (ctx, index) {
+          // Return your custom UI wrapper, but inject our smart itemBuilder inside!
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: itemBuilder(ctx, index),
+          );
+        },
+      );
+    },
+  ),
+);
+```
+
+> [!NOTE]
+> The `customGridBuilder` is **mandatory** when `gridLayout` is `PickerGridLayout.byog` — the config asserts it at construction time so a misconfiguration never reaches the UI.
+
+### Smart Sorting (Database-Level Ordering)
+
+The sort sheet of the picker offers four orders. They are **not** applied in Dart after the fact: the order is pushed down to the **gallery database itself**, so the pagination keeps working on libraries with tens of thousands of assets and the memory stays flat.
+
+```dart
+PickerConfig(
+  // The order applied when the picker opens. The user can change it at any
+  // time from the sort button of the picker app bar.
+  defaultSortOrder: PickerSortOrder.newest,
+)
+```
+
+| Order | Implementation |
+| --- | --- |
+| `PickerSortOrder.newest` | The default order of the gallery, no extra query needed. |
+| `PickerSortOrder.oldest` | Native ascending date order. |
+| `PickerSortOrder.largest` | Native descending order on the **real byte size** of the asset. |
+| `PickerSortOrder.smallest` | Native ascending order on the **real byte size** of the asset. |
+
+> [!IMPORTANT]
+> The byte-size orders are only offered on the platforms that can really resolve the size of an asset — **Android** (the `MediaStore._size` column) and **Web/Desktop** (the real file size reported by the OS). iOS and macOS do not expose the byte size of a `PHAsset`, so the option is simply **not offered** there instead of faking it with a resolution proxy.
 
 ### Google Photos Built-in Provider (Premium Cloud Integration)
 
@@ -669,7 +777,7 @@ We have prepared a dedicated **[Comprehensive GCP Setup Guide](https://github.co
 ### Bring Your Own Drop (BYOD) Architecture
 
 > [!TIP]
-> **Using `desktop_drop` or `super_drag_and_drop`?** We wrote deep integration tutorials for these exact packages. Read the **[BYOD Implementation Guide on our Official Hub](https://your-docs-website.com/docs/architectures/byod)**.
+> **Using `desktop_drop` or `super_drag_and_drop`?** We wrote deep integration tutorials for these exact packages. Read the **[BYOD Implementation Guide on our Official Hub][docs-byod]**.
 
 To keep the `gallery_suite` package incredibly lightweight and prevent aggressive C++/Rust compilation logs during your installs, we purposefully removed heavy internal drag-and-drop dependencies. Instead, we use a clean **Dependency Injection** pattern!
 
@@ -696,7 +804,7 @@ final assets = await CustomMediaPicker.show(
 ### Bring Your Own Editor (BYOE) Architecture
 
 > [!TIP]
-> **Using `pro_image_editor` or `image_editor_plus`?** We have built dedicated guides showing exactly how to wire them flawlessly. Read the **[BYOE Implementation Guide on our Official Hub](https://your-docs-website.com/docs/architectures/byoe)**.
+> **Using `pro_image_editor` or `image_editor_plus`?** We have built dedicated guides showing exactly how to wire them flawlessly. Read the **[BYOE Implementation Guide on our Official Hub][docs-byoe]**.
 
 Why force your users to download a bloated media picker that comes packed with heavy image editing dependencies they don't even use?
 
@@ -821,7 +929,7 @@ final assets = await CustomMediaPicker.show(
 #### 2. Bring Your Own Compressor (BYOC Hook)
 
 > [!TIP]
-> **Using `video_compress` or `flutter_image_compress`?** See our step-by-step performance wiring tutorial. Read the **[BYOC Implementation Guide on our Official Hub](https://your-docs-website.com/docs/architectures/byoc)**.
+> **Using `video_compress` or `flutter_image_compress`?** See our step-by-step performance wiring tutorial. Read the **[BYOC Implementation Guide on our Official Hub][docs-byoc]**.
 
 Need to aggressively compress **heavy video files** or apply custom algorithmic logic? Don't be constrained by built-in plugins! Use the `onCompressMedia` BYOC hook to inject your favorite package (like `video_compress`) silently into the picker's confirmation loop.
 
@@ -1083,7 +1191,7 @@ print(assets.first.aspectRatio);    // double
 
 > [!TIP]
 > **Need help uploading to standard backends?**
-> We've written a dedicated **[Uploading Architecture Guide](https://your-docs-website.com/docs/architectures/uploading)** filled with copy-pasteable production snippets for Firebase/Firestore, Supabase, and custom REST API endpoints using standard, up-to-date syntax.
+> We've written a dedicated **[Uploading Architecture Guide][docs-uploading]** filled with copy-pasteable production snippets for Firebase/Firestore, Supabase, and custom REST API endpoints using standard, up-to-date syntax.
 
 ### UI Theming & Customization
 
@@ -1147,6 +1255,10 @@ The entire look and feel for the main gallery is controlled via `PickerConfig`. 
 | ------------------------- | ------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `requestType`             | `RequestType`             | `RequestType.image`         | The specific gallery to open (`image`, `video`, or `audio`).                                                                                                                                                              |
 | `maxSelection`            | `int`                     | `10`                        | The maximum number of assets the user can select. Used in Images and Audio. Video is currently single-select.                                                                                                             |
+| `gridLayout`              | `PickerGridLayout`        | `PickerGridLayout.masonry`  | The geometry of the media grid: `masonry`, `aligned`, `quilted`, `staggered` or `byog`. [See docs](#dynamic-grid--byog-bring-your-own-grid)                                                                                  |
+| `customGridBuilder`       | `Widget Function?`        | `null`                      | **Required** when `gridLayout` is `byog`. Lets you inject a fully custom `ListView`, `PageView` or Sliver architecture while the picker keeps the state. [See docs](#dynamic-grid--byog-bring-your-own-grid)     |
+| `defaultSortOrder`        | `PickerSortOrder`         | `PickerSortOrder.newest`    | The order applied when the picker opens. The user can change it from the sort button of the app bar. [See docs](#smart-sorting-database-level-ordering)                                                               |
+| `enableSorting`           | `bool`                    | `true`                      | Whether to show the sort button in the picker app bar.                                                                                                                                                                    |
 | `primaryColor`            | `Color`                   | `Color(0xFF007AFF)`         | The global accent color for checkmarks, badges, seek-bars, and confirm buttons.                                                                                                                                           |
 | `brightness`              | `Brightness?`             | `null`                      | Force a specific theme (`Brightness.dark` or `light`). If `null`, it automatically follows the system `Theme.of(context)`.                                                                                                |
 | `textDelegate`            | `PickerTextDelegate`      | `EnglishPickerTextDelegate` | Handles 100% of the localized strings (buttons, search, empty states) with zero external dependencies.                                                                                                                    |
@@ -1173,15 +1285,18 @@ The entire look and feel for the main gallery is controlled via `PickerConfig`. 
 
 Controls the standalone camera behavior initiated through `CustomMediaPicker.camera()`.
 
-| Parameter          | Type                      | Default                     | Description                                                                                                                  |
-| ------------------ | ------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `maxSelection`     | `int`                     | `10`                        | Setting this higher than 1 allows the user to take multiple distinct photos in a single camera session (burst/rafale style). |
-| `enableVideo`      | `bool`                    | `true`                      | When `true`, long-pressing the capture button records a video. Short-pressing captures a photo.                              |
-| `primaryColor`     | `Color`                   | `Color(0xFF007AFF)`         | The primary accent color for UI elements inside the standalone camera.                                                       |
-| `brightness`       | `Brightness?`             | `null`                      | Force a specific theme. By default is derived from system theme.                                                             |
-| `onEditMedia`      | `Function?`               | `null`                      | Optional BYOE hook directly inside the capture review screen! Seamlessly opens your editor on any selected taken shot.       |
-| `textDelegate`     | `PickerTextDelegate`      | `EnglishPickerTextDelegate` | Override the camera localization text.                                                                                       |
-| `exitConfirmation` | `ExitConfirmationConfig?` | `null`                      | Custom guard to prevent users from exiting the camera accidentally after taking a bunch of photos/videos without sending.    |
+| Parameter           | Type                      | Default                     | Description                                                                                                                  |
+| ------------------- | ------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `maxSelection`      | `int`                     | `10`                        | Setting this higher than 1 allows the user to take multiple distinct photos in a single camera session (burst/rafale style). |
+| `enablePhoto`       | `bool`                    | `true`                      | When `true`, short-pressing the capture button takes a photo.                                                                |
+| `enableVideo`       | `bool`                    | `true`                      | When `true`, long-pressing the capture button records a video. Short-pressing captures a photo (if `enablePhoto` is true).   |
+| `enableGallery`     | `bool`                    | `true`                      | When `true`, displays a thumbnail in the bottom left that, when tapped, smoothly routes the user to the gallery picker.      |
+| `galleryModeConfig` | `PickerConfig?`           | `null`                      | An optional `PickerConfig` to pass to the gallery if `enableGallery` is tapped.                                              |
+| `primaryColor`      | `Color`                   | `Color(0xFF007AFF)`         | The primary accent color for UI elements inside the standalone camera.                                                       |
+| `brightness`        | `Brightness?`             | `null`                      | Force a specific theme. By default is derived from system theme.                                                             |
+| `onEditMedia`       | `Function?`               | `null`                      | Optional BYOE hook directly inside the capture review screen! Seamlessly opens your editor on any selected taken shot.       |
+| `textDelegate`      | `PickerTextDelegate`      | `EnglishPickerTextDelegate` | Override the camera localization text.                                                                                       |
+| `exitConfirmation`  | `ExitConfirmationConfig?` | `null`                      | Custom guard to prevent users from exiting the camera accidentally after taking a bunch of photos/videos without sending.    |
 
 ---
 
@@ -1214,8 +1329,8 @@ We use [Semantic Versioning](https://semver.org/). This package is currently evo
 
 | Version    | Status | Highlights                                                                                                                                                                                                                            |
 | ---------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **v2.x.x** | In Dev | **(Planned)** Configurable Grid Layouts (`Aligned`, `Quilted`, `BYOG`), Smart Local Media Sorting (Size/Date) via Isolate processing.                                                                                                 |
-| **1.0.0**  | Stable | Standalone Multi-Capture Camera, Google Photos Provider, Smart Clipboard, BYOE Architecture, Native Video/Audio Pickers, iOS Swipe-to-Select, Auto-convert HEIC, Hybrid Compression. (See [CHANGELOG](CHANGELOG.md) for more details) |
+| **1.0.0**  | Stable | 5 switchable grid layouts (Masonry, Aligned, Quilted, Staggered, BYOG), database-level smart sorting on the real byte size, Standalone Multi-Capture Camera, Google Photos Provider, Smart Clipboard, BYOE Architecture, Native Video/Audio Pickers, iOS Swipe-to-Select, Auto-convert HEIC, Hybrid Compression. (See [CHANGELOG](CHANGELOG.md) for more details) |
+| **1.1.0**  | Planned | **Modular split** of the Google Photos provider into a companion package (`gallery_suite_photos`) so the core drops from 26 to 19 runtime dependencies. See the [ROADMAP](ROADMAP.md). |
 
 ---
 
@@ -1281,3 +1396,17 @@ Apache 2.0 — see [LICENSE](LICENSE).
 - **[path_provider](https://pub.dev/packages/path_provider)** — Resolves the platform-appropriate local storage directories for our zero-dependency JSON persistence layer.
 
 Thank you to the Flutter community for building the "bricks" that allowed us to create this "house".
+
+<!--
+  ----------------------------------------------------------------------------
+  TODO(docs): the documentation hub domain is not purchased yet. Every
+  documentation link of this README goes through the reference definitions
+  below, so this is the ONLY place to edit once the domain is available.
+  ----------------------------------------------------------------------------
+-->
+[docs-hub]: https://github.com/Hawks124/gallery_suite#readme
+[docs-architecture]: https://github.com/Hawks124/gallery_suite#architecture
+[docs-byod]: https://github.com/Hawks124/gallery_suite#bring-your-own-drop-byod-architecture
+[docs-byoe]: https://github.com/Hawks124/gallery_suite#bring-your-own-editor-byoe-architecture
+[docs-byoc]: https://github.com/Hawks124/gallery_suite#hybrid-smart-compression-built-in--byoc
+[docs-uploading]: https://github.com/Hawks124/gallery_suite#handling-selected-media-upload-example

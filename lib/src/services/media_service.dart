@@ -8,6 +8,8 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+import '../enum/enum.dart';
+import 'sort_service.dart';
 import 'thumbnail_decode_queue.dart';
 
 // Service that handles media permissions, album fetching, asset loading,
@@ -76,23 +78,29 @@ class MediaService {
   Future<List<AssetPathEntity>> getAlbums(RequestType requestType) async {
     return PhotoManager.getAssetPathList(
       type: requestType,
-      filterOption: FilterOptionGroup(
-        orders: [
-          const OrderOption(type: OrderOptionType.createDate, asc: false),
-        ],
-      ),
+      filterOption: FilterOptionGroup(orders: [const OrderOption()]),
     );
   }
 
   // Fetches a page of assets from the given [album].
   //
   // Uses cursor-based pagination via [page] and [pageSize].
+  //
+  // When [sortOrder] is provided, the order is applied by the gallery
+  // database itself so the pagination keeps working on huge libraries.
   Future<List<AssetEntity>> getAssets({
     required AssetPathEntity album,
     required int page,
     required int pageSize,
+    PickerSortOrder? sortOrder,
   }) async {
-    return album.getAssetListPaged(page: page, size: pageSize);
+    final filter = SortService.instance.nativeFilter(
+      sortOrder ?? PickerSortOrder.newest,
+    );
+    final target = filter == null
+        ? album
+        : album.copyWith(filterOption: filter);
+    return target.getAssetListPaged(page: page, size: pageSize);
   }
 
   // Searches for assets within the given [album] that match [query].
@@ -101,7 +109,9 @@ class MediaService {
   // the full asset list first and matching against `asset.title`.
   // This works robustly across Android, iOS, macOS, and Web.
   Future<List<AssetEntity>> searchAssets(
-      AssetPathEntity album, String query) async {
+    AssetPathEntity album,
+    String query,
+  ) async {
     final count = await album.assetCountAsync;
     if (count == 0 || query.trim().isEmpty) return [];
 
@@ -220,8 +230,8 @@ class MediaService {
   // downloads if already cached in the temp directory.
   Future<File?> downloadRemoteAsset(
     String url, {
-    Map<String, String>? headers,
     required String id,
+    Map<String, String>? headers,
   }) async {
     if (kIsWeb) {
       return null;

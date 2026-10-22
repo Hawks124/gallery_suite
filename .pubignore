@@ -1,5 +1,21 @@
-# Ignore media files for pub.dev
-assets/media/
+# Files that must not be published to pub.dev.
+#
+# `dart pub publish` includes every file of the package except the ones
+# listed here. Keep this list tight: the published archive is downloaded by
+# every consumer, so anything non-essential belongs in here.
+
+# GitHub-only workflows, issue forms and PR template.
 .github/
+
+# Demo GIFs and the branding banner are served from GitHub by the README
+# through raw.githubusercontent.com. They never need to be in the archive.
 example/assets/
+
+# The documentation website lives in its own repository.
 website/
+
+# Local build tooling (asset optimisation scripts).
+tool/
+
+# Future companion package (see ROADMAP.md -> V1.1 Modular Split).
+gallery_suite_photos/

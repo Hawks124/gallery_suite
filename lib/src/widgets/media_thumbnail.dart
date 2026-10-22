@@ -1,18 +1,20 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
-import 'dart:async';
 import 'package:video_player/video_player.dart';
-import 'video_preview_sheet.dart';
-import '../sources/media_source_factory.dart';
-import '../pages/fullscreen_preview_page.dart';
+
+import '../intl/picker_text_delegate.dart';
 import '../models/picker_asset.dart';
 import '../models/picker_theme.dart';
-import '../intl/picker_text_delegate.dart';
+import '../pages/fullscreen_preview_page.dart';
 import '../services/google_photos_service.dart';
+import '../sources/media_source_factory.dart';
 import 'auth_image.dart';
+import 'video_preview_sheet.dart';
 
 class MediaThumbnailWidget extends StatefulWidget {
   final PickerAsset asset;
@@ -28,7 +30,6 @@ class MediaThumbnailWidget extends StatefulWidget {
   final PickerTextDelegate textDelegate;
 
   const MediaThumbnailWidget({
-    super.key,
     required this.asset,
     required this.isSelected,
     required this.primaryColor,
@@ -36,6 +37,7 @@ class MediaThumbnailWidget extends StatefulWidget {
     required this.onTap,
     required this.theme,
     required this.textDelegate,
+    super.key,
     this.googleService,
     this.showPlayOverlay = false,
     this.selectionNumber,
@@ -193,8 +195,9 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
       semanticLabel = widget.textDelegate.semanticVideo('$mm:$ss');
     } else {
       semanticLabel = widget.isSelected
-          ? widget.textDelegate
-              .semanticImageSelected(widget.selectionNumber ?? 0)
+          ? widget.textDelegate.semanticImageSelected(
+              widget.selectionNumber ?? 0,
+            )
           : widget.textDelegate.semanticImageUnselected;
     }
 
@@ -207,8 +210,8 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
       customSemanticsActions: {
         if (widget.onLongPress != null)
           CustomSemanticsAction(
-                  label: widget.textDelegate.semanticPreviewAction):
-              widget.onLongPress!,
+            label: widget.textDelegate.semanticPreviewAction,
+          ): widget.onLongPress!,
       },
       child: RepaintBoundary(
         child: GestureDetector(
@@ -268,23 +271,21 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
             ),
           );
         }
-        return Container(
+        return ColoredBox(
           color: _themeBase(),
           child: Center(
-            child: Icon(Icons.video_camera_back_outlined,
-                color: widget.isDark ? Colors.white30 : Colors.black26,
-                size: 32),
+            child: Icon(
+              Icons.video_camera_back_outlined,
+              color: widget.isDark ? Colors.white30 : Colors.black26,
+              size: 32,
+            ),
           ),
         );
       }
       return _buildShimmer();
     }
 
-    return Image.memory(
-      _thumbnail!,
-      fit: BoxFit.cover,
-      gaplessPlayback: true,
-    );
+    return Image.memory(_thumbnail!, fit: BoxFit.cover, gaplessPlayback: true);
   }
 
   Color _themeBase() =>
@@ -295,7 +296,7 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
   Widget _buildShimmer() {
     return AnimatedBuilder(
       animation: _pulseAnim,
-      builder: (_, __) {
+      builder: (_, _) {
         return ColoredBox(
           color: Color.lerp(_themeBase(), _themeHighlight(), _pulseAnim.value)!,
         );
@@ -324,8 +325,11 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.play_arrow_rounded,
-                    color: Colors.white, size: 11),
+                const Icon(
+                  Icons.play_arrow_rounded,
+                  color: Colors.white,
+                  size: 11,
+                ),
                 const SizedBox(width: 2),
                 Text(
                   '$mm:$ss',
@@ -375,9 +379,7 @@ class _MediaThumbnailWidgetState extends State<MediaThumbnailWidget>
         AnimatedOpacity(
           duration: const Duration(milliseconds: 180),
           opacity: isSelected ? 1.0 : 0.0,
-          child: ColoredBox(
-            color: widget.primaryColor.withValues(alpha: 0.28),
-          ),
+          child: ColoredBox(color: widget.primaryColor.withValues(alpha: 0.28)),
         ),
         Positioned(
           top: 7,
@@ -478,16 +480,16 @@ class SelectedPreviewItem extends StatefulWidget {
   final PickerTextDelegate textDelegate;
 
   const SelectedPreviewItem({
-    super.key,
     required this.asset,
     required this.index,
     required this.primaryColor,
     required this.onRemove,
     required this.theme,
+    required this.textDelegate,
+    super.key,
     this.googleService,
     this.editedFile,
     this.onEdit,
-    required this.textDelegate,
   });
 
   @override
@@ -597,29 +599,28 @@ class _SelectedPreviewItemState extends State<SelectedPreviewItem>
                           gaplessPlayback: true,
                         )
                       : (widget.asset is RemotePickerAsset)
-                          ? AuthImage(
-                              imageUrl:
-                                  (widget.asset as RemotePickerAsset).thumbUrl,
-                              googleService: widget.googleService,
-                              theme: widget.theme,
-                              headers:
-                                  (widget.asset as RemotePickerAsset).headers,
-                              width: 66,
-                              height: 66,
-                            )
-                          : (_data != null
-                              ? Image.memory(
-                                  _data!,
-                                  width: 66,
-                                  height: 66,
-                                  fit: BoxFit.cover,
-                                  gaplessPlayback: true,
-                                )
-                              : Container(
-                                  width: 66,
-                                  height: 66,
-                                  color: const Color(0xFF2C2C2E),
-                                )),
+                      ? AuthImage(
+                          imageUrl:
+                              (widget.asset as RemotePickerAsset).thumbUrl,
+                          googleService: widget.googleService,
+                          theme: widget.theme,
+                          headers: (widget.asset as RemotePickerAsset).headers,
+                          width: 66,
+                          height: 66,
+                        )
+                      : (_data != null
+                            ? Image.memory(
+                                _data!,
+                                width: 66,
+                                height: 66,
+                                fit: BoxFit.cover,
+                                gaplessPlayback: true,
+                              )
+                            : Container(
+                                width: 66,
+                                height: 66,
+                                color: const Color(0xFF2C2C2E),
+                              )),
                 ),
               ),
             ),

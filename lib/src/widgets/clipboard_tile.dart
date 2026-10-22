@@ -30,12 +30,12 @@ class ClipboardTile extends StatelessWidget {
   final VoidCallback onTap;
 
   const ClipboardTile({
-    super.key,
     required this.theme,
     required this.primaryColor,
     required this.label,
     required this.subtitle,
     required this.onTap,
+    super.key,
   });
 
   @override
@@ -66,7 +66,6 @@ class ClipboardTile extends StatelessWidget {
                   ),
                   border: Border.all(
                     color: primaryColor.withValues(alpha: 0.2),
-                    width: 1,
                   ),
                 ),
                 child: Icon(

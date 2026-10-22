@@ -1,6 +1,7 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
 import '../../gallery_suite.dart';
 
@@ -24,9 +25,9 @@ class FullscreenPreviewPage extends StatefulWidget {
   final Future<File?> Function()? onEdit;
 
   const FullscreenPreviewPage({
-    super.key,
     required this.asset,
     required this.theme,
+    super.key,
     this.googleService,
     this.thumbnail,
     this.editedFile,
@@ -133,31 +134,30 @@ class _FullscreenPreviewPageState extends State<FullscreenPreviewPage> {
                 ),
               )
             : (widget.asset is RemotePickerAsset)
-                ? InteractiveViewer(
-                    minScale: 1.0,
-                    maxScale: 4.0,
-                    child: Hero(
-                      tag: 'preview_${widget.asset.id}',
-                      child: AuthImage(
-                        imageUrl: (widget.asset as RemotePickerAsset).fullUrl,
-                        googleService: widget.googleService,
-                        theme: widget.theme,
-                        headers: (widget.asset as RemotePickerAsset).headers,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  )
-                : widget.thumbnail != null
-                    ? InteractiveViewer(
-                        minScale: 1.0,
-                        maxScale: 4.0,
-                        child: Hero(
-                          tag: 'preview_${widget.asset.id}',
-                          child: Image.memory(widget.thumbnail!,
-                              fit: BoxFit.contain),
-                        ),
-                      )
-                    : const CircularProgressIndicator(color: Colors.white),
+            ? InteractiveViewer(
+                minScale: 1.0,
+                maxScale: 4.0,
+                child: Hero(
+                  tag: 'preview_${widget.asset.id}',
+                  child: AuthImage(
+                    imageUrl: (widget.asset as RemotePickerAsset).fullUrl,
+                    googleService: widget.googleService,
+                    theme: widget.theme,
+                    headers: (widget.asset as RemotePickerAsset).headers,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              )
+            : widget.thumbnail != null
+            ? InteractiveViewer(
+                minScale: 1.0,
+                maxScale: 4.0,
+                child: Hero(
+                  tag: 'preview_${widget.asset.id}',
+                  child: Image.memory(widget.thumbnail!, fit: BoxFit.contain),
+                ),
+              )
+            : const CircularProgressIndicator(color: Colors.white),
       ),
     );
   }

@@ -100,14 +100,16 @@ class ThumbnailDecodeQueue {
       return;
     }
 
-    _queue.add(_DecodeRequest(
-      asset: asset,
-      cacheKey: cacheKey,
-      size: size,
-      quality: quality,
-      onComplete: onComplete,
-      priority: priority,
-    ));
+    _queue.add(
+      _DecodeRequest(
+        asset: asset,
+        cacheKey: cacheKey,
+        size: size,
+        quality: quality,
+        onComplete: onComplete,
+        priority: priority,
+      ),
+    );
 
     _scheduleDrain();
   }

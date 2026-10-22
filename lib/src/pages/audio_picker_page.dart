@@ -13,7 +13,7 @@ import '../../gallery_suite.dart';
 class AudioPickerPage extends StatefulWidget {
   final PickerConfig config;
 
-  const AudioPickerPage({super.key, required this.config});
+  const AudioPickerPage({required this.config, super.key});
 
   @override
   State<AudioPickerPage> createState() => _AudioPickerPageState();
@@ -91,7 +91,8 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final isDark = widget.config.brightness == Brightness.dark ||
+    final isDark =
+        widget.config.brightness == Brightness.dark ||
         (widget.config.brightness == null &&
             MediaQuery.of(context).platformBrightness == Brightness.dark);
     _theme = PickerTheme(isDark, widget.config.themeData);
@@ -139,8 +140,10 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
         );
 
         final filtered = results
-            .where((a) =>
-                (a.title ?? '').toLowerCase().contains(trimmed.toLowerCase()))
+            .where(
+              (a) =>
+                  (a.title ?? '').toLowerCase().contains(trimmed.toLowerCase()),
+            )
             .toList();
 
         if (mounted && _searchQuery == trimmed) {
@@ -197,9 +200,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
         album: _album!,
         page: _page,
         pageSize: _pageSize,
-      ))
-          .where((a) => a.type == AssetType.audio)
-          .toList();
+      )).where((a) => a.type == AssetType.audio).toList();
 
       if (mounted) {
         setState(() {
@@ -257,14 +258,17 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
         }
       } else if (asset is RemotePickerAsset) {
         await _player.setAudioSource(
-            AudioSource.uri(Uri.parse(asset.fullUrl), headers: asset.headers));
+          AudioSource.uri(Uri.parse(asset.fullUrl), headers: asset.headers),
+        );
       } else if (asset is FilePickerAsset) {
         if (kIsWeb) {
-          await _player
-              .setAudioSource(AudioSource.uri(Uri.parse(asset.filePath)));
+          await _player.setAudioSource(
+            AudioSource.uri(Uri.parse(asset.filePath)),
+          );
         } else {
-          await _player
-              .setAudioSource(AudioSource.uri(Uri.file(asset.filePath)));
+          await _player.setAudioSource(
+            AudioSource.uri(Uri.file(asset.filePath)),
+          );
         }
       }
       await _player.play();
@@ -284,7 +288,8 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                  'Vous ne pouvez sélectionner que ${widget.config.maxSelection} élément(s).'),
+                'Vous ne pouvez sélectionner que ${widget.config.maxSelection} élément(s).',
+              ),
               backgroundColor: _theme.elevated,
               behavior: SnackBarBehavior.floating,
               duration: const Duration(seconds: 3),
@@ -301,7 +306,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
     final hasChanges = _selected.isNotEmpty;
     if (!hasChanges || widget.config.exitConfirmation == null) {
       if (!mounted) return;
-      Navigator.of(context).pop(null);
+      Navigator.of(context).pop();
       return;
     }
 
@@ -312,7 +317,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
 
     if (!mounted) return;
     if (shouldExit) {
-      Navigator.of(context).pop(null);
+      Navigator.of(context).pop();
     }
   }
 
@@ -350,7 +355,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
 
           if (!context.mounted) return;
           if (shouldExit) {
-            Navigator.of(context).pop(null);
+            Navigator.of(context).pop();
           }
         },
         child: Scaffold(
@@ -365,7 +370,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
   PreferredSizeWidget _buildAppBar() {
     return PreferredSize(
       preferredSize: const Size.fromHeight(56),
-      child: Container(
+      child: ColoredBox(
         color: _theme.surface,
         child: SafeArea(
           bottom: false,
@@ -381,14 +386,17 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                     style: TextButton.styleFrom(
                       foregroundColor: _theme.secondaryText,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 8),
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
                     ),
                     child: Text(
                       widget.config.textDelegate.cancel,
                       style: TextStyle(
-                          color: _theme.secondaryText,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400),
+                        color: _theme.secondaryText,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                   ),
                 ),
@@ -415,16 +423,19 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                         IconButton(
                           onPressed: () async {
                             if (_source is FileSelectorMediaSource) {
-                              final newFiles = await (_source
-                                      as FileSelectorMediaSource)
-                                  .pickFiles(requestType: RequestType.audio);
+                              final newFiles = await (_source).pickFiles(
+                                requestType: RequestType.audio,
+                              );
                               if (newFiles.isNotEmpty && mounted) {
                                 _initialize();
                               }
                             }
                           },
-                          icon: Icon(Icons.add_rounded,
-                              color: widget.config.primaryColor, size: 28),
+                          icon: Icon(
+                            Icons.add_rounded,
+                            color: widget.config.primaryColor,
+                            size: 28,
+                          ),
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
                           splashRadius: 24,
@@ -434,7 +445,9 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                         duration: const Duration(milliseconds: 200),
                         transitionBuilder: (child, anim) => ScaleTransition(
                           scale: CurvedAnimation(
-                              parent: anim, curve: Curves.easeOutBack),
+                            parent: anim,
+                            curve: Curves.easeOutBack,
+                          ),
                           child: FadeTransition(opacity: anim, child: child),
                         ),
                         child: _selected.isNotEmpty
@@ -492,14 +505,21 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
           onChanged: _onSearchChanged,
           decoration: InputDecoration(
             hintText: 'Rechercher par nom...',
-            hintStyle:
-                TextStyle(color: _theme.secondaryText.withValues(alpha: 0.5)),
-            prefixIcon:
-                Icon(Icons.search, color: _theme.secondaryText, size: 20),
+            hintStyle: TextStyle(
+              color: _theme.secondaryText.withValues(alpha: 0.5),
+            ),
+            prefixIcon: Icon(
+              Icons.search,
+              color: _theme.secondaryText,
+              size: 20,
+            ),
             suffixIcon: _searchQuery.isNotEmpty
                 ? IconButton(
-                    icon: Icon(Icons.cancel,
-                        color: _theme.secondaryText, size: 16),
+                    icon: Icon(
+                      Icons.cancel,
+                      color: _theme.secondaryText,
+                      size: 16,
+                    ),
                     onPressed: () {
                       _searchCtrl.clear();
                       _onSearchChanged('');
@@ -530,7 +550,9 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
     if (_isLoading || (_isSearching && _isSearchLoading)) {
       return Center(
         child: CircularProgressIndicator(
-            color: widget.config.primaryColor, strokeWidth: 2),
+          color: widget.config.primaryColor,
+          strokeWidth: 2,
+        ),
       );
     }
 
@@ -539,26 +561,32 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search_off_rounded,
-                size: 56, color: _theme.secondaryText),
+            Icon(
+              Icons.search_off_rounded,
+              size: 56,
+              color: _theme.secondaryText,
+            ),
             const SizedBox(height: 16),
             Text(
               'Aucun r sultat pour "$_searchQuery"',
               style: TextStyle(
-                  color: _theme.secondaryText,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500),
+                color: _theme.secondaryText,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
       );
     }
 
-    final displayAssets =
-        (_isSearching && _searchQuery.isNotEmpty) ? _searchResults : _assets;
+    final displayAssets = (_isSearching && _searchQuery.isNotEmpty)
+        ? _searchResults
+        : _assets;
 
     if (!_isSearching && _assets.isEmpty) {
-      final bool isWebOrDesktop = kIsWeb ||
+      final bool isWebOrDesktop =
+          kIsWeb ||
           (!kIsWeb &&
               (defaultTargetPlatform == TargetPlatform.windows ||
                   defaultTargetPlatform == TargetPlatform.linux));
@@ -566,29 +594,36 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.library_music_outlined,
-                size: 56, color: _theme.secondaryText),
+            Icon(
+              Icons.library_music_outlined,
+              size: 56,
+              color: _theme.secondaryText,
+            ),
             const SizedBox(height: 16),
             Text(
               widget.config.textDelegate.noMediaFound,
               style: TextStyle(
-                  color: _theme.secondaryText,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500),
+                color: _theme.secondaryText,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             if (isWebOrDesktop && _source is FileSelectorMediaSource) ...[
               const SizedBox(height: 24),
               GestureDetector(
                 onTap: () async {
-                  final newFiles = await (_source as FileSelectorMediaSource)
-                      .pickFiles(requestType: RequestType.audio);
+                  final newFiles = await (_source).pickFiles(
+                    requestType: RequestType.audio,
+                  );
                   if (newFiles.isNotEmpty && mounted) {
                     _initialize();
                   }
                 },
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: widget.config.primaryColor,
                     borderRadius: BorderRadius.circular(12),
@@ -596,9 +631,10 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                   child: const Text(
                     'Sélectionner des fichiers',
                     style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600),
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
@@ -613,7 +649,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
     return ListView.separated(
       controller: _scrollController,
       itemCount: displayAssets.length + (isLoadingMoreAssets ? 1 : 0),
-      separatorBuilder: (_, __) =>
+      separatorBuilder: (_, _) =>
           Divider(height: 0.5, color: _theme.divider, indent: 82),
       itemBuilder: (_, i) {
         if (i >= displayAssets.length) {
@@ -621,7 +657,9 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
             height: 72,
             child: Center(
               child: CircularProgressIndicator(
-                  color: widget.config.primaryColor, strokeWidth: 2),
+                color: widget.config.primaryColor,
+                strokeWidth: 2,
+              ),
             ),
           );
         }
@@ -654,11 +692,16 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
         child: Container(
           decoration: BoxDecoration(
             color: _theme.surface.withValues(alpha: 0.75),
-            border:
-                Border(top: BorderSide(color: _theme.separator, width: 0.5)),
+            border: Border(
+              top: BorderSide(color: _theme.separator, width: 0.5),
+            ),
           ),
           padding: EdgeInsets.fromLTRB(
-              16, 12, 16, MediaQuery.of(context).padding.bottom + 12),
+            16,
+            12,
+            16,
+            MediaQuery.of(context).padding.bottom + 12,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -733,8 +776,11 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                         color: _theme.elevated,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.close_rounded,
-                          color: _theme.secondaryText, size: 16),
+                      child: Icon(
+                        Icons.close_rounded,
+                        color: _theme.secondaryText,
+                        size: 16,
+                      ),
                     ),
                   ),
                 ],
@@ -744,15 +790,16 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
               SliderTheme(
                 data: SliderThemeData(
                   trackHeight: 2.5,
-                  thumbShape:
-                      const RoundSliderThumbShape(enabledThumbRadius: 5),
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 5,
+                  ),
                   activeTrackColor: widget.config.primaryColor,
                   inactiveTrackColor: _theme.elevated,
                   thumbColor: widget.config.primaryColor,
                   overlayShape: SliderComponentShape.noOverlay,
                 ),
                 child: Slider(
-                  value: progress.toDouble(),
+                  value: progress,
                   onChanged: (v) {
                     final ms = (v * _duration.inMilliseconds).round();
                     _player.seek(Duration(milliseconds: ms));
@@ -767,7 +814,7 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
   }
 
   Widget _buildPermissionDenied() {
-    final isWeb = kIsWeb;
+    const isWeb = kIsWeb;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -777,10 +824,15 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
             Container(
               width: 80,
               height: 80,
-              decoration:
-                  BoxDecoration(color: _theme.elevated, shape: BoxShape.circle),
-              child: Icon(Icons.music_off_outlined,
-                  size: 38, color: _theme.secondaryText),
+              decoration: BoxDecoration(
+                color: _theme.elevated,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.music_off_outlined,
+                size: 38,
+                color: _theme.secondaryText,
+              ),
             ),
             const SizedBox(height: 24),
             Text(
@@ -798,7 +850,10 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                   ? 'Sélectionnez des fichiers audio depuis votre appareil pour commencer.'
                   : 'Autorisez l\'accès dans les réglages pour continuer.',
               style: TextStyle(
-                  color: _theme.secondaryText, fontSize: 14, height: 1.5),
+                color: _theme.secondaryText,
+                fontSize: 14,
+                height: 1.5,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
@@ -806,8 +861,9 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
               onTap: () async {
                 if (isWeb) {
                   if (_source is FileSelectorMediaSource) {
-                    final newFiles = await (_source as FileSelectorMediaSource)
-                        .pickFiles(requestType: RequestType.audio);
+                    final newFiles = await (_source).pickFiles(
+                      requestType: RequestType.audio,
+                    );
                     if (newFiles.isNotEmpty && mounted) {
                       _initialize(); // Reload to pick up the new virtual album content
                     }
@@ -817,18 +873,21 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
                 }
               },
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
                   color: widget.config.primaryColor,
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: Text(
+                child: const Text(
                   isWeb ? 'Sélectionner des fichiers' : 'Ouvrir les réglages',
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
@@ -841,8 +900,9 @@ class _AudioPickerPageState extends State<AudioPickerPage> {
   String _cleanTitle(String title) {
     return title
         .replaceAll(
-            RegExp(r'\.(mp3|wav|aac|flac|ogg|m4a|opus)$', caseSensitive: false),
-            '')
+          RegExp(r'\.(mp3|wav|aac|flac|ogg|m4a|opus)$', caseSensitive: false),
+          '',
+        )
         .trim();
   }
 }

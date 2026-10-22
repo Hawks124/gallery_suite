@@ -1,11 +1,13 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-import 'picker_theme.dart';
-import 'exit_confirmation.dart';
-import '../intl/picker_text_delegate.dart';
 import '../intl/english_picker_text_delegate.dart';
+import '../intl/picker_text_delegate.dart';
+import 'exit_confirmation.dart';
+import 'picker_config.dart';
+import 'picker_theme.dart';
 
 /// Configuration for the standalone [CustomMediaPicker.camera] entry point.
 class CameraPickerConfig {
@@ -14,12 +16,21 @@ class CameraPickerConfig {
   /// Note: Video recording inherently restricts the session to 1 regardless of this value.
   final int maxSelection;
 
+  /// Whether to allow capturing photos. Defaults to `true`.
+  final bool enablePhoto;
+
   /// Whether to allow recording video. Defaults to `true`.
   /// If `true`, a long press on the shutter will record video (if maxSelection permits).
   final bool enableVideo;
 
   /// Whether to record audio when capturing video. Defaults to `true`.
   final bool enableAudio;
+
+  /// Whether to display a gallery thumbnail button to transition to the full picker. Defaults to `true`.
+  final bool enableGallery;
+
+  /// Optional configuration for the gallery picker if [enableGallery] is true.
+  final PickerConfig? galleryModeConfig;
 
   /// Primary action color for the camera UI elements (e.g. shutter ring, checkmark).
   final Color primaryColor;
@@ -35,7 +46,11 @@ class CameraPickerConfig {
   /// Standardizes editing behaviour in the full-screen capture preview.
   /// The `asset` argument is always `null` in standalone mode as the image is pure RAM/Disk.
   final Future<File?> Function(
-      BuildContext context, AssetEntity? asset, File originalFile)? onEditMedia;
+    BuildContext context,
+    AssetEntity? asset,
+    File originalFile,
+  )?
+  onEditMedia;
 
   /// Prevents accidental exits by warning the user if they press back while having captured photos.
   final ExitConfirmationConfig? exitConfirmation;
@@ -45,8 +60,11 @@ class CameraPickerConfig {
 
   const CameraPickerConfig({
     this.maxSelection = 5,
+    this.enablePhoto = true,
     this.enableVideo = true,
     this.enableAudio = true,
+    this.enableGallery = true,
+    this.galleryModeConfig,
     this.primaryColor = const Color(0xFF007AFF),
     this.brightness = Brightness.dark,
     this.themeData,

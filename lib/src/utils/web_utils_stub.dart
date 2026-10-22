@@ -15,8 +15,9 @@ class WebUtils {
   /// Fetches media bytes securely bypassing some CORS restrictions on Web
   /// using an XMLHttpRequest. Returns null on non-Web platforms.
   static Future<Uint8List?> fetchMediaBytes(
-          String url, Map<String, String> headers) async =>
-      null;
+    String url,
+    Map<String, String> headers,
+  ) async => null;
 
   /// Creates an ephemeral Object URL (blob:) from memory [bytes].
   /// Required for `<video>` tag playback on Web without CORS issues.

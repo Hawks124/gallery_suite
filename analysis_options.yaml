@@ -1,4 +1,66 @@
 include: package:flutter_lints/flutter.yaml
 
-# Additional information about this file can be found at
-# https://dart.dev/guides/language/analysis-options
+analyzer:
+  errors:
+    missing_required_param: error
+    missing_return: error
+    dead_code: warning
+    unused_import: warning
+    unused_local_variable: warning
+    invalid_annotation_target: ignore
+    unawaited_return_in_try_block: error
+
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/*.pb.dart"
+    - build/**
+    - android/**
+    - ios/**
+
+linter:
+  rules:
+    # ── Style & lisibilité ────────────────────────────────────────────────────
+    - always_put_required_named_parameters_first
+    - annotate_overrides
+    - avoid_print                          # debugPrint() à la place
+    - avoid_redundant_argument_values
+    - avoid_relative_lib_imports           # imports package: uniquement
+    - avoid_returning_null_for_void
+    - avoid_unnecessary_containers
+    - avoid_unused_constructor_parameters
+    - cascade_invocations
+    - directives_ordering                  # dart, flutter, package, local
+    - eol_at_end_of_file
+    - missing_whitespace_between_adjacent_strings
+    - no_leading_underscores_for_local_identifiers
+    - prefer_const_constructors
+    - prefer_const_constructors_in_immutables
+    - prefer_const_declarations
+    - prefer_const_literals_to_create_immutables
+    - prefer_final_fields
+    - prefer_final_in_for_each
+    - prefer_single_quotes
+    - require_trailing_commas
+    - sized_box_for_whitespace
+    - sort_child_properties_last
+    - use_colored_box
+    - use_decorated_box
+    - use_full_hex_values_for_flutter_colors
+
+    # ── Sécurité & robustesse ─────────────────────────────────────────────────
+    - avoid_type_to_string                 # .toString() sur Type → risque obfuscation
+    - cancel_subscriptions
+    - close_sinks
+    - literal_only_boolean_expressions
+    - no_adjacent_strings_in_list
+    - test_types_in_equals
+    - throw_in_finally
+    - unnecessary_statements
+
+    # ── Performance ───────────────────────────────────────────────────────────
+    - noop_primitive_operations
+
+    # ── Flutter spécifique ────────────────────────────────────────────────────
+    - no_logic_in_create_state
+    - use_build_context_synchronously
